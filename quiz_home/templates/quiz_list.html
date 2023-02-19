@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Quizzes</h1>
+    
+    {% comment %} <ul>
+    {% for quiz in quiz_list %}
+    <li>
+      <p> 
+        <a href="{{ quiz.get_absolute_url }}" > {{name}} </a>
+      </p>
+    </li>
+    {% endfor %}
+    </ul> {% endcomment %}
+
+
+{% endblock %}

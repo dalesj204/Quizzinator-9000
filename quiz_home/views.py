@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
+from django.views import generic
+from .models import Quiz
 
 # Create your views here.
 
@@ -25,4 +27,12 @@ def studentLogin(request):
         return render(request, 'login.html')
     else:
         return HttpResponse("Plase use GET or POST method")
+    
+    
+    
+    
+class QuizListView(generic.ListView):
+    model = Quiz
+    paginated_by = 10
+    template_name = 'quiz_list.html'
 
