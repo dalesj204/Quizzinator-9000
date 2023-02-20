@@ -5,6 +5,11 @@ from django.views import generic
 from .models import Quiz
 
 # Create your views here.
+def index(request):
+    return render(
+        request,
+        'index.html',
+    )
 
 def studentLogin(request):
     if request.method == 'POST':
@@ -27,9 +32,7 @@ def studentLogin(request):
         return render(request, 'login.html')
     else:
         return HttpResponse("Plase use GET or POST method")
-    
-    
-    
+
     
 class QuizListView(generic.ListView):
     model = Quiz
