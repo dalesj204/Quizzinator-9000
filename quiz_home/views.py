@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz
+from .models import Quiz, Class
 
 # Create your views here.
 def index(request):
@@ -39,3 +39,11 @@ class QuizListView(generic.ListView):
     paginated_by = 10
     template_name = 'quiz_list.html'
 
+class ClassListView(generic.ListView):
+    model = Class
+    paginated_by = 10
+    template_name = 'class_list.html'
+
+class ClassDetailView(generic.ListView):
+    model = Class
+    template_name = 'class_detail.html'

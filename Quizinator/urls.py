@@ -23,6 +23,9 @@ from quiz_home import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
+    path('tournament_home/', RedirectView.as_view(url='/quiz_home/', permanent=True)),
     path('quiz_home/', include('quiz_home.urls')),
     re_path('studentLogin/',views.studentLogin,name='studentLogin'),
+    path('class_list/', views.ClassListView.as_view(), name='classes'),
+    path('class_list/<int:pk>', views.ClassDetailView.as_view(), name='class_detail')
 ]

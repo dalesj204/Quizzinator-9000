@@ -7,8 +7,10 @@ body {
 }
 
 a {
-    color: rgb(254, 254, 254);
+    color: black;
 }
+
+
 
 a:hover {
     color: black;
