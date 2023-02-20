@@ -6,6 +6,9 @@ class Quiz(models.Model):
     # id = models.AutoField('ID',primary_key=True)
     name = models.CharField(max_length=100)
     course = models.CharField(max_length=100)
+    
+    class Meta:
+        verbose_name_plural = "quizzes"
 
 
     def __str__(self):
