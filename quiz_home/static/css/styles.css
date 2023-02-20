@@ -10,8 +10,6 @@ a {
     color: black;
 }
 
-
-
 a:hover {
     color: black;
 }
@@ -19,6 +17,8 @@ a:hover {
 a:active {
     color: rgb(255, 255, 255);
   }
+
+
 
 .title {
     width: 120%;
@@ -35,8 +35,12 @@ a:active {
     padding-left: 20px;
 }
 
+.nav-link{
+    color: white;
+}
 .nav-item {
     display:block;
+    color:white;
     justify-content: center;
     width: 50%;
 }
