@@ -1,0 +1,9 @@
+{% extends "base_generic.html" %}
+{% block title %} Student Profile {% endblock title %}
+{% block content%}
+{% csrf_token %} 
+<div class="container">
+    <td>Profile</td>
+    <td>{{ student.sid }}</td>
+</div>
+{% endblock content %}

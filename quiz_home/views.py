@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class
+from .models import Quiz, Class, Student
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
@@ -32,6 +33,24 @@ def studentLogin(request):
         return render(request, 'login.html')
     else:
         return HttpResponse("Plase use GET or POST method")
+
+
+# Student Profile - Place Holder
+#
+#
+#This is a place holder for the student profile view to have the
+#profile page up and running. It is not complex as it only
+#contains one field. Afterwards it returns render.
+#
+# @return render - Renders the student profile.
+@login_required
+def studentProfile(request):
+    name = Student.name #The name of the student
+
+    #Context for render
+    #NOTE- THIS WILL NEED TO CHANGE LATER.
+    context = {'name': name}
+    return render(request, 'profile.html', context)
 
     
 class QuizListView(generic.ListView):
