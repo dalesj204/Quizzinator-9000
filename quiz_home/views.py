@@ -7,9 +7,16 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
+    
+    num_quizzes = Quiz.objects.all().count()
+    
+    context = {
+        'num_quizzes': num_quizzes,
+    }
+    
     return render(
         request,
-        'index.html',
+        'index.html', context=context,
     )
 
 def studentLogin(request):
@@ -55,13 +62,22 @@ def studentProfile(request):
 class QuizListView(generic.ListView):
     model = Quiz
     paginated_by = 10
+    context_object_name = 'quizzes'
     template_name = 'quiz_list.html'
+    quizzes = Quiz.objects.all()
+
+class QuizDetailView(generic.DetailView):
+    model = Quiz
+    paginated_by = 10
+    context_object_name = 'quiz'
+    template_name = 'quiz_detail.html'
+
 
 class ClassListView(generic.ListView):
     model = Class
     paginated_by = 10
     template_name = 'class_list.html'
 
-class ClassDetailView(generic.ListView):
+class ClassDetailView(generic.DetailView):
     model = Class
     template_name = 'class_detail.html'
