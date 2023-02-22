@@ -76,5 +76,13 @@ class Student(models.Model):
     def __str__(self):
         return self.name
     
-    
+
+class Stats(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('stat', kwargs={'pk': self.pk})
     

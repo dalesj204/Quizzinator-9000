@@ -30,5 +30,6 @@ urlpatterns = [
     path('profile/', views.studentProfile,name= 'studentProfile'),
     path('class_list/', views.ClassListView.as_view(), name='classes'),
     path('class_list/<int:pk>', views.ClassDetailView.as_view(), name='class_detail'),
-    path('class_list/<int:pk>/gradebook', views.ClassGradebookView.as_view(), name='grade_list')
+    path('class_list/<int:pk>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),
+    path('class_list/stats', views.ClassStatsView.as_view(), name='stats'),
 ]

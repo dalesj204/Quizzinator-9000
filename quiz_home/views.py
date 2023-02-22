@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class, Student, Grade
+from .models import Quiz, Class, Student, Grade, Stats
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -78,10 +78,18 @@ class ClassListView(generic.ListView):
     paginated_by = 10
     template_name = 'class_list.html'
 
+
 class ClassDetailView(generic.DetailView):
     model = Class
     template_name = 'class_detail.html'
-    
+
+
 class ClassGradebookView(generic.ListView):
     model = Grade
     template_name = 'gradebook.html'
+
+
+class ClassStatsView(generic.ListView):
+    model = Stats
+    template_name = 'stats.html'
+
