@@ -4,7 +4,7 @@
 <h1>Quizzes</h1>
     
     <ul>
-    {% for quiz in quiz_list %}
+    {% for quiz in quizzes %}
     <li>
       <p> 
         <a href="{% url 'quiz-detail' quiz.pk %}" > {{quiz.name}} </a>
