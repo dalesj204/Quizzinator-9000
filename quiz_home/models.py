@@ -16,12 +16,32 @@ class Quiz(models.Model):
 
     # def get_absolute_url(self):
     #     return reverse('quiz_detail', kwargs={'pk': self.pk})
+    
+    
+    
+# temporary model for the sake of getting the gradebook page running.
+class Grade(models.Model):
+    
+    name = models.CharField(max_length=100)
+    grade = models.IntegerField()
+    
 
+    class Meta:
+        verbose_name_plural = "grades"
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('grade_list')
+    
+    
 # More will be added as the program is fleshed out
 # For now, just having a name will suffice
 class Class(models.Model):
 
     name = models.CharField(max_length=100)
+    gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
 
     class Meta:
         verbose_name_plural = "classes"
@@ -54,3 +74,6 @@ class Student(models.Model):
     #returns the name of the user.
     def __str__(self):
         return self.name
+    
+    
+    

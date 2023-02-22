@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class, Student
+from .models import Quiz, Class, Student, Grade
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -66,3 +66,7 @@ class ClassListView(generic.ListView):
 class ClassDetailView(generic.ListView):
     model = Class
     template_name = 'class_detail.html'
+    
+class ClassGradebookView(generic.ListView):
+    model = Grade
+    template_name = 'gradebook.html'

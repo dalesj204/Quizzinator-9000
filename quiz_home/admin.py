@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Quiz, Class
+from .models import Quiz, Class, Grade
 
 # Register your models here.
 
@@ -10,3 +10,5 @@ class QuizAdmin(admin.ModelAdmin):
     fields = ['name', 'course']
 
 admin.site.register(Class)
+
+admin.site.register(Grade)
