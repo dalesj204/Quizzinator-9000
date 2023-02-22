@@ -86,3 +86,13 @@ class Stats(models.Model):
     def get_absolute_url(self):
         return reverse('stat', kwargs={'pk': self.pk})
     
+class MultipleChoiceQuestion(models.Model):
+    question_text = models.CharField(max_length=500)
+    a = models.CharField(max_length=100)
+    b = models.CharField(max_length=100)
+    c = models.CharField(max_length=100)
+    d = models.CharField(max_length=100)
+    correct_answer = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.question_text
