@@ -9,6 +9,7 @@
 <div class ="image">
     <img class ="image" src="../static/pdambear.png"></img>
 </div>
-    <h2>Current Active Quizzes:</h2>
+    <h2>Number of Available 
+        <a href="{% url 'quiz-list' %}">Quizzes:</a> {{ num_quizzes }}</h2>
 
 {% endblock %}

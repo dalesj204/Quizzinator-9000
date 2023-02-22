@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 # Create your models here.
 
+# quiz model contains name and course attributes
 class Quiz(models.Model):
     # id = models.AutoField('ID',primary_key=True)
     name = models.CharField(max_length=100)
@@ -14,8 +15,8 @@ class Quiz(models.Model):
     def __str__(self):
         return str(self.name)
 
-    # def get_absolute_url(self):
-    #     return reverse('quiz_detail', kwargs={'pk': self.pk})
+    def get_absolute_url(self):
+        return reverse('quiz_detail', kwargs={'pk': self.pk})
     
     
     
