@@ -43,10 +43,9 @@ def studentLogin(request):
 #contains one field. Afterwards it returns render.
 #
 # @return render - Renders the student profile.
-@login_required
+#@login_required
 def studentProfile(request):
     name = Student.name #The name of the student
-
     #Context for render
     #NOTE- THIS WILL NEED TO CHANGE LATER.
     context = {'name': name}
