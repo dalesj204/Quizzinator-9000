@@ -10,5 +10,16 @@
     <img class ="image" src="../static/pdambear.png"></img>
 </div>
     <h2>Current Active Quizzes:</h2>
+    {% if quiz_list %}
+  <ul>
+    {% for quiz in quiz_list %}
+      <li>
+        <a href="{% url 'quiz_detail' quiz.pk %}">{{ quiz.name }}</a> 
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>There are no active quizzes.</p>
+  {% endif %}
 
 {% endblock %}

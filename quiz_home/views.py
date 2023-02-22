@@ -56,13 +56,21 @@ def studentProfile(request):
 class QuizListView(generic.ListView):
     model = Quiz
     paginated_by = 10
+    context_object_name = 'quiz_list'
     template_name = 'quiz_list.html'
+    
+class QuizDetailView(generic.DetailView):
+    model = Quiz
+    paginated_by = 10
+    context_object_name = 'quiz_detail'
+    template_name = 'quiz_detail.html'
+
 
 class ClassListView(generic.ListView):
     model = Class
     paginated_by = 10
     template_name = 'class_list.html'
 
-class ClassDetailView(generic.ListView):
+class ClassDetailView(generic.DetailView):
     model = Class
     template_name = 'class_detail.html'
