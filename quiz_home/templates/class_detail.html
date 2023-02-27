@@ -8,7 +8,7 @@
 <a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
 <h2>Quizzes for class: </h2>
 <ul>
-    {% for quiz in class.quiz_set.all %}
+    {% for quiz in class.quizzes.all %}
     <li>
       <p> 
         <a href="{% url 'quiz-detail' quiz.pk %}" > {{quiz.name}} </a>
