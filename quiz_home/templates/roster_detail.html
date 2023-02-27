@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Roster:</h1>
+    
+    <ul>
+    {% for student in class %}
+    <li>
+      <p> 
+        <a href="{% url 'profile' profile.pk %}" > {{student.name}} </a>
+      </p>
+    </li>
+    {% endfor %}
+    </ul>
+
+
+{% endblock %}

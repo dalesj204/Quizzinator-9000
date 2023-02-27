@@ -7,10 +7,11 @@ class Quiz(models.Model):
     # id = models.AutoField('ID',primary_key=True)
     name = models.CharField(max_length=100)
     course = models.CharField(max_length=100)
-    
+    startDate = models.DateField(help_text="Set the date for when you want this quiz to open:", null=True)
+    endDate = models.DateField(help_text="Set the date for when you want this quiz to close:", blank = True, null=True)
     class Meta:
         verbose_name_plural = "quizzes"
-
+        ordering = ["-endDate"]
 
     def __str__(self):
         return str(self.name)
