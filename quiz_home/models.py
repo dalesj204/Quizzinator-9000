@@ -100,7 +100,7 @@ class MultipleChoiceQuestion(models.Model):
 class Teacher(models.Model):
     
     name = models.CharField(max_length=100)
-    tid = models.CharField('Student ID',max_length=12,primary_key=True)
+    tid = models.CharField('Teacher ID',max_length=12,primary_key=True)
     
     def __str__(self):
         return self.name
