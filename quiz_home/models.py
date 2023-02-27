@@ -35,7 +35,7 @@ class Grade(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('grade_list')
+        return reverse('grade_list', kwargs={'pk': self.pk})
     
     
 
