@@ -67,6 +67,8 @@ class Student(models.Model):
     name = models.CharField(max_length=100)
     sid = models.CharField('Student ID',max_length=12,primary_key=True)
 
+    classes = models.ManyToManyField(Class)
+
     #For referencing the model.
     class Meta:
         verbose_name = 'Student'
@@ -75,6 +77,9 @@ class Student(models.Model):
     #returns the name of the user.
     def __str__(self):
         return self.name
+    
+    def get_absolute_url(self):
+        return reverse('student', kwargs={'student_id': self.sid})
     
 
 class Stats(models.Model):

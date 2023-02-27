@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Welcome {{student}}!</h1>
+
+<h3>Classes</h3>
+    
+    <ul>
+    {% for class in classes %}
+    <li>
+      <p> 
+        <a href="{{ class.get_absolute_url }}" > {{class}} </a>
+      </p>
+    </li>
+    {% endfor %}
+    </ul>
+
+
+{% endblock %}

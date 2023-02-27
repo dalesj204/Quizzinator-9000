@@ -103,3 +103,14 @@ def TeacherHomeView(request, teacher_id):
     }
 
     return render(request, 'teacher_home.html', context)
+
+def StudentHomeView(request, student_id):
+    student = Student.objects.get(sid=student_id)
+    classes = student.classes.all()
+
+    context = {
+        'student': student,
+        'classes': classes,
+    }
+
+    return render(request, 'student_home.html', context)
