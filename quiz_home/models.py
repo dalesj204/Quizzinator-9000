@@ -101,6 +101,11 @@ class Teacher(models.Model):
     
     name = models.CharField(max_length=100)
     tid = models.CharField('Teacher ID',max_length=12,primary_key=True)
+
+    classes = models.ManyToManyField(Class)
     
     def __str__(self):
         return self.name
+    
+    def get_absolute_url(self):
+        return reverse('teacher', kwargs={'teacher_id': self.tid})

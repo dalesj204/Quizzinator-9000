@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class, Student, Grade, Stats
+from .models import Quiz, Class, Student, Grade, Stats, Teacher
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -93,3 +93,13 @@ class ClassStatsView(generic.ListView):
     model = Stats
     template_name = 'stats.html'
 
+def TeacherHomeView(request, teacher_id):
+    teacher = Teacher.objects.get(tid=teacher_id)
+    classes = teacher.classes.all()
+
+    context = {
+        'teacher': teacher,
+        'classes': classes,
+    }
+
+    return render(request, 'teacher_home.html', context)
