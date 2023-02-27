@@ -93,3 +93,6 @@ class ClassStatsView(generic.ListView):
     model = Stats
     template_name = 'stats.html'
 
+class RosterListView(generic.ListView):
+    model = Class
+    template_name = 'roster_list.html'

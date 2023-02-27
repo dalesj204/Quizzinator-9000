@@ -4,7 +4,7 @@
 <h1>Roster:</h1>
     
     <ul>
-    {% for student in class %}
+    {% for student in class.students_set.all %}
     <li>
       <p> 
         <a href="{% url 'profile' profile.pk %}" > {{student.name}} </a>

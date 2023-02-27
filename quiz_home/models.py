@@ -23,7 +23,6 @@ class Quiz(models.Model):
     
 # temporary model for the sake of getting the gradebook page running.
 class Grade(models.Model):
-    
     name = models.CharField(max_length=100)
     grade = models.IntegerField()
     
@@ -102,6 +101,8 @@ class MultipleChoiceQuestion(models.Model):
 
     def __str__(self):
         return self.question_text
+    
+
 # More will be added as the program is fleshed out
 # For now, just having a name will suffice
 class Class(models.Model):
