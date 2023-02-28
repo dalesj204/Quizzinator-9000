@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>{{class.name}}</h1>
-<p><strong>Instructor:</strong> {{ class.instructor.all|join:", " }}</p>
+<p><strong>Instructor:</strong> {{ instructor.all|join:", " }}</p>
 
 <h2><a href="{{ roster.get_absolute_url }}">Roster</a></h2>
 <a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>

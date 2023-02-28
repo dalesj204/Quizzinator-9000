@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class, Student, Grade, Stats
+from .models import Quiz, Class, Student, Grade, Stats, Teacher
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -93,6 +93,37 @@ class ClassStatsView(generic.ListView):
     model = Stats
     template_name = 'stats.html'
 
-class RosterListView(generic.ListView):
-    model = Class
-    template_name = 'roster_list.html'
+def TeacherHomeView(request, teacher_id):
+    teacher = Teacher.objects.get(tid=teacher_id)
+    classes = teacher.classes.all()
+
+    context = {
+        'teacher': teacher,
+        'classes': classes,
+    }
+
+    return render(request, 'teacher_home.html', context)
+
+def StudentHomeView(request, student_id):
+    student = Student.objects.get(sid=student_id)
+    classes = student.classes.all()
+
+    context = {
+        'student': student,
+        'classes': classes,
+    }
+
+    return render(request, 'student_home.html', context)
+
+def RosterListView(request, class_id):
+    this_class = Class.objects.get(id=class_id)
+    instructor = Teacher.objects.filter(classes=this_class)
+    roster = Student.objects.filter(classes=this_class)
+
+    context = {
+        'class': this_class,
+        'instructor': instructor,
+        'roster': roster,
+    }
+
+    return render(request, 'class_detail.html', context)

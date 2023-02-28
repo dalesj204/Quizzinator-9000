@@ -32,5 +32,7 @@ urlpatterns = [
     path('class_list/<int:pk>', views.ClassDetailView.as_view(), name='class_detail'),
     path('class_list/<int:pk>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),
     path('class_list/stats', views.ClassStatsView.as_view(), name='stats'),
-    path('roster/<int:pk>', views.RosterListView.as_view(), name ='roster'),
+    path('roster/<int:class_id>', views.RosterListView, name ='roster'),
+    path('teacher_profile/<int:teacher_id>', views.TeacherHomeView, name='teacher'),
+    path('student_profile/<int:student_id>', views.StudentHomeView, name='student'),
 ]

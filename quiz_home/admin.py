@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Quiz, Class, Grade, Instructor, Student, Stats, MultipleChoiceQuestion
+from .models import Quiz, Class, Grade, Teacher, Student, Stats, MultipleChoiceQuestion
 
 # Register your models here.
 
 admin.site.register(Quiz)
-admin.site.register(Instructor)
+admin.site.register(Teacher)
 admin.site.register(Student)
 admin.site.register(Stats)
 admin.site.register(MultipleChoiceQuestion)

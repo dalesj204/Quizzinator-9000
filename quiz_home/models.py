@@ -36,51 +36,6 @@ class Grade(models.Model):
     def get_absolute_url(self):
         return reverse('grade_list', kwargs={'pk': self.pk})
     
-    
-
-#
-#
-#This is a place holder for the instructor model to have the
-#profile page up and running. It is not complex as it only
-#contains two fields. As the project continues, I implore
-#you to edit this to the needs it program as it evolves.
-#
-# @return self.name - The student's name.
-class Instructor(models.Model):
-    #Fields.
-    name = models.CharField(max_length=100)
-
-    #For referencing the model.
-    class Meta:
-        verbose_name = 'Instructor'
-        verbose_name_plural = 'Instructor'
-
-    #returns the name of the user.
-    def __str__(self):
-        return self.name
-# Student Model - Place Holder
-#
-#
-#This is a place holder for the student model to have the
-#profile page up and running. It is not complex as it only
-#contains two fields. As the project continues, I implore
-#you to edit this to the needs it program as it evolves.
-#
-# @return self.name - The student's name.
-class Student(models.Model):
-    #Fields.
-    name = models.CharField(max_length=100)
-    sid = models.CharField('Student ID',max_length=12,primary_key=True)
-
-    #For referencing the model.
-    class Meta:
-        verbose_name = 'Student'
-        verbose_name_plural = 'Students'
-
-    #returns the name of the user.
-    def __str__(self):
-        return self.name
-    
 
 class Stats(models.Model):
     name = models.CharField(max_length=100)
@@ -104,17 +59,14 @@ class MultipleChoiceQuestion(models.Model):
     def __str__(self):
         return self.question_text
     
-
 # More will be added as the program is fleshed out
 # For now, just having a name will suffice
 class Class(models.Model):
 
     name = models.CharField(max_length=100)
     gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
-    instructor = models.ManyToManyField(Instructor)
     gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
     quizzes = models.ManyToManyField(Quiz)
-    students = models.ManyToManyField(Student)
     class Meta:
         verbose_name_plural = "classes"
 
@@ -123,3 +75,45 @@ class Class(models.Model):
 
     def get_absolute_url(self):
         return reverse('class_detail', kwargs={'pk': self.pk})
+
+# Student Model - Place Holder
+#
+#
+#This is a place holder for the student model to have the
+#profile page up and running. It is not complex as it only
+#contains two fields. As the project continues, I implore
+#you to edit this to the needs it program as it evolves.
+#
+# @return self.name - The student's name.
+class Student(models.Model):
+    #Fields.
+    name = models.CharField(max_length=100)
+    sid = models.CharField('Student ID',max_length=12,primary_key=True)
+
+    classes = models.ManyToManyField(Class)
+
+    #For referencing the model.
+    class Meta:
+        verbose_name = 'Student'
+        verbose_name_plural = 'Students'
+
+    #returns the name of the user.
+    def __str__(self):
+        return self.name
+    
+    def get_absolute_url(self):
+        return reverse('student', kwargs={'student_id': self.sid})
+    
+
+class Teacher(models.Model):
+    
+    name = models.CharField(max_length=100)
+    tid = models.CharField('Teacher ID',max_length=12,primary_key=True)
+
+    classes = models.ManyToManyField(Class)
+    
+    def __str__(self):
+        return self.name
+    
+    def get_absolute_url(self):
+        return reverse('teacher', kwargs={'teacher_id': self.tid})
