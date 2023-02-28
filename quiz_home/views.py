@@ -79,11 +79,6 @@ class ClassListView(generic.ListView):
     template_name = 'class_list.html'
 
 
-class ClassDetailView(generic.DetailView):
-    model = Class
-    template_name = 'class_detail.html'
-
-
 class ClassGradebookView(generic.ListView):
     model = Grade
     template_name = 'gradebook.html'
@@ -115,7 +110,7 @@ def StudentHomeView(request, student_id):
 
     return render(request, 'student_home.html', context)
 
-def RosterListView(request, class_id):
+def ClassDetailView(request, class_id):
     this_class = Class.objects.get(id=class_id)
     instructor = Teacher.objects.filter(classes=this_class)
     roster = Student.objects.filter(classes=this_class)
