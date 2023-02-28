@@ -1,5 +1,8 @@
 {% extends "base_generic.html" %}
 
+{% comment %} the following commented if statements are to be implemented once authentication and permissions have been implemented
+{% if User.is_authenticated and User.has_permission and User.return_int(teacher.tid) == teacher_id %}
+{% endcomment %}
 {% block content %}
 <h1>Welcome {{teacher}}!</h1>
 
@@ -17,3 +20,19 @@
 
 
 {% endblock %}
+
+{% comment %}
+{% endif %}
+{% endcomment %}
+
+{% comment %}
+{% if !User.is_authenticated %}
+  {% block content %}
+    <h3>Please log in to view this page. <a href="login url">Login</a></h3>
+  {% endblock %}
+{% else %}
+  {% block content %}
+    <h3>You do not have permission to view this page.</h3>
+  {% endblock %}
+{% endif %}
+{% endcomment %}

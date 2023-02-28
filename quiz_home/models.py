@@ -74,7 +74,7 @@ class Class(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('class_detail', kwargs={'pk': self.pk})
+        return reverse('class_detail', kwargs={'class_id': self.pk})
 
 # Student Model - Place Holder
 #
