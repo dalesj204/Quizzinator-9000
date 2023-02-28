@@ -3,8 +3,7 @@
 {% block content %}
 <h1>{{class.name}}</h1>
 <p><strong>Instructor:</strong> {{ class.instructor.all|join:", " }}</p>
-
-<h2><a href="{{ roster.get_absolute_url }}">Roster</a></h2>
+<p><strong>Students:</strong> {{ class.students.all|join:", " }}</p>
 <a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
 <h2>Quizzes for class: </h2>
 <ul>
