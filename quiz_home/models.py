@@ -80,6 +80,8 @@ class Student(models.Model):
     #returns the name of the user.
     def __str__(self):
         return self.name
+    def get_absolute_url(self):
+        return reverse('studentProfile', kwargs={'pk': self.pk})
     
 
 class Stats(models.Model):

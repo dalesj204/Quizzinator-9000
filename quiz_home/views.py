@@ -95,4 +95,5 @@ class ClassStatsView(generic.ListView):
 
 class RosterListView(generic.ListView):
     model = Class
+    context_object_name = 'class'
     template_name = 'roster_list.html'
