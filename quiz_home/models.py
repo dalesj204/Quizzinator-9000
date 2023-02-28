@@ -86,6 +86,8 @@ class Student(models.Model):
 
 class Stats(models.Model):
     name = models.CharField(max_length=100)
+    class Meta:
+        verbose_name_plural = "stats"
 
     def __str__(self):
         return self.name
