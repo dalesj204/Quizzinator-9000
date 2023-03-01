@@ -125,3 +125,23 @@ class Class(models.Model):
 
     def get_absolute_url(self):
         return reverse('class_detail', kwargs={'pk': self.pk})
+
+"""
+class Questions(models.Model):
+    question_type = model.ForeignKey(Question_Bank, on_delete=models.CASCADE, default=1)
+    subject_tag = model.ManyToOne(SubjectTags)
+    question = models.CharField(max_length=300)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('question', kwargs={'pk': self.pk})
+
+
+class SubjectTags(models.Model):
+    subject_name = model.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+"""
