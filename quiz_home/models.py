@@ -126,9 +126,38 @@ class Class(models.Model):
     def get_absolute_url(self):
         return reverse('class_detail', kwargs={'pk': self.pk})
 
+# QuestionBank Model - To Be Further Modified
+#
+#
+#The Question Bank model is simplistic in its inital design
+#due to multiple choice questions being the only type curr-
+#ently completed. As more questions types are developed, this
+#will grow in complexity.
+class QuestionBank(models.Model):
+    #Tags for the tags for specific questions in our bank.
+    QUESTION_TYPE = (
+      ('MC', 'Multiple Choice'),
+      ('PP', 'Parsens Problem'),
+      ('PMC', 'Permutation Problem'),
+    )
+
+    #Have the bank point towards the MC Model
+    questions = (
+        ('MC', models.ForeignKey(MultipleChoiceQuestion,
+                on_delete=models.CASCADE)),
+        #Next Question Type
+    )
+
+
 """
+class SubjectTags(models.Model):
+    subject_name = model.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class Questions(models.Model):
-    question_type = model.ForeignKey(Question_Bank, on_delete=models.CASCADE, default=1)
+    question_type = model.ForeignKey(QuestionBank, on_delete=models.CASCADE, default=1)
     subject_tag = model.ManyToOne(SubjectTags)
     question = models.CharField(max_length=300)
 
@@ -137,11 +166,4 @@ class Questions(models.Model):
 
     def get_absolute_url(self):
         return reverse('question', kwargs={'pk': self.pk})
-
-
-class SubjectTags(models.Model):
-    subject_name = model.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
 """
