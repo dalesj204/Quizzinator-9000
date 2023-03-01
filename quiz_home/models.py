@@ -118,6 +118,8 @@ class Teacher(models.Model):
     def get_absolute_url(self):
         return reverse('teacher', kwargs={'teacher_id': self.tid})
 
+#------------- BACK-END -------------#
+
 # QuestionBank Model - To Be Further Modified
 #
 #
@@ -141,7 +143,6 @@ class QuestionBank(models.Model):
     )
 
 
-"""
 class SubjectTags(models.Model):
     subject_name = model.CharField(max_length=100)
 
@@ -149,8 +150,8 @@ class SubjectTags(models.Model):
         return self.name
 
 class Questions(models.Model):
-    question_type = model.ForeignKey(QuestionBank, on_delete=models.CASCADE, default=1)
-    subject_tag = model.ManyToOne(SubjectTags)
+    question_type = models.ForeignKey(QuestionBank, on_delete=models.CASCADE, default=1)
+    subject_tag = models.ManyToManyField(SubjectTags)
     question = models.CharField(max_length=300)
 
     def __str__(self):
@@ -158,4 +159,3 @@ class Questions(models.Model):
 
     def get_absolute_url(self):
         return reverse('question', kwargs={'pk': self.pk})
-"""
