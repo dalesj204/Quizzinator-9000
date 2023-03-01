@@ -1,8 +1,11 @@
 from django.db import models
 from django.urls import reverse
-# Create your models here.
 
-# quiz model contains name and course attributes
+
+# quiz model contains name, course attributes, startDate, and endDate for quizzes
+# A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first
+# @return str self.name - The quiz's name.
+# @return absolute_url quiz_detail - the detail view for that particular quiz
 class Quiz(models.Model):
     # id = models.AutoField('ID',primary_key=True)
     name = models.CharField(max_length=100)
@@ -59,12 +62,12 @@ class MultipleChoiceQuestion(models.Model):
     def __str__(self):
         return self.question_text
     
-# More will be added as the program is fleshed out
-# For now, just having a name will suffice
+#This model has a name, there will be a gradebook associated for each user for each class,
+#and each class can have many quizzes associated with it(every quiz can be assigned to many classes)
+# @return str self.name - The class's name.
+# @return absolute_url class_detail - the detail view for that particular class
 class Class(models.Model):
-
     name = models.CharField(max_length=100)
-    gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
     gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
     quizzes = models.ManyToManyField(Quiz)
     class Meta:
@@ -144,7 +147,7 @@ class QuestionBank(models.Model):
 
 
 class SubjectTags(models.Model):
-    subject_name = model.CharField(max_length=100)
+    subject_name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
