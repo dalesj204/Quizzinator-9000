@@ -1,19 +1,30 @@
 from django import forms
-from .models import Quiz, QuestionBank
+
+from .models import Quiz, MultipleChoice, PermutationMultipleChoice, ParsonsProblem
 
 
 class QuizForm(forms.ModelForm):
     class Meta:
         model = Quiz
-        fields = ['name', 'start_time', 'end_time', 'time_limit', 'questions']
+        fields = ['name', 'end_time', 'time_limit', 'multiple_choice', 'permutation_multiple_choice', 'parsons_problem']
         widgets = {
-            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'questions': forms.CheckboxSelectMultiple(),
         }
 
 
-class QuestionBankForm(forms.ModelForm):
+class MultipleChoiceForm(forms.ModelForm):
     class Meta:
-        model = QuestionBank
-        fields = ['question', 'question_type', 'correct_answer', 'distractor_1', 'distractor_2', 'distractor_3']
+        model = MultipleChoice
+        fields = ['question', 'correct_answer', 'distractor1', 'distractor2', 'distractor3']
+
+
+class PermutationMultipleChoiceForm(forms.ModelForm):
+    class Meta:
+        model = PermutationMultipleChoice
+        fields = ['question', 'choice1', 'choice2', 'choice3', 'choice4', 'correct_answers']
+
+
+class ParsonsProblemForm(forms.ModelForm):
+    class Meta:
+        model = ParsonsProblem
+        fields = ['question', 'code_segments', 'correct_answer']

@@ -10,7 +10,7 @@ def quiz_list(request):
     return render(request, 'quiz_list.html', {'quizzes': quizzes})
 
 
-@login_required
+# @login_required
 def create_quiz(request):
     if request.method == 'POST':
         name = request.POST['name']
