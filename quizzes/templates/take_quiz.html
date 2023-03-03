@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ quiz.name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+            <h3>{{ question.question }}</h3>
+            {% if question.question_type == 'multiple_choice' %}
+                {% for choice in question.choices.all %}
+                    <input type="radio" id="{{ choice.id }}" name="{{ question.id }}" value="{{ choice.id }}">
+                    <label for="{{ choice.id }}">{{ choice.choice_text }}</label><br>
+                {% endfor %}
+            {% elif question.question_type == 'permutation_multiple_choice' %}
+                {% for choice in question.choices.all %}
+                    <input type="checkbox" id="{{ choice.id }}" name="{{ question.id }}" value="{{ choice.id }}">
+                    <label for="{{ choice.id }}">{{ choice.choice_text }}</label><br>
+                {% endfor %}
+            {% elif question.question_type == 'parsons_problem' %}
+                <div class="parsons-container">
+                    {% for code_segment in question.code_segments.all %}
+                        <div class="parsons-segment">{{ code_segment.code_text }}</div>
+                    {% endfor %}
+                </div>
+                <select id="{{ question.id }}" name="{{ question.id }}">
+                    <option value="">--Select the correct order--</option>
+                    {% for choice in question.choices.all %}
+                    <option value="{{ choice.id }}">{{ choice.choice_text }}</option>
+                    {% endfor %}
+                </select><br>
+            {% endif %}
+        {% endfor %}
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}    
