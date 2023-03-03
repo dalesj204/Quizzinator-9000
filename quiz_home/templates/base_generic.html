@@ -30,11 +30,6 @@
                 <a class="nav-link" href="{% url 'classes' %}">Classes</a>
             </li>
             {% endif %}
-            {% if request.get_full_path == "/class_list/" %}
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'quiz-list' %}">Quizzes</a>
-            </li>
-            {% endif %}
 
             <li class="nav-item"></li>
             <a href="{{ request.META.HTTP_REFERER }}" class="nav-link" class>Back</a>

@@ -2,13 +2,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from quiz_home import models
 from django.views import generic
-from .models import Quiz, Class, Student, Grade, Stats, Teacher
+from .models import Class, Student, Grade, Stats, Teacher
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
     
-    num_quizzes = Quiz.objects.all().count()
+    num_quizzes = 0#Quiz.objects.all().count()
     
     context = {
         'num_quizzes': num_quizzes,
@@ -57,21 +57,6 @@ def studentProfile(request):
     #NOTE- THIS WILL NEED TO CHANGE LATER.
     context = {'name': name}
     return render(request, 'profile.html', context)
-
-    
-class QuizListView(generic.ListView):
-    model = Quiz
-    paginated_by = 10
-    context_object_name = 'quizzes'
-    template_name = 'quiz_list.html'
-    quizzes = Quiz.objects.all()
-
-class QuizDetailView(generic.DetailView):
-    model = Quiz
-    paginated_by = 10
-    context_object_name = 'quiz'
-    template_name = 'quiz_detail.html'
-
 
 class ClassListView(generic.ListView):
     model = Class

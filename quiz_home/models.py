@@ -50,18 +50,7 @@ class Stats(models.Model):
 
     def get_absolute_url(self):
         return reverse('stat', kwargs={'pk': self.pk})
-    
-class MultipleChoiceQuestion(models.Model):
-    question_text = models.CharField(max_length=500)
-    a = models.CharField(max_length=100)
-    b = models.CharField(max_length=100)
-    c = models.CharField(max_length=100)
-    d = models.CharField(max_length=100)
-    correct_answer = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.question_text
-    
+ 
 #This model has a name, there will be a gradebook associated for each user for each class,
 #and each class can have many quizzes associated with it(every quiz can be assigned to many classes)
 # @return str self.name - The class's name.
@@ -120,45 +109,3 @@ class Teacher(models.Model):
     
     def get_absolute_url(self):
         return reverse('teacher', kwargs={'teacher_id': self.tid})
-
-#------------- BACK-END -------------#
-
-# QuestionBank Model - To Be Further Modified
-#
-#
-#The Question Bank model is simplistic in its inital design
-#due to multiple choice questions being the only type curr-
-#ently completed. As more questions types are developed, this
-#will grow in complexity.
-class QuestionBank(models.Model):
-    #Tags for the tags for specific questions in our bank.
-    QUESTION_TYPE = (
-      ('MC', 'Multiple Choice'),
-      ('PP', 'Parsens Problem'),
-      ('PMC', 'Permutation Problem'),
-    )
-
-    #Have the bank point towards the MC Model
-    questions = (
-        ('MC', models.ForeignKey(MultipleChoiceQuestion,
-                on_delete=models.CASCADE)),
-        #Next Question Type
-    )
-
-
-class SubjectTags(models.Model):
-    subject_name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-class Questions(models.Model):
-    question_type = models.ForeignKey(QuestionBank, on_delete=models.CASCADE, default=1)
-    subject_tag = models.ManyToManyField(SubjectTags)
-    question = models.CharField(max_length=300)
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('question', kwargs={'pk': self.pk})

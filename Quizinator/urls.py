@@ -24,8 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
     path('quiz_home/', include('quiz_home.urls')),
-    path('quiz_list/', views.QuizListView.as_view(), name ='quiz-list'),
-    path('quiz/<int:pk>', views.QuizDetailView.as_view(), name='quiz-detail'),
     re_path('studentLogin/',views.studentLogin,name='studentLogin'),
     path('profile/<int:pk>', views.studentProfile,name= 'studentProfile2'),
      path('profile/', views.studentProfile,name= 'studentProfile'),
