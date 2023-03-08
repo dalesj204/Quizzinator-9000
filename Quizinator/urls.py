@@ -19,11 +19,6 @@ from django.views.generic import RedirectView
 from django.urls import include
 # from django.conf.urls import url
 from quiz_home import views
-from quizzes.views import (
-    create_quiz,
-    update_quiz,
-    take_quiz,
-)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,8 +33,4 @@ urlpatterns = [
     path('class_list/stats', views.ClassStatsView.as_view(), name='stats'),
     path('teacher_profile/<int:teacher_id>', views.TeacherHomeView, name='teacher'),
     path('student_profile/<int:student_id>', views.StudentHomeView, name='student'),
-    #LoginRequired
-    path('create/', create_quiz, name='create'),
-    path('<int:pk>/update/', update_quiz, name='update'),
-    path('<int:pk>/take/', take_quiz, name='take'),
 ]
