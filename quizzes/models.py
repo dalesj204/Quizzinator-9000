@@ -82,3 +82,32 @@ class ParsonsProblem(models.Model):
         choices = self.choices.split(",")
         random.shuffle(choices)
         return choices
+    
+
+# QuestionBank Model - To Be Further Modified
+# Author - Jacob Fielder
+#
+# NOTE- Comment Style to be change once
+# coding standards are defined.
+#
+#The Question Bank model is simplistic in its inital design
+#due to multiple choice questions being the only type curr-
+#ently completed. As more questions types are developed, this
+#will grow in complexity.
+class QuestionBank(models.Model):
+    #Tags for the tags for specific questions in our bank.
+    QUESTION_TYPE = (
+      ('MC', 'Multiple Choice'),
+      ('PP', 'Parsens Problem'),
+      ('PMC', 'Permutation Problem'),
+    )
+
+    #Have the bank point towards the question type models.
+    questions = (
+        ('MC',models.ForeignKey(MultipleChoiceQuestion,
+                on_delete=models.CASCADE)),
+        ('PMC',models.ForeignKey(PermutationalMultipleChoiceQuestion,
+                on_delete=models.CASCADE)),
+        ('PP',models.ForeignKey(ParsonsProblem,
+                on_delete=models.CASCADE))
+    )
