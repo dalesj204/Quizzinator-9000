@@ -1,5 +1,6 @@
 from django.test import TestCase
 from .models import MultipleChoiceQuestion, PermutationalMultipleChoiceQuestion, ParsonsProblem
+from.models import QuestionBank
 
 class QuestionModelTests(TestCase):
 
@@ -72,3 +73,25 @@ class QuestionModelTests(TestCase):
         self.assertIn("8", choices)
         self.assertIn("9", choices)
         self.assertIn("10", choices)
+
+# QuestionBankModelTest - To Be Further Modified
+# Author - Jacob Fielder, Nathan Prelewicz
+#
+# NOTE- Comment Style to be change once
+# coding standards are defined.
+#
+#This made us recognize that we have been going about
+#the question bank and question wrong, there is a sign-
+#ificantly simplier way of handling this.
+class QuestionBankModelTests(TestCase):
+    def test_if_it_holds_multiplechoice(self):
+        self.bank = QuestionBank.objects.create(
+            questions = (
+                MultipleChoiceQuestion.objects.create(
+                    root="My name is Bob, what is my name",
+                    correct_answer="Bob",
+                    distractors="Ziggs, Aldur, Mason"
+                ),
+            )
+        )
+        self.assertEqual(self.bank[0], 'MC')

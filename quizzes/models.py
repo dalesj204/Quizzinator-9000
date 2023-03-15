@@ -85,7 +85,7 @@ class ParsonsProblem(models.Model):
     
 
 # QuestionBank Model - To Be Further Modified
-# Author - Jacob Fielder
+# Author - Jacob Fielder, Nathan Prelewicz
 #
 # NOTE- Comment Style to be change once
 # coding standards are defined.
@@ -96,12 +96,12 @@ class ParsonsProblem(models.Model):
 #will grow in complexity.
 class QuestionBank(models.Model):
     #Tags for the tags for specific questions in our bank.
-    QUESTION_TYPE = (
-      ('MC', 'Multiple Choice'),
-      ('PP', 'Parsens Problem'),
-      ('PMC', 'Permutation Problem'),
-    )
-
+    QUESTION_TYPE = [
+        ('MC', 'Multiple Choice'),
+        ('PP', 'Parsens Problem'),
+        ('PMC', 'Permutation Problem'),
+    ]
+      
     #Have the bank point towards the question type models.
     questions = (
         ('MC',models.ForeignKey(MultipleChoiceQuestion,
@@ -109,5 +109,7 @@ class QuestionBank(models.Model):
         ('PMC',models.ForeignKey(PermutationalMultipleChoiceQuestion,
                 on_delete=models.CASCADE)),
         ('PP',models.ForeignKey(ParsonsProblem,
-                on_delete=models.CASCADE))
+                on_delete=models.CASCADE)),
     )
+
+    
