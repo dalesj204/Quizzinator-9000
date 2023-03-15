@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Questions</h1>
+    
+    <ul>
+    {% for question in fakemultiplechoicequestion_list %}
+    <li>
+      <p> 
+        <h3>{{question.root}} {{question.correct_answer}} {{ question.distractors.all|join:", " }} {{question.hint}} {{ question.tags.all|join:", " }} </h3>
+      </p>
+    </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'export_xcl'  %}">Export</a></p>
+    
+{% endblock %}

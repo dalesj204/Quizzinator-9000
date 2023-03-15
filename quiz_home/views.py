@@ -1,10 +1,13 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, request
 from quiz_home import models
 from django.views import generic
-from .models import Class, Student, Grade, Stats, Teacher
+from import_export import fields
+from import_export.widgets import ManyToManyWidget
+from quizzes import views
+from .models import Class, Student, Grade, Stats, Teacher,  fakeMultipleChoiceQuestion, fakeDistractors, fakeSubjectTags
 from django.contrib.auth.decorators import login_required
-
+import xlwt
 # Create your views here.
 def index(request):
     
@@ -72,6 +75,88 @@ class ClassGradebookView(generic.ListView):
 class ClassStatsView(generic.ListView):
     model = Stats
     template_name = 'stats.html'
+
+#This for creating a place to enter questions manually one by one on the page instead of bulk importing - Not complete ignore
+# class fakeMultQuestionCreate(LoginRequiredMixin, CreateView):
+#     model = fakeMultipleChoiceQuestion
+#     fields = ['root','correct_answer', 'distractors', 'hint', 'tags']
+#     template_name ='multQuest.html'
+#     def get_context_data(self, **kwargs):
+#         context = super(fakeMultQuestionCreate,self ).get_context_data(**kwargs)
+#         context['blog'] = get_object_or_404(BlogPost, pk = self.kwargs['pk'])
+#         return context
+#     def form_valid(self, form):
+#         form.instance.userCom = self.request.user
+#         form.instance.BlogPost = get_object_or_404(BlogPost, pk = self.kwargs['pk'])
+#         return super(BlogCommentCreate, self).form_valid(form)
+#     def get_success_url(self):
+#         return reverse('blogpost-detail', kwargs={'pk' : self.kwargs['pk'],})
+
+#Just to display list of all questions
+class questionPageView(generic.ListView):
+    model = fakeMultipleChoiceQuestion
+    template_name = 'questionPage.html'
+
+#Creates a microsoft Excel sheet that contains all the questions in the database
+#and their attributes including the question, correct answer, distractors, hint, and tags
+#this is connected to our fake multiple choice question which we modeled after the MC question that was current at the time
+#So that we didn't mess with the other team members model while they were updating it this sprint
+#also only did MC because the other models did not exist yet.
+def export_xcl(request):
+    #Creates Excel workbook
+    response = HttpResponse(content_type = "application/ms-excel")
+    response['Content-Disposition'] = 'attachment; filename=filename.xls'
+    file = xlwt.Workbook(encoding="utf-8")
+    #Creates Excel sheet apart of the workbook
+    filesheet = file.add_sheet("Questions")
+    row_number = 0
+    #Fills out the header with column names for each attribute
+    columns = ['Question' , 'Correct Answer', 'Distractors', 'Hint', 'Tags']
+    for col_num in range(len(columns)):
+        filesheet.write(row_number, col_num, columns[col_num])
+    #Fills in the rows (each row is one question, and each column is the attribute)
+    for row in fakeMultipleChoiceQuestion.objects.all():
+        row_number += 1
+        temp = ''
+        tempTwo = ''
+        col_num = 0
+        #puts all the distractors into one string
+        for k in row.distractors.all():
+                temp = temp + str(k) + ' '
+        #puts all the tags into one string
+        for k in row.tags.all():
+                tempTwo = tempTwo + str(k) + ' '
+        #puts each attribute for each question in corresponding cell
+        for col_num in range(len(columns)):
+            if col_num == 0:
+                filesheet.write(row_number, col_num, row.root)
+            elif col_num == 1:
+                filesheet.write(row_number, col_num, row.correct_answer)
+            elif col_num == 2:
+                filesheet.write(row_number, col_num, temp)
+            elif col_num == 3:
+                filesheet.write(row_number, col_num, row.hint)
+            elif col_num == 4:
+                filesheet.write(row_number, col_num, tempTwo)
+    file.save(response)
+    #Returns file for the response
+    return response
+
+#This was the start of getting import up, but put on pause since we might go another direction - Blocked - Ignore
+# class importView(views):
+#     model = fakeMultipleChoiceQuestion
+#     #from_encoding = "utf-8"
+#     DEFAULT_FORMATS = (
+#         base_formats.XLS,
+#     )
+#     formats = DEFAULT_FORMATS
+#     import_template_name = '/importExportPage.html'
+#     resource_class = None
+
+#     def get_import_formats(self):
+#         return [f for f in self.formats if f().can_import()]
+
+
 
 def TeacherHomeView(request, teacher_id):
     teacher = Teacher.objects.get(tid=teacher_id)

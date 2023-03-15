@@ -33,4 +33,6 @@ urlpatterns = [
     path('class_list/stats', views.ClassStatsView.as_view(), name='stats'),
     path('teacher_profile/<int:teacher_id>', views.TeacherHomeView, name='teacher'),
     path('student_profile/<int:student_id>', views.StudentHomeView, name='student'),
+    path('questions/', views.questionPageView.as_view(), name = 'questionPage'),
+    path('export_xcl/', views.export_xcl, name = 'export_xcl'),
 ]

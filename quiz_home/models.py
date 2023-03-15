@@ -1,6 +1,28 @@
 from django.db import models
 from django.urls import reverse
 
+# The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
+# while the questions/question bank reamins unchanged by us so that the others can finish
+# Do not touch
+class fakeSubjectTags(models.Model):
+    subject_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.subject_name
+    
+class fakeDistractors(models.Model):
+    subject_name = models.CharField(max_length=100)
+    def __str__(self):
+        return self.subject_name
+
+class fakeMultipleChoiceQuestion(models.Model):
+    root = models.CharField(max_length=200)
+    correct_answer = models.CharField(max_length=200)
+    distractors = models.ManyToManyField(fakeDistractors)
+    hint = models.CharField(max_length=100, blank=True, null=True)
+    tags = models.ManyToManyField(fakeSubjectTags)
+    def __str__(self):
+        return self.root
 
 # quiz model contains name, course attributes, startDate, and endDate for quizzes
 # A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first
