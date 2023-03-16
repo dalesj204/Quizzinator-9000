@@ -5,9 +5,13 @@ from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
 from quizzes import views
-from .models import Class, Student, Grade, Stats, Teacher,  fakeMultipleChoiceQuestion, fakeDistractors, fakeSubjectTags
+from .models import Class, Student, Grade, Stats, Teacher,  fakeMultipleChoiceQuestion, User, fakeDistractors, fakeSubjectTags
 from django.contrib.auth.decorators import login_required
 import xlwt
+from django.contrib.auth import login
+from django.shortcuts import redirect
+from django.views.generic import CreateView
+from quiz_home.forms import StudentSignUpForm, TeacherSignUpForm
 # Create your views here.
 def index(request):
     
@@ -192,3 +196,34 @@ def ClassDetailView(request, class_id):
     }
 
     return render(request, 'class_detail.html', context)
+
+
+
+class StudentSignUpView(CreateView):
+    model = User
+    form_class = StudentSignUpForm
+    template_name = 'student_registration.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'student'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('quiz_home/')
+    
+    
+class TeacherSignUpView(CreateView):
+    model = User
+    form_class = TeacherSignUpForm
+    template_name = 'teacher_registration.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'teacher'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('quiz_home/')

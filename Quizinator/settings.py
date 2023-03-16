@@ -125,4 +125,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'quiz_home.BaseUser'
+AUTH_USER_MODEL = 'quiz_home.User'

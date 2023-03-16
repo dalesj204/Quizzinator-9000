@@ -35,4 +35,6 @@ urlpatterns = [
     path('student_profile/<int:student_id>', views.StudentHomeView, name='student'),
     path('questions/', views.questionPageView.as_view(), name = 'questionPage'),
     path('export_xcl/', views.export_xcl, name = 'export_xcl'),
+    path('register/student', views.StudentSignUpView.as_view(), name='studentRegistration'),
+    path('register/teacher', views.TeacherSignUpView.as_view(), name='teacherRegistration'),
 ]

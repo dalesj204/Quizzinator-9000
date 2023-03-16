@@ -3,16 +3,21 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from random import randrange
 
-from quiz_home.models import Student, Teacher, BaseUser
+from quiz_home.models import Student, Teacher, User
 
 class StudentSignUpForm(UserCreationForm):
-    name = forms.CharField(max_length=100)
-    id = randrange(111111111111, 999999999999)
-    while(len(Student.objects.filter(sid=id)) != 0):
-        id = randrange(111111111111, 999999999999)
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    tempid = randrange(111111111111, 999999999999)
+    email = forms.EmailField(required=True)
+    
+    # Checks to see if ID already exists
+    #while(len(User.objects.filter(id=tempid)) != 0):
+    #    tempid = randrange(111111111111, 999999999999)
 
     class Meta(UserCreationForm.Meta):
-        model = BaseUser
+        model = User
+        fields = ("username", "email", "password1", "password2")
 
     @transaction.atomic
     def save(self):
@@ -25,13 +30,18 @@ class StudentSignUpForm(UserCreationForm):
         return user
     
 class TeacherSignUpForm(UserCreationForm):
-    name = forms.CharField(max_length=100)
-    id = randrange(111111111111, 999999999999)
-    while(len(Teacher.objects.filter(sid=id)) != 0):
-        id = randrange(111111111111, 999999999999)
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    tempid = randrange(111111111111, 999999999999)
+    email = forms.EmailField(required=True)
+    
+    # Checks to see if ID already exists
+    #while(len(User.objects.filter(id=tempid)) != 0):
+    #    tempid = randrange(111111111111, 999999999999)
 
     class Meta(UserCreationForm.Meta):
-        model = BaseUser
+        model = User
+        fields = ("username", "email", "password1", "password2")
 
     @transaction.atomic
     def save(self):

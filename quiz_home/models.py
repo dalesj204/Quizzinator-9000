@@ -96,7 +96,7 @@ class Class(models.Model):
 # 
 # This model is used to differentiate between the different
 # levels of authorization between teachers and students
-class BaseUser(AbstractUser):
+class User(AbstractUser):
     id = models.CharField("ID", max_length=12, primary_key=True)
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
@@ -113,8 +113,11 @@ class BaseUser(AbstractUser):
 # @return self.name - The student's name.
 class Student(models.Model):
     #Fields.
-    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
-    name = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, default=None)
+    user_id = User(user).id
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
 
     classes = models.ManyToManyField(Class)
 
@@ -132,8 +135,11 @@ class Student(models.Model):
     
 
 class Teacher(models.Model):
-    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
-    name = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, default=None)
+    user_id = User(user).id
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
 
     classes = models.ManyToManyField(Class)
     

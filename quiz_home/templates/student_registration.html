@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h3>Register as: Student</h3>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">Register</button>
+</form>
+<p>If you already have an account, {% comment %}<a href="{% url login %}">login</a>{% endcomment %} instead.</p>
+<p>Register as a teacher <a href="{% url 'teacherRegistration' %}">here</a></P>
+
+{% endblock %}
