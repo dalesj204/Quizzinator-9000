@@ -132,8 +132,8 @@ class Student(models.Model):
     
 
 class Teacher(models.Model):
-    #user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
-    name = models.CharField(max_length=100, primary_key=True, default=None)
+    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
+    name = models.CharField(max_length=100)
 
     classes = models.ManyToManyField(Class)
     
