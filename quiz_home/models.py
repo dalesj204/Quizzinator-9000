@@ -96,7 +96,8 @@ class Class(models.Model):
 # 
 # This model is used to differentiate between the different
 # levels of authorization between teachers and students
-class User(AbstractUser):
+class BaseUser(AbstractUser):
+    id = models.CharField("ID", max_length=12, primary_key=True)
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
 
@@ -112,8 +113,8 @@ class User(AbstractUser):
 # @return self.name - The student's name.
 class Student(models.Model):
     #Fields.
+    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
     name = models.CharField(max_length=100)
-    sid = models.CharField('Student ID',max_length=12,primary_key=True)
 
     classes = models.ManyToManyField(Class)
 
@@ -127,13 +128,12 @@ class Student(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse('student', kwargs={'student_id': self.sid})
+        return reverse('student', kwargs={'student_id': self.user.id})
     
 
 class Teacher(models.Model):
-    
-    name = models.CharField(max_length=100)
-    tid = models.CharField('Teacher ID',max_length=12,primary_key=True)
+    #user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True, default=None)
+    name = models.CharField(max_length=100, primary_key=True, default=None)
 
     classes = models.ManyToManyField(Class)
     
@@ -141,4 +141,4 @@ class Teacher(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse('teacher', kwargs={'teacher_id': self.tid})
+        return reverse('teacher', kwargs={'teacher_id': self.user.id})
