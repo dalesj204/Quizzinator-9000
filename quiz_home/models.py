@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import AbstractUser
 
 # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
 # while the questions/question bank reamins unchanged by us so that the others can finish
@@ -89,6 +90,16 @@ class Class(models.Model):
 
     def get_absolute_url(self):
         return reverse('class_detail', kwargs={'class_id': self.pk})
+
+
+# Base User Model
+# 
+# This model is used to differentiate between the different
+# levels of authorization between teachers and students
+class User(AbstractUser):
+    is_student = models.BooleanField(default=False)
+    is_teacher = models.BooleanField(default=False)
+
 
 # Student Model - Place Holder
 #
