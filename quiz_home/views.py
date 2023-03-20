@@ -11,7 +11,7 @@ import xlwt
 from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.views.generic import CreateView
-from quiz_home.forms import StudentSignUpForm, TeacherSignUpForm
+from .forms import StudentSignUpForm, TeacherSignUpForm
 # Create your views here.
 def index(request):
     
@@ -59,7 +59,7 @@ def studentLogin(request):
 # @return render - Renders the student profile.
 #@login_required
 def studentProfile(request):
-    name = Student.name #The name of the student
+    name = str(Student.first_name) + " " + str(Student.last_name) #The name of the student
     #Context for render
     #NOTE- THIS WILL NEED TO CHANGE LATER.
     context = {'name': name}

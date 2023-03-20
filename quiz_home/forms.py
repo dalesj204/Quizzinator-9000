@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from random import randrange
 
-from quiz_home.models import Student, Teacher, User
+from .models import Student, Teacher, User
 
 class StudentSignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=100)

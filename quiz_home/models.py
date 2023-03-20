@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 
+from Quizinator import settings
+
 # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
 # while the questions/question bank reamins unchanged by us so that the others can finish
 # Do not touch
@@ -97,7 +99,7 @@ class Class(models.Model):
 # This model is used to differentiate between the different
 # levels of authorization between teachers and students
 class User(AbstractUser):
-    id = models.CharField("ID", max_length=12, primary_key=True)
+    id = models.CharField("ID", max_length=12, primary_key=True, unique=True)
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
 
@@ -113,8 +115,8 @@ class User(AbstractUser):
 # @return self.name - The student's name.
 class Student(models.Model):
     #Fields.
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, default=None)
-    user_id = User(user).id
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Student_User", default=None)
+    sid = User(user).id
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
@@ -131,12 +133,12 @@ class Student(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse('student', kwargs={'student_id': self.user.id})
+        return reverse('student', kwargs={'student_id': self.sid})
     
 
 class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, default=None)
-    user_id = User(user).id
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Teacher_User", default=None)
+    tid = User(user).id
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
@@ -147,4 +149,4 @@ class Teacher(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse('teacher', kwargs={'teacher_id': self.user.id})
+        return reverse('teacher', kwargs={'teacher_id': self.tid})
