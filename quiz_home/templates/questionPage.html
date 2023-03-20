@@ -2,16 +2,27 @@
 
 {% block content %}
 <h1>Questions</h1>
-    
-    <ul>
-    {% for question in fakemultiplechoicequestion_list %}
-    <li>
+  
+    <table>
+      <th>Question Root</th>
+      <th>Correct Answer</th>
+      <th>Distractors</th>
+      <th>Hint</th>
+      <th>Tags</th>
+      {% for question in fakemultiplechoicequestion_list %}
+    <tr>
       <p> 
-        <h3>{{question.root}} {{question.correct_answer}} {{ question.distractors.all|join:", " }} {{question.hint}} {{ question.tags.all|join:", " }} </h3>
+        <td> {{question.root}} </td>
+        <td> {{question.correct_answer}} </td>
+        <td> {{ question.distractors.all|join:", " }} </td>
+        <td> {{question.hint}} </td>
+        <td> {{ question.tags.all|join:", " }} </td>
       </p>
-    </li>
+    </tr>
     {% endfor %}
-    </ul>
-    <a href="{% url 'export_xcl'  %}">Export</a></p>
+    </table>
+    
+    {% comment %} <p><strong><a href="{% url 'import_xcl'  %}">Import</a></strong></p> {% endcomment %}
+    <p><strong><a href="{% url 'export_xcl'  %}">Export</a></strong></p>
     
 {% endblock %}
