@@ -1,7 +1,0 @@
-# PostgreSQL
-# ------------------------------------------------------------------------------
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_DB=quizinator
-POSTGRES_USER=AERYiBpDwlQxmXyQWPCUySADWGDDDDgO
-POSTGRES_PASSWORD=9qtNwwEGL5wM8fVEi4LfbziunKGP3HDGXHAv7u9fkDXooULfvA1WeIPftsdx8gUZ
