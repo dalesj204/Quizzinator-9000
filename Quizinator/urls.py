@@ -38,3 +38,11 @@ urlpatterns = [
     path('register/student', views.StudentSignUpView.as_view(), name='studentRegistration'),
     path('register/teacher', views.TeacherSignUpView.as_view(), name='teacherRegistration'),
 ]
+from quizzes.views import *
+ 
+urlpatterns += [
+    path('Question/index/', QuestionView.as_view(), name='test_qs'),
+    path('Question/add/', QuestionAddView.as_view(), name='add_qs'),
+    path('Question/update/', QuestionUpdateView.as_view(), name='update_qs'),
+    path('Question/delete/', QuestionDeleteView.as_view(), name='delete_qs'),
+]

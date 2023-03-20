@@ -1,0 +1,17 @@
+# Ignore database files
+*.db
+*.sqlite3
+*.sqlite
+db.sqlite3
+
+# Ignore migration files
+/migrations/
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore environment files
+.env
+
+# Ignore IDE files
+.idea/

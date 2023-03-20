@@ -1,115 +1,58 @@
-import random
 from django.db import models
 
-class MultipleChoiceQuestion(models.Model):
-    """
-    Author: Shawn Cai
-    
-    A model for a standard multiple choice question.
+# Author - Shawn Cai
+# Define the options for the 'Type' field of the 'Question' model
+Type = (
+    (0, 'MC'),
+    (1, 'PMC'),
+    (2, 'PP')
+)
 
-    Fields:
-    - root (CharField): the root of the question
-    - correct_answer (CharField): the correct answer
-    - distractors (ArrayField): an array of plausible distractors
+# Author - Shawn Cai
+# Define the options for the 'Option' field of the 'Options' and 'Answer' models
+Option = (
+    (1, 'A'),
+    (2, 'B'),
+    (3, 'C'),
+    (4, 'D'),
+    (5, 'E'),
+    (6, 'F'),
+    (7, 'G'),
+    (8, 'H')
+)
 
-    Methods:
-    - randomize_choices(): randomizes the order of the choices
-    - score_answer(answer: str) -> float: scores the given answer
-    """
-    root = models.TextField()
-    correct_answer = models.TextField()
-    distractors = models.TextField()
-    hint = models.TextField(blank=True, null=True)
+# Create the 'Question' model
+# Author - Shawn Cai
+class Question(models.Model):
+    stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
+    type = models.IntegerField(choices=Type, verbose_name='type')
+    explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
+ 
+    class Meta:
+        db_table = 'questions'  # Define the database table name
+        verbose_name = 'Question'  # Define the verbose name for the model
 
-    def get_randomized_choices(self):
-        choices = [self.correct_answer] + self.distractors.split(",")
-        random.shuffle(choices)
-        return choices
-    
+# Create the 'Options' model
+# Author - Shawn Cai
+class Options(models.Model):
+    options = models.IntegerField(choices=Option, verbose_name='options')
+    content = models.CharField(max_length=256, verbose_name='content')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
-class PermutationalMultipleChoiceQuestion(models.Model):
-    """
-    Author: Shawn Cai
+    class Meta:
+        db_table = 'options'  # Define the database table name
+        verbose_name = 'Option'  # Define the verbose name for the model
+        unique_together = ('question', 'content')  # Define a unique constraint for the combination of 'question' and 'content' fields
+        ordering = ['options']  # Define the default ordering for the model
 
-    A model for a permutational multiple choice question.
-
-    Fields:
-    - root_1 (CharField): the first root of the question
-    - correct_answer_1 (CharField): the correct answer for the first root
-    - root_2 (CharField): the second root of the question
-    - correct_answer_2 (CharField): the correct answer for the second root
-    - distractors (ArrayField): an array of plausible distractors
-
-    Methods:
-    - randomize_choices(): randomizes the order of the choices
-    - score_answer(answer_1: str, answer_2: str) -> float: scores the given answers
-    """
-    root1 = models.TextField()
-    root2 = models.TextField()
-    correct_answer1 = models.TextField()
-    correct_answer2 = models.TextField()
-    distractors = models.TextField()
-    hint = models.TextField(blank=True, null=True)
-
-    def get_randomized_choices(self):
-        choices1 = [self.correct_answer1] + self.distractors.split(",")
-        random.shuffle(choices1)
-        choices2 = [self.correct_answer2] + self.distractors.split(",")
-        random.shuffle(choices2)
-        return choices1, choices2
-
-
-class ParsonsProblem(models.Model):
-    """
-    Author: Shawn Cai
-
-    A model for a Parson's problem.
-
-    Fields:
-    - question (CharField): the question to be answered
-    - code_snippet (TextField): the code snippet to be put in order
-
-    Methods:
-    - randomize_order(): randomizes the order of the code snippet
-    - score_answer(answer: List[int]) -> float: scores the given answer
-    """
-    question = models.TextField()
-    code_snippet = models.TextField()
-    choices = models.TextField()
-    hint = models.TextField(blank=True, null=True)
-
-    def get_randomized_choices(self):
-        choices = self.choices.split(",")
-        random.shuffle(choices)
-        return choices
-    
-
-# QuestionBank Model - To Be Further Modified
-# Author - Jacob Fielder, Nathan Prelewicz
-#
-# NOTE- Comment Style to be change once
-# coding standards are defined.
-#
-#The Question Bank model is simplistic in its inital design
-#due to multiple choice questions being the only type curr-
-#ently completed. As more questions types are developed, this
-#will grow in complexity.
-class QuestionBank(models.Model):
-    #Tags for the tags for specific questions in our bank.
-    QUESTION_TYPE = [
-        ('MC', 'Multiple Choice'),
-        ('PP', 'Parsens Problem'),
-        ('PMC', 'Permutation Problem'),
-    ]
-      
-    #Have the bank point towards the question type models.
-    questions = (
-        ('MC',models.ForeignKey(MultipleChoiceQuestion,
-                on_delete=models.CASCADE)),
-        ('PMC',models.ForeignKey(PermutationalMultipleChoiceQuestion,
-                on_delete=models.CASCADE)),
-        ('PP',models.ForeignKey(ParsonsProblem,
-                on_delete=models.CASCADE)),
-    )
-
-    
+# Create the 'Answer' model
+# Author - Shawn Cai
+class Answer(models.Model):
+    options = models.IntegerField(choices=Option, verbose_name='options')
+    question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
+ 
+    class Meta:
+        db_table = 'answers'  # Define the database table name
+        verbose_name = 'Answer'  # Define the verbose name for the model
+        unique_together = ('question', 'options')  # Define a unique constraint for the combination of 'question' and 'options' fields
+        ordering = ['options']  # Define the default ordering for the model
