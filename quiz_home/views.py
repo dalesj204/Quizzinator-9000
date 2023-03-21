@@ -1,17 +1,22 @@
 from django.shortcuts import render
-from django.http import HttpResponse, request
 from quiz_home import models
 from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
 from quizzes import views
-from .models import Class, Student, Grade, Stats, Teacher,  fakeMultipleChoiceQuestion, User, fakeDistractors, fakeSubjectTags
 from django.contrib.auth.decorators import login_required
 import xlwt
 from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.views.generic import CreateView
 from .forms import StudentSignUpForm, TeacherSignUpForm
+from django.http import HttpResponse, request, HttpResponseRedirect
+from django.template import loader
+from .models import Class, Student, Grade, Stats, Teacher,  fakeMultipleChoiceQuestion, User
+import tablib
+from django.urls import reverse
+from tablib import Dataset
+from .resources import fakeMultipleChoiceQuestionResource
 # Create your views here.
 def index(request):
     
@@ -100,6 +105,14 @@ class ClassStatsView(generic.ListView):
 class questionPageView(generic.ListView):
     model = fakeMultipleChoiceQuestion
     template_name = 'questionPage.html'
+    def index(request):
+        ques = fakeMultipleChoiceQuestion.objects.all().values()
+        template = loader.get_template('questionPage.html')
+        context = {
+            'fakemultiplechoicequestion_list': ques,
+        }
+        return HttpResponse(template.render(context, request))
+  
 
 #Creates a microsoft Excel sheet that contains all the questions in the database
 #and their attributes including the question, correct answer, distractors, hint, and tags
@@ -115,53 +128,70 @@ def export_xcl(request):
     filesheet = file.add_sheet("Questions")
     row_number = 0
     #Fills out the header with column names for each attribute
-    columns = ['Question' , 'Correct Answer', 'Distractors', 'Hint', 'Tags']
+    columns = ['ID','Question' , 'Correct Answer', 'Distractors', 'Hint', 'Tags']
     for col_num in range(len(columns)):
         filesheet.write(row_number, col_num, columns[col_num])
+
+    temp = fakeMultipleChoiceQuestion.objects.values_list('id','root', 'correct_answer', 'distractors', 'hint', 'tags')
     #Fills in the rows (each row is one question, and each column is the attribute)
-    for row in fakeMultipleChoiceQuestion.objects.all():
+    for row in temp:
         row_number += 1
-        temp = ''
-        tempTwo = ''
         col_num = 0
-        #puts all the distractors into one string
-        for k in row.distractors.all():
-                temp = temp + str(k) + ' '
-        #puts all the tags into one string
-        for k in row.tags.all():
-                tempTwo = tempTwo + str(k) + ' '
-        #puts each attribute for each question in corresponding cell
-        for col_num in range(len(columns)):
-            if col_num == 0:
-                filesheet.write(row_number, col_num, row.root)
-            elif col_num == 1:
-                filesheet.write(row_number, col_num, row.correct_answer)
-            elif col_num == 2:
-                filesheet.write(row_number, col_num, temp)
-            elif col_num == 3:
-                filesheet.write(row_number, col_num, row.hint)
-            elif col_num == 4:
-                filesheet.write(row_number, col_num, tempTwo)
+        for col_num in range(len(row)):
+            filesheet.write(row_number, col_num, str(row[col_num]))
     file.save(response)
     #Returns file for the response
     return response
+def importing(request):
+    template = loader.get_template('import_form.html')
+    return HttpResponse(template.render({}, request))
+# for importing 
+def import_xcl(request):
+    question_resource = fakeMultipleChoiceQuestionResource()
+    dataset = tablib.Dataset()
+    new_questions = request.FILES['my_file']
+    imported_data = dataset.load(new_questions.read(), format = 'xls')
+    for data in imported_data:
+        value = fakeMultipleChoiceQuestion(
+            data[0], # fake id
+            data[1], # root
+            data[2], # answer
+            data[3], # distractors
+            data[4], # hint
+            data[5],# tags
+        )
+        value.save()
+    return HttpResponseRedirect(reverse('questionPage'))
+    
 
-#This was the start of getting import up, but put on pause since we might go another direction - Blocked - Ignore
-# class importView(views):
-#     model = fakeMultipleChoiceQuestion
-#     #from_encoding = "utf-8"
-#     DEFAULT_FORMATS = (
-#         base_formats.XLS,
-#     )
-#     formats = DEFAULT_FORMATS
-#     import_template_name = '/importExportPage.html'
-#     resource_class = None
+def get_success_url(self):
+    # go back to the blog detail page after comment has been posted
+    return reverse('questionPage')
 
-#     def get_import_formats(self):
-#         return [f for f in self.formats if f().can_import()]
-
-
-
+  
+  
+def add(request):
+    template = loader.get_template('add.html')
+    return HttpResponse(template.render({}, request))
+def addrecord(request):
+    x = request.POST['root']
+    y = request.POST['correct_answer']
+    z = request.POST['distractors']
+    q = request.POST['hint']
+    s = request.POST['tags']
+    ques = fakeMultipleChoiceQuestion(root=x, correct_answer=y, distractors=z, hint=q, tags=s)
+    if 'Submit' in request.POST:
+        ques.save()
+        return HttpResponseRedirect(reverse('questionPage'))
+    elif 'Cancel' in request.POST:
+        return HttpResponseRedirect(reverse('questionPage'))
+    else:
+        ques.save()
+        return HttpResponseRedirect(reverse('add'))
+# def delete(request, id):
+#     ques = fakeMultipleChoiceQuestion.objects.get(id=id)
+#     ques.delete()
+#     return HttpResponseRedirect(reverse('questionPage'))
 def TeacherHomeView(request, teacher_id):
     teacher = Teacher.objects.get(tid=teacher_id)
     classes = teacher.classes.all()

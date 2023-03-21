@@ -7,23 +7,15 @@ from Quizinator import settings
 # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
 # while the questions/question bank reamins unchanged by us so that the others can finish
 # Do not touch
-class fakeSubjectTags(models.Model):
-    subject_name = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.subject_name
-    
-class fakeDistractors(models.Model):
-    subject_name = models.CharField(max_length=100)
-    def __str__(self):
-        return self.subject_name
 
 class fakeMultipleChoiceQuestion(models.Model):
-    root = models.CharField(max_length=200)
-    correct_answer = models.CharField(max_length=200)
-    distractors = models.ManyToManyField(fakeDistractors)
-    hint = models.CharField(max_length=100, blank=True, null=True)
-    tags = models.ManyToManyField(fakeSubjectTags)
+    id = models.AutoField(primary_key=True)
+    root =models.TextField(default="")
+    correct_answer = models.TextField(default="")
+    distractors = models.TextField(default="")
+    hint = models.TextField(blank=True, null=True)
+    tags =models.TextField(default="")
     def __str__(self):
         return self.root
 

@@ -14,15 +14,16 @@
       <p> 
         <td> {{question.root}} </td>
         <td> {{question.correct_answer}} </td>
-        <td> {{ question.distractors.all|join:", " }} </td>
+        <td> {{ question.distractors}} </td>
         <td> {{question.hint}} </td>
-        <td> {{ question.tags.all|join:", " }} </td>
+        <td> {{ question.tags}} </td>
+        {% comment %}<td><a href="delete/{{ question.id }}">delete</a></td>{% endcomment %}
       </p>
     </tr>
     {% endfor %}
     </table>
-    
-    {% comment %} <p><strong><a href="{% url 'import_xcl'  %}">Import</a></strong></p> {% endcomment %}
+    <p><strong><a href="add/">Add Question</a></strong></p>
+    <p><strong><a href="{% url 'importing'  %}">Import</a></strong></p> 
     <p><strong><a href="{% url 'export_xcl'  %}">Export</a></strong></p>
     
 {% endblock %}

@@ -3,8 +3,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from random import randrange
 
-from .models import Student, Teacher, User
-
+from quiz_home.models import Student, Teacher, User, fakeMultipleChoiceQuestion
+# form to input questions
+class fakeQuestionForm(forms.Form):
+    class meta:
+        model = fakeMultipleChoiceQuestion
+        fields = 'all'
 class StudentSignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=100)
     last_name = forms.CharField(max_length=100)

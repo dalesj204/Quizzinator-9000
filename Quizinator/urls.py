@@ -37,4 +37,9 @@ urlpatterns = [
     path('export_xcl/', views.export_xcl, name = 'export_xcl'),
     path('register/student', views.StudentSignUpView.as_view(), name='studentRegistration'),
     path('register/teacher', views.TeacherSignUpView.as_view(), name='teacherRegistration'),
+    path('questions/importing/', views.importing, name = 'importing'),
+    path('questions/importing/import_xcl/', views.import_xcl, name='importxcl'),
+    # path('questions/delete/<int:id>', views.delete, name='delete'),
+    path('questions/add/', views.add, name='add'),
+    path('questions/add/addrecord/', views.addrecord, name='addrecord'),
 ]

@@ -1,0 +1,26 @@
+<h1>Add question</h1>
+
+<form action="addrecord/" method="post">
+{% csrf_token %}
+Question:<br>
+<input name="root">
+<br><br>
+Correct Answer:<br>
+<input name="correct_answer">
+<br><br>
+<br><br>
+Distractors:<br>
+<input name="distractors">
+<br><br>
+<br><br>
+Hint:<br>
+<input name="hint">
+<br><br>
+<br><br>
+Tags:<br>
+<input name="tags">
+<br><br>
+<input type="submit" value="Submit" name="Submit">
+<input type="submit" value="Cancel" name="Cancel">
+<input type="submit" value="Submit and Add Another" name="Another">
+</form>
