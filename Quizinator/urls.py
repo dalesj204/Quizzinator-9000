@@ -43,3 +43,11 @@ urlpatterns = [
     path('questions/add/', views.add, name='add'),
     path('questions/add/addrecord/', views.addrecord, name='addrecord'),
 ]
+from quizzes.views import *
+ 
+urlpatterns += [
+    path('Question/index/', QuestionView.as_view(), name='test_qs'),
+    path('Question/add/', QuestionAddView.as_view(), name='add_qs'),
+    path('Question/update/', QuestionUpdateView.as_view(), name='update_qs'),
+    path('Question/delete/', QuestionDeleteView.as_view(), name='delete_qs'),
+]

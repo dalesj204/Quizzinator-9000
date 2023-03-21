@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Question Test</title>
+</head>
+<body>
+    {% for one in object_list %}
+        <p>{{ forloop.counter }}, {{ one.stem }}</p>
+        {% for options in one.options_set.all %}
+            {{ options.get_options_display }}, {{ options.content }} </br>
+        {% endfor %}
+        <p id="{{ one.id }}id" hidden>
+        {% for answer in one.answer_set.all %}
+            {{ answer.get_options_display }}
+        {% endfor %}
+        </p>
+    {% endfor %}
+</body>
+</html>
