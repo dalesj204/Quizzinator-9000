@@ -79,7 +79,7 @@ class QuestionUpdateView(View):
             print(e)
             res = {'status': 1, 'msg': 'Failed'}
         return JsonResponse(res)
-    
+
 # Create QuestionDeleteView class to delete questions
 # Author - Shawn Cai
 class QuestionDeleteView(View):

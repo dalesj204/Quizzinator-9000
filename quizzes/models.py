@@ -1,5 +1,6 @@
 from django.db import models
-
+from datetime import timedelta
+from django.utils import timezone
 # Author - Shawn Cai
 # Define the options for the 'Type' field of the 'Question' model
 Type = (
@@ -21,13 +22,21 @@ Option = (
     (8, 'H')
 )
 
+# Create the 'Tag' model
+class Tag(models.Model):
+    tag = models.CharField(max_length=30, verbose_name='tag')
+    class Meta:
+        db_table = 'tags'  # Define the database table name
+        verbose_name = 'Tag'  # Define the verbose name for the model
+
 # Create the 'Question' model
 # Author - Shawn Cai
 class Question(models.Model):
     stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
     type = models.IntegerField(choices=Type, verbose_name='type')
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
- 
+    tag = models.ManyToManyField(Tag)
+    
     class Meta:
         db_table = 'questions'  # Define the database table name
         verbose_name = 'Question'  # Define the verbose name for the model
@@ -50,9 +59,22 @@ class Options(models.Model):
 class Answer(models.Model):
     options = models.IntegerField(choices=Option, verbose_name='options')
     question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
- 
+
     class Meta:
         db_table = 'answers'  # Define the database table name
         verbose_name = 'Answer'  # Define the verbose name for the model
         unique_together = ('question', 'options')  # Define a unique constraint for the combination of 'question' and 'options' fields
         ordering = ['options']  # Define the default ordering for the model
+
+# Create the 'Quiz' model
+# Author - Shawn Cai
+class Quiz(models.Model):
+    name = models.CharField(max_length=255)
+    questions = models.ManyToManyField(Question)
+    start_time = models.DateTimeField(default=timezone.now)
+    end_time = models.DateTimeField(default=timezone.now)
+    time_limit = models.DurationField(default=timedelta(minutes=30))
+    
+    class Meta:
+        db_table = 'quizzes'  # Define the database table name
+        verbose_name = 'Quiz'  # Define the verbose name for the model
