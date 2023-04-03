@@ -1,0 +1,64 @@
+
+
+
+body {
+    width: 100%;
+    font-size: 20px;
+}
+
+a {
+    color: black;
+}
+
+a:hover {
+    color: black;
+}
+
+a:active {
+    color: rgb(255, 255, 255);
+  }
+
+
+
+.title {
+    width: 120%;
+    text-align:center;
+    color: black;
+    font-size: 20px;
+}
+
+.subtext {
+    width: 120%;
+    text-align:center;
+    color: #831515;
+    font-size: 20px;
+    padding-left: 20px;
+}
+
+.nav-link{
+    color: white;
+}
+.nav-item {
+    display:block;
+    color:white;
+    justify-content: center;
+    width: 50%;
+}
+.navbar{
+    background-color: #831515;
+    margin:0%;
+    padding: 0%;
+    border: 1px solid rgb(0, 0, 0);
+}
+
+.title1{
+    font-family: 'sans-serif';
+}
+
+.image {
+    display: flex;
+    justify-content: center;
+    padding-left: 350px;
+    width: 800px;
+
+}
