@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class ="title">
+    <h1>Quizzinator</h1><br>
+</div>
+<div class ="image">
+    <img class ="image" src="../static/pdambear.png"></img>
+</div>
+
+    {% if user.is_authenticated %}
+        <h1>Hi {{ user.first_name }}</h1>
+        <h1>You are logged in!</h1>
+        {% endif %}
+
+
+{% endblock %}

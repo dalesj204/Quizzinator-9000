@@ -1,0 +1,55 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<!-- Add additional CSS in static file -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+
+<h1>Questions</h1>
+    <table>
+      
+      <th class="text-left" style= "font-size :x-large">Question</th>
+      <th class="text-left" style= "font-size :x-large">Correct Answer</th>
+      <th class="text-left" style= "font-size :x-large">Distractors</th>
+      <th class="text-left" style= "font-size :x-large">Hint</th>
+      <th class="text-left" style= "font-size :x-large">Tags</th>
+
+      <th class="text-left" style= "font-size :x-large">Delete</th>
+      <th class="text-left" style= "font-size :x-large">Edit</th>
+      <th class="text-left" style= "font-size :x-large">Select for Export</th>
+      <label><input type="checkbox" onclick="for(c in document.getElementsByName('selectedQues')) document.getElementsByName('selectedQues').item(c).checked = this.checked"> Select All For Export</label>
+   
+      {% for question in fakemultiplechoicequestion_list %}
+    <tr>
+      <p> 
+        <td class="text-left"> {{question.root}} </td>
+        <td class="text-left"> {{question.correct_answer}} </td>
+        <td class="text-left"> {{question.distractors}} </td>
+        <td class="text-left"> {{question.hint}} </td>
+        <td class="text-left"> {{question.tags}} </td>
+        <td class="text-center"> <a href="{% url 'delete' question.pk %}">delete</a> </td>
+        <td class="text-center"> <a href="{% url 'edit' question.pk %}">edit</a> </td>
+        <form action="{% url 'export_xcl'  %}" method="post">
+          {%csrf_token%}
+          <td class="text-center"> <div class="form-check">
+          <input type="checkbox" value= "{{question.id}}" 
+                  id=question name="selectedQues"></input>
+                </div>
+              </td>
+      </p>
+    </tr>
+
+    {% endfor %}         
+    </table>
+
+    <p></p>
+    <button><a href="add/">Add Question</a></button>
+    <p></p>
+    <button><a href="{% url 'importing'  %}">Import</a></button>
+    <button type ="submit">Export</button>
+    
+   
+  </form>
+{% endblock %}

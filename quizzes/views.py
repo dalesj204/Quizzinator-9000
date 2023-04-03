@@ -1,7 +1,200 @@
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from django.views.generic import View, ListView, TemplateView
+from django.views import generic
+from import_export import fields
+from import_export.widgets import ManyToManyWidget
+from quizzes import views
+import xlwt
+from django.shortcuts import redirect
+from django.views.generic import CreateView,View, ListView, TemplateView
+from django.contrib import messages
+from .forms import  questionForm
+from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
+from django.template import loader
+from .models import Class,  Grade, Stats,  fakeMultipleChoiceQuestion
+import tablib
+from django.urls import reverse
+from tablib import Dataset
+from .resources import fakeMultipleChoiceQuestionResource
 from .models import *
+# Create your views here.
+def index(request):
+    
+    num_quizzes = 0#Quiz.objects.all().count()
+    
+    context = {
+        'num_quizzes': num_quizzes,
+    }
+    
+    return render(
+        request,
+        'index.html', context=context,
+    )
+
+class ClassListView(generic.ListView):
+    model = Class
+    paginated_by = 10
+    template_name = 'class_list.html'
+
+
+class ClassGradebookView(generic.ListView):
+    model = Grade
+    template_name = 'gradebook.html'
+
+
+class ClassStatsView(generic.ListView):
+    model = Stats
+    template_name = 'stats.html'
+
+# Just  displays the questions, has a spot to import new ones, enter new question manually, delete questions and export the questions.
+# Returns a list of all questions in database 
+class questionPageView(generic.ListView):
+    model = fakeMultipleChoiceQuestion
+    template_name = 'questionPage.html'
+    def index(request):
+        ques = fakeMultipleChoiceQuestion.objects.all().values()
+        template = loader.get_template('questionPage.html')
+        context = {
+            'fakemultiplechoicequestion_list': ques,
+        }
+        return HttpResponse(template.render(context, request))
+  
+
+#Creates a microsoft Excel sheet that contains all the selected questions(user can now select individual questions or all questions) from the database
+#and their attributes including the question, correct answer, distractors, hint, and tags
+#this is connected to our fake multiple choice question which we modeled after the MC question that was current at the time
+#So that we didn't mess with the other team members model while they were updating it this sprint
+#also only did MC because the other models did not exist yet.
+# Precondition - none
+# Parameter - none
+# Postcondition - Questions/IDs get exported to excel file named filename
+def export_xcl(request):
+    #Creates Excel workbook
+    response = HttpResponse(content_type = "application/ms-excel")
+    response['Content-Disposition'] = 'attachment; filename=filename.xls'
+    file = xlwt.Workbook(encoding="utf-8")
+    #Creates Excel sheet apart of the workbook
+    filesheet = file.add_sheet("Questions")
+    row_number = 0
+    #Fills out the header with column names for each attribute
+    columns = ['ID','Question' , 'Correct Answer', 'Distractors', 'Hint', 'Tags']
+    for col_num in range(len(columns)):
+        filesheet.write(row_number, col_num, columns[col_num])
+    # filesheet.write(2,1,request.method)
+    if request.method == 'POST': 
+        # filesheet.write(2,2,'hi')  
+        selectedQues = request.POST.getlist('selectedQues')
+        # filesheet.write(2,3,selectedQues) 
+        #temp = fakeMultipleChoiceQuestion.objects.values_list('id','root', 'correct_answer', 'distractors', 'hint', 'tags')
+        temp = fakeMultipleChoiceQuestion.objects.all().filter(id__in=selectedQues).values_list('id','root', 'correct_answer', 'distractors', 'hint', 'tags')
+        #Fills in the rows (each row is one question, and each column is the attribute)
+        for row in temp:
+            row_number += 1
+            col_num = 0
+            for col_num in range(len(row)):
+                filesheet.write(row_number, col_num, str(row[col_num]))
+    file.save(response)
+    #Returns file for the response
+    return response
+#Import form gives a form/template to give the file/filename that you will be importing
+def importing(request):
+    template = loader.get_template('import_form.html')
+    return HttpResponse(template.render({}, request))
+
+#takes a microsoft Excel sheet that contains  questions that will go into the database
+#and their attributes including the question, correct answer, distractors, hint, and tags
+#this is connected to our fake multiple choice question which we modeled after the MC question that was current at the time
+#So that we didn't mess with the other team members model while they were updating it this sprint
+#also only did MC because the other models did not exist yet.
+# Warning - if you use an ID already in the question bank you will overwrite the question
+# Precondition - must be given an excel sheet, no other files
+# Parameter - root(question), correct_answer, distractors, hint, tags (all in the excel sheet)
+# Postcondition - Questions/IDs now exists in the database with the correct fields
+def import_xcl(request):
+    question_resource = fakeMultipleChoiceQuestionResource()
+    dataset = tablib.Dataset()
+    new_questions = request.FILES['my_file']
+    imported_data = dataset.load(new_questions.read(), format = 'xls')
+    for data in imported_data:
+        value = fakeMultipleChoiceQuestion(
+            data[0], # fake id
+            data[1], # root
+            data[2], # answer
+            data[3], # distractors
+            data[4], # hint
+            data[5],# tags
+        )
+        value.save()
+    return HttpResponseRedirect(reverse('questionPage'))
+    
+# go back to the blog detail page after comment has been posted
+def get_success_url(self):
+    return reverse('questionPage')
+
+  
+#Takes you to a page to fill out the fields to create a question manually 
+def add(request):
+    template = loader.get_template('add.html')
+    return HttpResponse(template.render({}, request))
+
+
+# Function takes your fields and and allows users to add more questions while saving them to the database, 
+# cancel their question(doesn't add it to the data base), or save question to the database and return to the questions page
+# Precondition - Every field except for the hint has to be filled in
+# Parameter - root(question), correct_answer, distractors, hint, tags
+# Postcondition - Question/ID now exists in the database with the correct fields
+def addrecord(request):
+    x = request.POST['root']
+    y = request.POST['correct_answer']
+    z = request.POST['distractors']
+    q = request.POST['hint']
+    s = request.POST['tags']
+    ques = fakeMultipleChoiceQuestion(root=x, correct_answer=y, distractors=z, hint=q, tags=s)
+    if 'Submit' in request.POST:
+        ques.save()
+        return HttpResponseRedirect(reverse('questionPage'))
+    elif 'Cancel' in request.POST:
+        return HttpResponseRedirect(reverse('questionPage'))
+    else:
+        ques.save()
+        return HttpResponseRedirect(reverse('add'))
+    
+# Function that deletes the question from the question bank. 
+# And then returns you do the question page that should not have that question in the list anymore.
+# Precondition - Question/ID must exist
+# Parameter - Must be given question id to give
+# Postcondition - Question/ID no longer exist/is not being used anymore
+def delete(request, id):
+    ques = fakeMultipleChoiceQuestion.objects.get(id=id)
+    ques.delete()
+    return HttpResponseRedirect(reverse('questionPage'))
+
+# Function that edit the question from the question bank. 
+# And then returns you do the question page that should have the updated question in the list. Unless they canceled it.
+# Precondition - Question/ID must exist
+# Parameter - Must be given question id to give
+# Postcondition - Question is now updated
+def edit(request, id):
+    question = fakeMultipleChoiceQuestion.objects.get(id=id)
+    template = loader.get_template('edit_question.html')
+    form = questionForm(request.POST or None, instance=question)
+    if 'Update' in request.POST:
+        if form.is_valid():
+            form.save()
+            return redirect('questionPage')
+    if 'Cancel' in request.POST:
+        return HttpResponseRedirect(reverse('questionPage'))
+    
+    return HttpResponse(template.render({'question':question, 'form':form}, request))
+def ClassDetailView(request, class_id):
+    this_class = Class.objects.get(id=class_id)
+
+    context = {
+        'class': this_class,
+    }
+
+    return render(request, 'class_detail.html', context)
+
+
 
 # Create QuestionView class to display questions
 # Author - Shawn Cai

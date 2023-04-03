@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>{{class.name}}</h1>
+<p><strong>Instructor:</strong> {{ instructor.all|join:", " }}</p>
+
+<p><strong>Students: </strong> {{ roster.all|join:", " }}</p>
+<a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
+<h2>Quizzes for class: </h2>
+<ul>
+    {% for quiz in classes.quizzes.all %}
+    <li>
+      <p> 
+        <a href="{% url 'quiz-detail' quiz.pk %}" > {{quiz.name}} </a>
+      </p>
+    </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

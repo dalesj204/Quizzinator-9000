@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Edit Question</h1>
+<br/> 
+<form action ="" method=POST>
+    {% csrf_token %}
+    {{form.as_p}}
+    <br/>
+    <input type ="submit" value="Update" name="Update"
+    class="btn btn-secondary">
+    <input type="submit" value="Cancel" name="Cancel"
+    class="btn btn-secondary">
+</form>
+
+
+{% endblock %}

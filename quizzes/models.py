@@ -1,6 +1,9 @@
 from django.db import models
 from datetime import timedelta
 from django.utils import timezone
+from django.urls import reverse
+
+
 # Author - Shawn Cai
 # Define the options for the 'Type' field of the 'Question' model
 Type = (
@@ -78,3 +81,81 @@ class Quiz(models.Model):
     class Meta:
         db_table = 'quizzes'  # Define the database table name
         verbose_name = 'Quiz'  # Define the verbose name for the model
+        # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
+# while the questions/question bank reamins unchanged by us so that the others can finish
+# Do not touch
+class fakeMultipleChoiceQuestion(models.Model):
+    id = models.AutoField(primary_key=True)
+    root =models.TextField(default="")
+    correct_answer = models.TextField(default="")
+    distractors = models.TextField(default="")
+    hint = models.TextField(blank=True, null=True)
+    tags =models.TextField(default="")
+    def __str__(self):
+        return self.root
+
+# # quiz model contains name, course attributes, startDate, and endDate for quizzes
+# # A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first
+# # @return str self.name - The quiz's name.
+# # @return absolute_url quiz_detail - the detail view for that particular quiz
+# class Quiz(models.Model):
+#     # id = models.AutoField('ID',primary_key=True)
+#     name = models.CharField(max_length=100)
+#     course = models.CharField(max_length=100)
+#     startDate = models.DateField(help_text="Set the date for when you want this quiz to open:", null=True)
+#     endDate = models.DateField(help_text="Set the date for when you want this quiz to close:", blank = True, null=True)
+#     class Meta:
+#         verbose_name_plural = "quizzes"
+#         ordering = ["-endDate"]
+
+#     def __str__(self):
+#         return str(self.name)
+
+#     def get_absolute_url(self):
+#         return reverse('quiz_detail', kwargs={'pk': self.pk})
+    
+    
+    
+# temporary model for the sake of getting the gradebook page running.
+class Grade(models.Model):
+    name = models.CharField(max_length=100)
+    grade = models.IntegerField()
+    
+
+    class Meta:
+        verbose_name_plural = "grades"
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('grade_list', kwargs={'pk': self.pk})
+    
+
+class Stats(models.Model):
+    name = models.CharField(max_length=100)
+    class Meta:
+        verbose_name_plural = "stats"
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('stat', kwargs={'pk': self.pk})
+ 
+#This model has a name, there will be a gradebook associated for each user for each class,
+#and each class can have many quizzes associated with it(every quiz can be assigned to many classes)
+# @return str self.name - The class's name.
+# @return absolute_url class_detail - the detail view for that particular class
+class Class(models.Model):
+    name = models.CharField(max_length=100)
+    gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
+    quizzes = models.ManyToManyField(Quiz)
+    class Meta:
+        verbose_name_plural = "classes"
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('class_detail', kwargs={'class_id': self.pk})
