@@ -31,14 +31,17 @@ class Tag(models.Model):
     class Meta:
         db_table = 'tags'  # Define the database table name
         verbose_name = 'Tag'  # Define the verbose name for the model
-
+    def tag_label_return(self, obj):
+      return f"{obj.name}"
 # Create the 'Question' model
 # Author - Shawn Cai
 class Question(models.Model):
     stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
     type = models.IntegerField(choices=Type, verbose_name='type')
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
-    tag = models.ManyToManyField(Tag)
+    tag = models.ManyToManyField(Tag, null=True)
+    def get_type(self, ind):
+        return f"{Type[ind]}"
     
     class Meta:
         db_table = 'questions'  # Define the database table name

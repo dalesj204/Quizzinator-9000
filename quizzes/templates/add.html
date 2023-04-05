@@ -7,19 +7,16 @@
 <form action="addrecord/" method="post">
 {% csrf_token %}
 Question:<br>
-<input name="root">
+<input name="stem">
 <br><br>
-Correct Answer:<br>
-<input name="correct_answer">
-<br><br>
-Distractors:<br>
-<input name="distractors">
+Type:<br>
+<input name="type">
 <br><br>
 Hint:<br>
-<input name="hint">
+<input name="explain">
 <br><br>
 Tags:<br>
-<input name="tags">
+<input name="tag">
 <br><br>
 <input type="submit" value="Submit" name="Submit">
 <input type="submit" value="Submit and Add Another" name="Another">

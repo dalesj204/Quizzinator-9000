@@ -10,9 +10,9 @@
 <h1>Questions</h1>
     <table>
       
+      <th class="text-left" style= "font-size :x-large">ID</th>
       <th class="text-left" style= "font-size :x-large">Question</th>
-      <th class="text-left" style= "font-size :x-large">Correct Answer</th>
-      <th class="text-left" style= "font-size :x-large">Distractors</th>
+      <th class="text-left" style= "font-size :x-large">Type</th>
       <th class="text-left" style= "font-size :x-large">Hint</th>
       <th class="text-left" style= "font-size :x-large">Tags</th>
 
@@ -21,14 +21,20 @@
       <th class="text-left" style= "font-size :x-large">Select for Export</th>
       <label><input type="checkbox" onclick="for(c in document.getElementsByName('selectedQues')) document.getElementsByName('selectedQues').item(c).checked = this.checked"> Select All For Export</label>
    
-      {% for question in fakemultiplechoicequestion_list %}
+      {% for question in question_list %}
     <tr>
       <p> 
-        <td class="text-left"> {{question.root}} </td>
-        <td class="text-left"> {{question.correct_answer}} </td>
-        <td class="text-left"> {{question.distractors}} </td>
-        <td class="text-left"> {{question.hint}} </td>
-        <td class="text-left"> {{question.tags}} </td>
+        <td class="text-left"> {{question.ID}} </td>
+        <td class="text-left"> {{question.stem}} </td>
+        <td class="text-left"> {% if question.type == 0 %} MC 
+          {% elif question.type == 1 %} PMC 
+          {% elif question.type == 2 %} PP 
+        {% endif %}</td>
+        <td class="text-left"> {{question.explain}} </td>
+        <td class="text-left">{% for x in question.tag.all %}
+         {{x.tag}}
+        {% endfor %}
+      </td>
         <td class="text-center"> <a href="{% url 'delete' question.pk %}">delete</a> </td>
         <td class="text-center"> <a href="{% url 'edit' question.pk %}">edit</a> </td>
         <form action="{% url 'export_xcl'  %}" method="post">
