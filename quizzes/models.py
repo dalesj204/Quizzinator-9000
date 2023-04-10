@@ -39,7 +39,7 @@ class Question(models.Model):
     stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
     type = models.IntegerField(choices=Type, verbose_name='type')
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
-    tag = models.ManyToManyField(Tag, null=True)
+    tag = models.ManyToManyField(Tag, blank=True)
     def get_type(self, ind):
         return f"{Type[ind]}"
     
@@ -84,18 +84,18 @@ class Quiz(models.Model):
     class Meta:
         db_table = 'quizzes'  # Define the database table name
         verbose_name = 'Quiz'  # Define the verbose name for the model
-        # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
+# The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
 # while the questions/question bank reamins unchanged by us so that the others can finish
 # Do not touch
-class fakeMultipleChoiceQuestion(models.Model):
-    id = models.AutoField(primary_key=True)
-    root =models.TextField(default="")
-    correct_answer = models.TextField(default="")
-    distractors = models.TextField(default="")
-    hint = models.TextField(blank=True, null=True)
-    tags =models.TextField(default="")
-    def __str__(self):
-        return self.root
+# class fakeMultipleChoiceQuestion(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     root =models.TextField(default="")
+#     correct_answer = models.TextField(default="")
+#     distractors = models.TextField(default="")
+#     hint = models.TextField(blank=True, null=True)
+#     tags =models.TextField(default="")
+#     def __str__(self):
+#         return self.root
 
 # # quiz model contains name, course attributes, startDate, and endDate for quizzes
 # # A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first

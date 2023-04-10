@@ -10,11 +10,11 @@ from django.contrib import messages
 from .forms import  questionForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats,  fakeMultipleChoiceQuestion, Question, Tag, Type
+from .models import Class,  Grade, Stats, Question, Tag, Type#, fakeMultipleChoiceQuestion
 import tablib
 from django.urls import reverse
 from tablib import Dataset
-from .resources import fakeMultipleChoiceQuestionResource
+# from .resources import fakeMultipleChoiceQuestionResource
 from .models import *
 # Create your views here.
 def index(request):

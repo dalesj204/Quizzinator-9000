@@ -1,26 +1,23 @@
 
 from django.test import TestCase
-from django.db import models
 from django.urls import reverse
 from .models import Class, Grade, Quiz,Tag, Question, Options, Answer
 from datetime import datetime as dt, timedelta
 from django.utils import timezone
+from termcolor import colored
 
 # Create the 'Tag' Test
 # Author - Shawn Cai
 class TagTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Tag', 'red'))
+        super().setUpClass()
+
     def setUp(self):
         self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
         self.tag1 = Tag.objects.create(tag='Geography')
         self.tag2 = Tag.objects.create(tag='Europe')
-    @classmethod
-    def setUpClass(cls):
-        print("Tag is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Tag Tested!")
     
     def test_question_type(self):
         self.assertEqual(self.question.type, 0)
@@ -33,22 +30,24 @@ class TagTestCase(TestCase):
         self.question.tag.add(self.tag2)
         self.assertEqual(self.question.tag.count(), 2)
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Tag is Tested!', 'green'))
+
 # Create the 'Option' Test
 # Author - Shawn Cai
-class OptionsModelTest(TestCase):
+class OptionModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Option', 'red'))
+        super().setUpClass()
+
     def setUp(self):
         self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
         self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
         self.option2 = Options.objects.create(options=2, content="London", question=self.question)
 
-    @classmethod
-    def setUpClass(cls):
-        print("Option is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Option Tested!")
     
     def test_options_content(self):
         self.assertEqual(self.option1.content, "Paris")
@@ -58,31 +57,43 @@ class OptionsModelTest(TestCase):
         self.assertEqual(self.option1.question, self.question)
         self.assertEqual(self.option2.question, self.question)
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Option is Tested!', 'green'))
+
 # Create the 'Answer' Test
 # Author - Shawn Cai
 class AnswerModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Answer', 'red'))
+        super().setUpClass()
+
     def setUp(self):
         self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
         self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
         self.option2 = Options.objects.create(options=2, content="London", question=self.question)
         self.answer = Answer.objects.create(options=1, question=self.question)
 
-    @classmethod
-    def setUpClass(cls):
-        print("Answer is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Answer Tested!")
     
     def test_correct_answer(self):
         correct_option = Options.objects.get(pk=self.answer.options)
         self.assertEqual(correct_option.content, "Paris")
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Answer is Tested!', 'green'))
+
 # Create the 'Question' Test
 # Author - Shawn Cai
 class QuestionModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Question', 'red'))
+        super().setUpClass()
+
     def setUp(self):
         self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
         self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
@@ -92,15 +103,6 @@ class QuestionModelTest(TestCase):
         self.tag2 = Tag.objects.create(tag='Europe')
         self.question.tag.add(self.tag1)
         self.question.tag.add(self.tag2)
-
-    @classmethod
-    def setUpClass(cls):
-        print("Question is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Question Tested!")
     
     def test_question_contains_options(self):
         options = self.question.options_set.all()
@@ -114,9 +116,19 @@ class QuestionModelTest(TestCase):
         tags = self.question.tag.all()
         self.assertEqual(len(tags), 2)
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Question is Tested!', 'green'))
+        
 # Create the 'Quiz' Test
 # Author - Shawn Cai
 class QuizModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Quiz', 'red'))
+        super().setUpClass()
+
     def setUp(self):
         self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
         self.option1 = Options.objects.create(options=1, content="Paris", question=self.question1)
@@ -143,15 +155,6 @@ class QuizModelTest(TestCase):
         self.quiz = Quiz.objects.create(name="Geography and Economy Quiz", start_time=start_time, end_time=end_time, time_limit=time_limit)
         self.quiz.questions.add(self.question1)
         self.quiz.questions.add(self.question2)
-
-    @classmethod
-    def setUpClass(cls):
-        print("Quiz is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Quiz Tested!")
     
     def test_quiz_contains_questions(self):
         questions = self.quiz.questions.all()
@@ -178,7 +181,18 @@ class QuizModelTest(TestCase):
         self.assertEqual(self.quiz.end_time, end_time)
         self.assertEqual(self.quiz.time_limit, time_limit)
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Quiz is Tested!', 'green'))
+
+# Create the 'Class' Test
+# Author - Shawn Cai
 class TestClassModel(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('UnitTest is Testing: ', 'blue')+colored('Class', 'red'))
+        super().setUpClass()
     @classmethod
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods
@@ -186,24 +200,17 @@ class TestClassModel(TestCase):
         classer.save()
         # quizzer = classer.quizzes.create(name = "Quiz One", course = "Assembly", startDate = "2023-03-23", endDate = "2023-04-24")
         # quizzer.save()
-    @classmethod
-    def setUpClass(cls):
-        print("Classes is Testing")
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("Classes Tested!")
+
         
     def test_name_label(self):
         className = Class.objects.get(id=1)
         field_label = className._meta.get_field('name').verbose_name
         self.assertEqual(field_label, 'name')
 
-    # def test_quizzes_label(self):
-    #     className = Class.objects.get(id=1)
-    #     field_label = className._meta.get_field('quizzes').verbose_name
-    #     self.assertEqual(field_label, 'quizzes')
+    def test_quizzes_label(self):
+        className = Class.objects.get(id=1)
+        field_label = className._meta.get_field('quizzes').verbose_name
+        self.assertEqual(field_label, 'quizzes')
 
     def test_gradebook_label(self):
         className = Class.objects.get(id=1)
@@ -224,6 +231,10 @@ class TestClassModel(TestCase):
         className = Class.objects.get(id=1)
         self.assertEqual(className.get_absolute_url(), '/class_list/1')
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Classes is Tested!', 'green'))
     
     # def test_quizzer(self):
     #     pracClass = Class.objects.create(name = "Assembly", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
