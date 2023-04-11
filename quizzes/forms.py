@@ -6,12 +6,12 @@ import random
 from django.http import HttpResponse
 from django.forms import ModelForm
 
-from .models import fakeMultipleChoiceQuestion
+from .models import Question
 
 # form to edit questions
 class questionForm(ModelForm):
     class Meta:
-        model = fakeMultipleChoiceQuestion
-        fields = ('root', 'correct_answer', 'distractors', 'hint', 'tags')
+        model = Question
+        fields = ('stem', 'type', 'explain', 'tag')
   
         

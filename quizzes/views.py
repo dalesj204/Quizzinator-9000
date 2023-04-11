@@ -10,11 +10,11 @@ from django.contrib import messages
 from .forms import  questionForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats,  fakeMultipleChoiceQuestion
+from .models import Class,  Grade, Stats, Question, Tag, Type#, fakeMultipleChoiceQuestion
 import tablib
 from django.urls import reverse
 from tablib import Dataset
-from .resources import fakeMultipleChoiceQuestionResource
+# from .resources import fakeMultipleChoiceQuestionResource
 from .models import *
 # Create your views here.
 def index(request):
@@ -48,15 +48,16 @@ class ClassStatsView(generic.ListView):
 # Just  displays the questions, has a spot to import new ones, enter new question manually, delete questions and export the questions.
 # Returns a list of all questions in database 
 class questionPageView(generic.ListView):
-    model = fakeMultipleChoiceQuestion
+    model = Question
     template_name = 'questionPage.html'
     def index(request):
-        ques = fakeMultipleChoiceQuestion.objects.all().values()
+        ques = Question.objects.all().values()
         template = loader.get_template('questionPage.html')
+        temp = ["MC", "PMC", "PP"]
         context = {
-            'fakemultiplechoicequestion_list': ques,
+            'question_list': ques,
         }
-        return HttpResponse(template.render(context, request))
+        return HttpResponse(template.render(context, request, temp))
   
 
 #Creates a microsoft Excel sheet that contains all the selected questions(user can now select individual questions or all questions) from the database
@@ -67,8 +68,12 @@ class questionPageView(generic.ListView):
 # Precondition - none
 # Parameter - none
 # Postcondition - Questions/IDs get exported to excel file named filename
+    #Fills out the header with column names for each attribute
+
+   
+       
 def export_xcl(request):
-    #Creates Excel workbook
+     #Creates Excel workbook
     response = HttpResponse(content_type = "application/ms-excel")
     response['Content-Disposition'] = 'attachment; filename=filename.xls'
     file = xlwt.Workbook(encoding="utf-8")
@@ -76,22 +81,40 @@ def export_xcl(request):
     filesheet = file.add_sheet("Questions")
     row_number = 0
     #Fills out the header with column names for each attribute
-    columns = ['ID','Question' , 'Correct Answer', 'Distractors', 'Hint', 'Tags']
+    columns = ['ID', 'Question' , 'Type', 'Hint', 'Tags']
     for col_num in range(len(columns)):
         filesheet.write(row_number, col_num, columns[col_num])
-    # filesheet.write(2,1,request.method)
+
     if request.method == 'POST': 
-        # filesheet.write(2,2,'hi')  
         selectedQues = request.POST.getlist('selectedQues')
-        # filesheet.write(2,3,selectedQues) 
-        #temp = fakeMultipleChoiceQuestion.objects.values_list('id','root', 'correct_answer', 'distractors', 'hint', 'tags')
-        temp = fakeMultipleChoiceQuestion.objects.all().filter(id__in=selectedQues).values_list('id','root', 'correct_answer', 'distractors', 'hint', 'tags')
+        # temp = .values_list('id','stem', 'type', 'explain', 'tag')
         #Fills in the rows (each row is one question, and each column is the attribute)
-        for row in temp:
+        for row in Question.objects.all().filter(id__in=selectedQues):
             row_number += 1
+            temp = ''
+            tempTwo = ''
             col_num = 0
-            for col_num in range(len(row)):
-                filesheet.write(row_number, col_num, str(row[col_num]))
+            #puts all the tags into one string
+            for k in row.tag.all():
+                    tempTwo = tempTwo + str(k.tag) + ' '
+            #puts each attribute for each question in corresponding cell
+            for col_num in range(len(columns)):
+                if col_num == 0:
+                    filesheet.write(row_number, col_num, row.id)
+                elif col_num == 1:
+                    filesheet.write(row_number, col_num, row.stem)
+                elif col_num == 2:
+                    if row.type == 0:
+                        filesheet.write(row_number, col_num, 'MC')
+                    elif row.type == 1:
+                        filesheet.write(row_number, col_num, 'PMC')
+                    elif row.type == 2:
+                        filesheet.write(row_number, col_num, 'PP')
+                elif col_num == 3:
+                    filesheet.write(row_number, col_num, row.explain)
+                elif col_num == 4:
+                    filesheet.write(row_number, col_num, tempTwo)
+                
     file.save(response)
     #Returns file for the response
     return response
@@ -110,19 +133,24 @@ def importing(request):
 # Parameter - root(question), correct_answer, distractors, hint, tags (all in the excel sheet)
 # Postcondition - Questions/IDs now exists in the database with the correct fields
 def import_xcl(request):
-    question_resource = fakeMultipleChoiceQuestionResource()
+    question_resource = Question()
     dataset = tablib.Dataset()
     new_questions = request.FILES['my_file']
     imported_data = dataset.load(new_questions.read(), format = 'xls')
     for data in imported_data:
-        value = fakeMultipleChoiceQuestion(
-            data[0], # fake id
-            data[1], # root
-            data[2], # answer
-            data[3], # distractors
-            data[4], # hint
-            data[5],# tags
+        temp = []
+        for tag in data[4].split('|'):
+            h = Tag(tag = tag)
+            h.save()
+            temp.append(h)
+        value = Question(
+            data[0],
+            data[1], # stem
+            data[2], # type
+            data[3], # explain
         )
+        value.save()
+        value.tag.add(*temp)
         value.save()
     return HttpResponseRedirect(reverse('questionPage'))
     
@@ -143,18 +171,31 @@ def add(request):
 # Parameter - root(question), correct_answer, distractors, hint, tags
 # Postcondition - Question/ID now exists in the database with the correct fields
 def addrecord(request):
-    x = request.POST['root']
-    y = request.POST['correct_answer']
-    z = request.POST['distractors']
-    q = request.POST['hint']
-    s = request.POST['tags']
-    ques = fakeMultipleChoiceQuestion(root=x, correct_answer=y, distractors=z, hint=q, tags=s)
+    x = request.POST['stem']
+    y = request.POST['type']
+    z = request.POST['explain']
+    q = request.POST['tag']
+    ques = Question(stem=x, type=y, explain=z)
     if 'Submit' in request.POST:
+        ques.save()
+        temp = []
+        for k in q.split('|'):
+            h = Tag(tag = k)
+            h.save()
+            temp.append(h)
+        ques.tag.add(*temp)
         ques.save()
         return HttpResponseRedirect(reverse('questionPage'))
     elif 'Cancel' in request.POST:
         return HttpResponseRedirect(reverse('questionPage'))
     else:
+        ques.save()
+        temp = []
+        for k in q.split('|'):
+            h = Tag(tag = k)
+            h.save()
+            temp.append(h)
+        ques.tag.add(*temp)
         ques.save()
         return HttpResponseRedirect(reverse('add'))
     
@@ -164,7 +205,7 @@ def addrecord(request):
 # Parameter - Must be given question id to give
 # Postcondition - Question/ID no longer exist/is not being used anymore
 def delete(request, id):
-    ques = fakeMultipleChoiceQuestion.objects.get(id=id)
+    ques = Question.objects.get(id=id)
     ques.delete()
     return HttpResponseRedirect(reverse('questionPage'))
 
@@ -174,7 +215,7 @@ def delete(request, id):
 # Parameter - Must be given question id to give
 # Postcondition - Question is now updated
 def edit(request, id):
-    question = fakeMultipleChoiceQuestion.objects.get(id=id)
+    question = Question.objects.get(id=id)
     template = loader.get_template('edit_question.html')
     form = questionForm(request.POST or None, instance=question)
     if 'Update' in request.POST:
