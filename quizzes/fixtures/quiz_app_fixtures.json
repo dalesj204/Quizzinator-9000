@@ -1,0 +1,81 @@
+[
+  {
+    "model": "quizzes.Grade",
+    "pk": "1",
+    "fields": {
+      "name": "Grade 1",
+      "grade": "90"
+    }
+  },
+  {
+    "model": "quizzes.Grade",
+    "pk": "2",
+    "fields": {
+      "name": "Grade 2",
+      "grade": "90"
+    }
+  },
+  {
+    "model": "quizzes.Class",
+    "pk": "1",
+    "fields": {
+      "name": "Class 1234",
+      "gradebook": "1",
+      "quizzes": ""
+    }
+  },
+  {
+    "model": "quizzes.Class",
+    "pk": "2",
+    "fields": {
+      "name": "Class 1235",
+      "gradebook": "2",
+      "quizzes": ""
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "1",
+    "fields": {
+      "tag": "CIS 201"
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "2",
+    "fields": {
+      "tag": "CIS 202"
+    }
+  },
+  {
+    "model": "quizzes.Question",
+    "pk": "1",
+    "fields": {
+      "stem": "Whats 2+2?",
+      "type": "0",
+      "explain": "It's EZ",
+      "tag": "1"
+    }
+  },
+  {
+    "model": "quizzes.Question",
+    "pk": "2",
+    "fields": {
+      "stem": "Whats 2+3?",
+      "type": "0",
+      "explain": "It's EZ",
+      "tag": "2"
+    }
+  }
+]

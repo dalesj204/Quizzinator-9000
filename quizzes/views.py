@@ -10,7 +10,7 @@ from django.contrib import messages
 from .forms import  questionForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type#, fakeMultipleChoiceQuestion
+from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz #, fakeMultipleChoiceQuestion
 import tablib
 from django.urls import reverse
 from tablib import Dataset
@@ -326,3 +326,9 @@ class QuestionDeleteView(View):
             print(e)
             res = {'status': 1, 'msg': 'Failed'}
         return JsonResponse(res)
+
+
+class QuizView(View):
+    def get(self, request):
+        ques_id = Question.objects.get
+
