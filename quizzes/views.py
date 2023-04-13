@@ -133,7 +133,6 @@ def importing(request):
 # Parameter - root(question), correct_answer, distractors, hint, tags (all in the excel sheet)
 # Postcondition - Questions/IDs now exists in the database with the correct fields
 def import_xcl(request):
-    question_resource = Question()
     dataset = tablib.Dataset()
     new_questions = request.FILES['my_file']
     imported_data = dataset.load(new_questions.read(), format = 'xls')
@@ -224,7 +223,6 @@ def edit(request, id):
             return redirect('questionPage')
     if 'Cancel' in request.POST:
         return HttpResponseRedirect(reverse('questionPage'))
-    
     return HttpResponse(template.render({'question':question, 'form':form}, request))
 def ClassDetailView(request, class_id):
     this_class = Class.objects.get(id=class_id)
