@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<center>
+  <h3>Login</h3>
+
+  <form method="POST">
+      {% csrf_token %}
+      <table>
+      <fieldset class="form-group">
+      {% comment %}{{ form.as_p }}{% endcomment %}{{ form.as_table }}
+      </fieldset>
+      {% comment %}
+      Email:
+          <input type="text" name="email" value="" id="email" size="30" />
+      <br />
+          Password:
+          <input type="password" name="password" value="" id="password" size="30" />
+          <br />
+          {% endcomment %}
+    </table>
+      <button type="submit">login</button>
+  </form>
+  {% comment %}<p>If you are not already registered, click <a href="{% url 'registration' %}">here</a></P>{% endcomment %}
+  <form action={% url 'registration' %} method="link">
+      <button type="submit">signup</button>
+  </form>
+</center>
+{% endblock %}
