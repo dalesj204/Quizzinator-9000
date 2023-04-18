@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Answer#, fakeMultipleChoiceQuestion
+from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Answer, Teacher, Student, User#, fakeMultipleChoiceQuestion
 
 # Register your models here.
 
@@ -11,6 +11,9 @@ admin.site.register(Stats)
 admin.site.register(Class)
 admin.site.register(Grade)
 admin.site.register(Options)
+admin.site.register(User)
+admin.site.register(Teacher)
+admin.site.register(Student)
 # admin.site.register(fakeMultipleChoiceQuestion)
 class QuizAdmin(admin.ModelAdmin):
     list_display = ('name', 'course')
