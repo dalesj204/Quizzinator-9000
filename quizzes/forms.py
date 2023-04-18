@@ -13,8 +13,15 @@ class questionForm(ModelForm):
     class Meta:
         model = Question
         fields = ('stem', 'type', 'explain', 'tag')
-  
-        
+
+ids = []
+# generates random unique id  
+def unique_id():
+    tempid = random.randint(111111111111, 999999999999)
+    while tempid in ids:
+        tempid = random.randint(111111111111, 999999999999)
+    ids.append(tempid)
+    return tempid
         
 class StudentSignUpForm(UserCreationForm):
     first_name = forms.CharField(label='First name', max_length=100)
@@ -22,17 +29,7 @@ class StudentSignUpForm(UserCreationForm):
     email = forms.EmailField(label='Email', required=True)
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput, max_length=100)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)
-        
-    # generates random unique id
-    # def unique_id():
-    #     tempid = random.randint(111111111111, 999999999999)
-    #     new = User.objects.filter(id=tempid)
-    #     while(new.count() > 0):
-    #         tempid = random.randint(111111111111, 999999999999)
-    #         new = User.objects.filter(id=tempid)
-    #     return tempid
-        
-    # tempid = unique_id()
+    tempid = unique_id()
     
 
     class Meta(UserCreationForm.Meta):
@@ -68,18 +65,8 @@ class TeacherSignUpForm(UserCreationForm):
     last_name = forms.CharField(label='Last name', max_length=100)
     email = forms.EmailField(label='Email', required=True)
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput, max_length=100)
-    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)
-        
-    # generates random unique id
-    # def unique_id():
-    #     tempid = random.randint(111111111111, 999999999999)
-    #     new = User.objects.filter(id=tempid)
-    #     while(new.count() > 0):
-    #         tempid = random.randint(111111111111, 999999999999)
-    #         new = User.objects.filter(id=tempid)
-    #     return tempid
-        
-    # tempid = unique_id()
+    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)    
+    tempid = unique_id()
 
     class Meta(UserCreationForm.Meta):
         model = User

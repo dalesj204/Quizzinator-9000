@@ -228,15 +228,6 @@ def edit(request, id):
         return HttpResponseRedirect(reverse('questionPage'))
     return HttpResponse(template.render({'question':question, 'form':form}, request))
 
-def ClassDetailView(request, class_id):
-    this_class = Class.objects.get(id=class_id)
-
-    context = {
-        'class': this_class,
-    }
-
-    return render(request, 'class_detail.html', context)
-
 
 
 # Create QuestionView class to display questions
