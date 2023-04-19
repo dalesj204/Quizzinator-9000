@@ -10,16 +10,15 @@ from django.contrib import messages
 from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz
-# , User, Student, Teacher
+from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
 import tablib
 from django.urls import reverse
 from tablib import Dataset
-# from .resources import fakeMultipleChoiceQuestionResource
 from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
+from django.db.models import Q
 # Create your views here.
 def index(request):
     
@@ -40,24 +39,46 @@ class ClassListView(generic.ListView):
     template_name = 'class_list.html'
 
 
-# def studentPageView(request, id):
-#         stud = Student.objects.all().filter(classes = id).values()
-#         template = loader.get_template('addStudent.html')
-#         context = {
-#             'student_list': stud,
-#         }
-#         return HttpResponse(template.render(context, request))
+def studentPageView(request, id):
+        list2 =[]
+        stud2 = Student.objects.all().filter(~Q(classes = id))
+        for s in stud2:
+            list2.append(User.objects.get(id=s.user.id))
+        stud = Student.objects.all().filter(classes = id)
+        list = []
+        for s in stud:
+            list.append(User.objects.get(id=s.user_id))
+        template = loader.get_template('addStudent.html')
+        context = {
+            'student_list': list,
+            'student_list_not_class': list2,
+            'class_id': id,
+        }
+        return HttpResponse(template.render(context, request))
 
-# def addStudentrecord(request, id):
-#     if request.method == 'POST': 
-#         selectedStudent = request.POST.getlist('selectedStudent')
-#         for studentID in selectedStudent:
-#             stud =Student.get(studentID)
-#             stud.classes.add(Class.get(id))
-#             stud.save()
+def addStudentrecord(request, id):
+    if request.method == 'POST': 
+        selectedStudent = request.POST.getlist('selectedStudent')
+        print(selectedStudent)
+        for studentID in selectedStudent:
+            stud = User.objects.get(id = studentID)
+            stud2 = Student.objects.get(user = stud)
+            stud2.classes.add(Class.objects.get(pk = id))
+            stud.save()
 
-    # #Returns file for the response
-    # return HttpResponseRedirect(reverse('addStudent'))
+    #Returns file for the response
+    return HttpResponseRedirect(reverse('addStudent', args = [id]))
+def deleteStudentrecord(request, id):
+    if request.method == 'POST': 
+        selectedStudent = request.POST.getlist('selectedStudent2')
+        print(selectedStudent)
+        for studentID in selectedStudent:
+            stud = User.objects.get(id = studentID)
+            stud2 = Student.objects.get(user = stud)
+            stud2.classes.remove(Class.objects.get(pk = id))
+            stud.save()
+    #Returns file for the response
+    return HttpResponseRedirect(reverse('addStudent', args = [id]))
 
 class ClassGradebookView(generic.ListView):
     model = Grade
@@ -70,20 +91,25 @@ class ClassStatsView(generic.ListView):
 
 # Just  displays the questions, has a spot to import new ones, enter new question manually, delete questions and export the questions.
 # Returns a list of all questions in database 
+@login_required(login_url='login')
 class questionPageView(generic.ListView):
-    model = Question
-    template_name = 'questionPage.html'
-    def get_context_data(self, **kwargs):
-        ctx = super(questionPageView, self).get_context_data(**kwargs)
-        ctx['ques'] = Question.objects.all().values()
-        ctx['opts'] =Options.objects.all().values()
-        ctx['ans'] = Answer.objects.all().values()
-        return ctx
-    def index(request):
-    
-        template = loader.get_template('questionPage.html')
-        temp = ["MC", "PMC", "PP"]
-        return HttpResponse(template.render(request, temp))
+    this_user = User.objects.get(id=request.user.id)
+    if this_user.is_teacher:
+        model = Question
+        template_name = 'questionPage.html'
+        def get_context_data(self, **kwargs):
+            ctx = super(questionPageView, self).get_context_data(**kwargs)
+            ctx['ques'] = Question.objects.all().values()
+            ctx['opts'] =Options.objects.all().values()
+            ctx['ans'] = Answer.objects.all().values()
+            return ctx
+        def index(request):
+        
+            template = loader.get_template('questionPage.html')
+            temp = ["MC", "PMC", "PP"]
+            return HttpResponse(template.render(request, temp))
+    else:
+        template_name = 'questionPage.html'
   
 
 #Creates a microsoft Excel sheet that contains all the selected questions(user can now select individual questions or all questions) from the database

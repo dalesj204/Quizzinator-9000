@@ -14,7 +14,6 @@ admin.site.register(Options)
 admin.site.register(User)
 admin.site.register(Teacher)
 admin.site.register(Student)
-# admin.site.register(fakeMultipleChoiceQuestion)
 class QuizAdmin(admin.ModelAdmin):
     list_display = ('name', 'course')
     fields = ['name', 'course']
