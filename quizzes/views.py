@@ -19,6 +19,9 @@ from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
+import datetime
+from datetime import datetime
+
 # Create your views here.
 def index(request):
     
@@ -450,3 +453,78 @@ def LogoutView(request):
     logout(request)
     messages.info(request, "Logged out successfully.")
     return redirect(index, permanent=True)
+
+
+# QuizCreateView - Give the user the ability to create
+# and instance of the quiz model.
+#
+# Author - Jacob Fielder
+class QuizCreateView(View):
+    def get(self, request):
+        # Render the quiz creation form
+        return render(request, 'quiz_create.html')
+
+    def post(self, request):
+        # Get the quiz details from the form
+        quiz_name = request.POST['quiz_name']
+        start_time_str = request.POST['start_time']
+        end_time_str = request.POST['end_time']
+
+        # Parse the datetime strings into datetime objects
+        start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+        end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
+
+        # Create a new quiz instance
+        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time)
+
+        # Convert the naive datetime objects to aware datetime objects
+        quiz.start_time = timezone.make_aware(quiz.start_time, timezone.get_current_timezone())
+        quiz.end_time = timezone.make_aware(quiz.end_time, timezone.get_current_timezone())
+
+        quiz.save() # Save the quiz to the database to generate an ID
+
+        # Retrieve questions based on stem
+        stem = request.POST['stem']
+        questions = Question.objects.filter(stem__icontains=stem)
+
+        # Render the quiz summary page with quiz details and selected questions
+        return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
+
+    def process_question_selection(self, request, quiz):
+        if request.method == 'POST':
+            # Get the selected questions from the form
+            selected_question_ids = request.POST.getlist('question_ids')
+
+            # Add selected questions to the quiz
+            for question_id in selected_question_ids:
+                question = Question.objects.get(id=question_id)
+                quiz.questions.add(question)
+
+            # Redirect to quiz summary page
+            return redirect('quiz_summary', quiz_id=quiz.id)
+
+
+
+# QuizSummaryView - Create a Summary of the Quiz after
+# creation.
+#
+# Author - Jacob Fielder
+class QuizSummaryView(View):
+    def get(self, request, quiz_id):
+        # Get the quiz instance from the database
+        quiz = Quiz.objects.get(id=quiz_id)
+
+        # Render the quiz summary page
+        return render(request, 'quiz_summary.html', {'quiz': quiz})
+
+#As the user types in the question, perform a search.
+def search_questions(request):
+    stem = request.GET.get('stem', '')
+    questions = Question.objects.filter(stem__icontains=stem)
+    data = []
+    for question in questions:
+        data.append({
+            'id': question.id,
+            'stem': question.stem  # Include the 'stem' field in the JSON response
+        })
+    return JsonResponse(data, safe=False)

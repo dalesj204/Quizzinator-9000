@@ -1,14 +1,16 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
-
 from quizzes.forms import questionForm
-from .models import Question, Tag, Option, Type, User, Student
+from .models import Quiz, Question, Tag, Option, Type, User, Student
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
 from xlwt import Workbook
 import openpyxl
 from django.core.files.uploadedfile import SimpleUploadedFile
+import json
+from datetime import datetime, timezone, timedelta
+
 class questionListViewTest(TestCase):
     @classmethod
     def setUpTestData(self):
@@ -344,3 +346,98 @@ class LoginTest(TestCase):
         response = self.client.get(reverse('student'))#, kwargs={'student_id': student.user.id}
         # No longer redirects because you are logged in as Richie Man
         self.assertEqual(response.status_code, 200)
+
+# QuizCreateViewTest - Tests is the if  QuizCreateView is working.
+#
+# Author - Jacob Fielder
+class QuizCreateViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored(' QuizCreateView', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('View: QuizCreateView is Tested!', 'green'))
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse('quiz_create')
+        start_time = datetime.now(timezone.utc).isoformat()
+        end_time = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
+        self.data = {
+            'quiz_name': 'Test Quiz',
+            'start_time': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M'),
+            'end_time': (datetime.now(timezone.utc) + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M'),
+            'stem': 'test',
+            'questions': ['test question'],
+        }
+
+    #Tests the get request.
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'quiz_create.html')
+
+    #Tests the post request.
+    def test_post(self):
+        response = self.client.post(self.url, data=self.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'quiz_summary.html')
+        self.assertTrue(Quiz.objects.filter(name='Test Quiz').exists())
+
+# QuizSummaryViewTest - Tests is the if  QuizSumamaryView is working.
+#
+# Author - Jacob Fielder
+class QuizSummaryViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored(' QuizSummaryView', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('View: QuizSummaryView is Tested!', 'green'))
+
+    #Create a Quiz
+    def setUp(self):
+        self.quiz = Quiz.objects.create(name='Test Quiz')
+        self.url = reverse('quiz_summary', args=[self.quiz.id])
+
+        #Check if it returns a 200 code and the template works.
+    def test_quiz_summary_view(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'quiz_summary.html')
+        self.assertEqual(response.context['quiz'], self.quiz)
+        
+# SearchQuestionsTest - Tests is the question search is functioning as intented.
+#
+# Author - Jacob Fielder
+class SearchQuestionsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored(' def search_questions(request):', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('DEF: def search_questions(request): is Tested!\n', 'green'))
+
+    def setUp(self):
+        self.client = Client()
+        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1")
+        self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2")
+
+    def test_search_questions_view(self):
+        #print(colored('UnitTest is Testing: SearchQuestionsView', 'red'))
+        url = reverse('search_questions')
+        response = self.client.get(url, {'stem': 'capital'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), [
+            {'id': self.question1.id, 'stem': self.question1.stem},
+            {'id': self.question2.id, 'stem': self.question2.stem},
+        ])
