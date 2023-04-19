@@ -1,11 +1,12 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
 from quizzes import views
 import xlwt
 from django.shortcuts import redirect
-from django.views.generic import CreateView,View, ListView, TemplateView
+from django.views.generic import CreateView,View, ListView, TemplateView, DetailView
 from django.contrib import messages
 from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
@@ -33,10 +34,55 @@ def index(request):
         'index.html', context=context,
     )
 
-class ClassListView(generic.ListView):
-    model = Class
+@login_required(login_url='login')
+def ClassListRedirectView(request):
+    this_user = User.objects.get(id=request.user.id)
+    if this_user.is_student:
+        return redirect(ClassListViewStudent, permanent=True)
+    if this_user.is_teacher:
+        return redirect(ClassListViewTeacher, permanent=True)
+
+
+@login_required(login_url='login')
+class ClassListViewStudent(generic.ListView):
+    
+    model = Student
+    #paginated_by = 10
+    template_name = 'class_list.html'    
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     this_user = User.objects.get(id=request.user.id)
+    #     student = Student.objects.get(user=this_user)
+    #     context['classes'] = student.object.all()
+    #     return context
+    
+
+@login_required(login_url='login')
+class ClassListViewTeacher(DetailView):        
+    model = Teacher
     paginated_by = 10
     template_name = 'class_list.html'
+
+    #def get_queryset(self):
+    #    return Student.objects.values('classes')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        this_user = User.objects.get(id=request.user.id)
+        teacher = Teacher.objects.get(user=this_user)
+        context['classes'] = teacher.object.all()
+        
+        return context
+
+#class ClassListView(generic.ListView):
+#    model = Class
+#    paginated_by = 10
+#    template_name = 'class_list.html'
+
+
+#@login_required(login_url='login')
+#class ClassDetailView(ListView, class_id):
 
 
 class ClassGradebookView(generic.ListView):
