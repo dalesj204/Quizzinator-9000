@@ -42,4 +42,11 @@ urlpatterns = [
     # path('addStudent/<int:id>', views.studentPageView, name='addStudent'),
     # path('addStudent/addStudentrecord/<int:id>', views.addStudentrecord, name='addStudentrecord'),
     path('questions/edit_question/<int:id>', views.edit, name='edit'),
+    path('login/', views.LoginView, name='login'),
+    path('logout/', views.LogoutView, name='logout'),
+    path('register/', views.RegistrationView, name='registration'),
+    path('register/student', views.StudentSignUpView, name='studentRegistration'),
+    path('register/teacher', views.TeacherSignUpView, name='teacherRegistration'),
+    path('teacher_profile/', views.TeacherHomeView, name='teacher'),
+    path('student_profile/', views.StudentHomeView, name='student'),
 ]

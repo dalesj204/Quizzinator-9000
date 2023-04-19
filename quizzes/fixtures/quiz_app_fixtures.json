@@ -34,14 +34,36 @@
     }
   },
   {
-    "model": "auth.user",
-    "pk": 1,
+    "model": "quizzes.User",
     "fields": {
+      "id": "999999999999",
       "username": "admin",
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Admin",
       "is_superuser": true,
       "is_staff": true,
       "is_active": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111111",
+      "username": "richieman@gmail.com",
+      "email": "richieman@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Richie",
+      "last_name": "Man",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111111"
     }
   },
   {

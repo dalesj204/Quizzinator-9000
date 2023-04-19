@@ -1,0 +1,9 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h3>Registration</h3>
+
+<p>Register as a: <a href="{% url 'studentRegistration' %}">student</a></P>
+<p>Register as a: <a href="{% url 'teacherRegistration' %}">teacher</a></P>
+
+{% endblock %}

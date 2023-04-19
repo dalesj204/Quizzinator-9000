@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from quizzes.forms import questionForm
-from .models import Question, Tag, Option, Type
+from .models import Question, Tag, Option, Type, User, Student
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -307,3 +307,40 @@ class importTest(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         print("/"+colored('\n View: Import is Tested!', 'green'))
+
+
+class LoginTest(TestCase):
+    @classmethod
+    def setUp(self):
+        
+        User.objects.create(
+            id="111222333444",
+            is_student=True,
+            is_teacher=False,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Student.objects.create(
+            user=this_user
+        )
+        student = Student.objects.all().first()
+
+    def test_create_user(self):
+        this_user = User.objects.all().first()
+        student = Student.objects.all().first()
+        response = self.client.get(reverse('student'))#, kwargs={'student_id': student.user.id}
+        # Redirects to the login page as intended - hence 302 status code
+        self.assertEqual(response.status_code, 302)
+
+    def test_login(self):
+        this_user = User.objects.all().first()
+        student = Student.objects.all().first()
+        self.client.login(username="test@test.com", password="SlappedHam123")
+        
+        response = self.client.get(reverse('student'))#, kwargs={'student_id': student.user.id}
+        # No longer redirects because you are logged in as Richie Man
+        self.assertEqual(response.status_code, 200)

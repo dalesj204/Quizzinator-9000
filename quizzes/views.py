@@ -7,7 +7,7 @@ import xlwt
 from django.shortcuts import redirect
 from django.views.generic import CreateView,View, ListView, TemplateView
 from django.contrib import messages
-from .forms import  questionForm
+from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz
@@ -16,6 +16,9 @@ import tablib
 from django.urls import reverse
 from tablib import Dataset
 # from .resources import fakeMultipleChoiceQuestionResource
+from .authentication import EmailAuthenticateBackend
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .models import *
 # Create your views here.
 def index(request):
@@ -305,14 +308,6 @@ def edit(request, id):
     if 'Cancel' in request.POST:
         return HttpResponseRedirect(reverse('questionPage'))
     return HttpResponse(template.render({'question':question, 'form':form}, request))
-def ClassDetailView(request, class_id):
-    this_class = Class.objects.get(id=class_id)
-
-    context = {
-        'class': this_class,
-    }
-
-    return render(request, 'class_detail.html', context)
 
 
 
@@ -411,3 +406,128 @@ class QuizView(View):
     def get(self, request):
         ques_id = Question.objects.get
 
+
+@login_required(login_url='login')
+def TeacherHomeView(request):
+    # checks for authentication
+    if request.user.is_authenticated:
+        this_user = User.objects.get(id=request.user.id)
+        
+        # checks to make sure the user is a student
+        if this_user.is_teacher:
+            teacher = Teacher.objects.get(user=this_user)
+            classes = teacher.classes.all()
+            name = this_user.__str__()
+
+            context = {
+                'teacher': teacher,
+                'classes': classes,
+                'name': name,
+                'teacher_id': request.user.id,
+            }
+
+            return render(request, 'teacher_home.html', context)
+        
+        # redirects user to student home if they are a teacher instead
+        elif this_user.is_student:
+            return redirect(StudentHomeView, student_id=request.user.id)
+            
+
+@login_required(login_url='login')
+def StudentHomeView(request):
+    # checks for authentication
+    if request.user.is_authenticated:
+        this_user = User.objects.get(id=request.user.id)
+        
+        # checks to make sure the user is a student
+        if this_user.is_student:
+            student = Student.objects.get(user=this_user)
+            classes = student.classes.all()
+            name = this_user.__str__()
+
+            context = {
+                'student': student,
+                'classes': classes,
+                'name': name,
+                'student_id': request.user.id,
+            }
+
+            return render(request, 'student_home.html', context)
+        
+        # redirects user to teacher home if they are a teacher instead
+        elif this_user.is_teacher:
+            return redirect(TeacherHomeView, teacher_id=request.user.id)
+        
+    
+            
+
+def ClassDetailView(request, class_id):
+    this_class = Class.objects.get(id=class_id)
+    instructor = Teacher.objects.filter(classes=this_class)
+    roster = Student.objects.filter(classes=this_class)
+
+    context = {
+        'class': this_class,
+        'instructor': instructor,
+        'roster': roster,
+    }
+
+    return render(request, 'class_detail.html', context)
+
+
+def StudentSignUpView(request):
+    if request.method == 'POST':
+        form = StudentSignUpForm(request.POST)
+        if form.is_valid():
+            form.email_clean()
+            form.clean_password()
+            EmailAuthenticateBackend.authenticate(form, request, username=form.email_clean(), password=form.clean_password())
+            user = form.save(commit=False)
+            user.set_password(request.POST["password1"])
+            user.save()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect(index, permanent=True)
+    else:
+        form = TeacherSignUpForm()
+    return render(request, 'student_registration.html', {'form' : form})
+
+    
+def TeacherSignUpView(request):
+    if request.method == 'POST':
+        form = TeacherSignUpForm(request.POST)
+        if form.is_valid():
+            form.email_clean()
+            form.clean_password()
+            EmailAuthenticateBackend.authenticate(form, request, username=form.email_clean(), password=form.clean_password())
+            user = form.save(commit=False)
+            user.set_password(request.POST["password1"])
+            user.save()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect(index, permanent=True)
+    else:
+        form = TeacherSignUpForm()
+    return render(request, 'teacher_registration.html', {'form' : form})
+    
+def RegistrationView(request):
+    return render(request, 'registration.html')
+
+# allows a user to log in
+def LoginView(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(index, permanent=True)
+        else:
+            messages.error(request, 'Invalid email or password.')
+    form = LoginForm()
+    return render(request, 'login.html', {'form' : form}) 
+
+
+#@login_required
+def LogoutView(request):
+    logout(request)
+    messages.info(request, "Logged out successfully.")
+    return redirect(index, permanent=True)
