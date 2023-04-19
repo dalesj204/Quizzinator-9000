@@ -10,7 +10,7 @@ from django.contrib import messages
 from .forms import  questionForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz #, fakeMultipleChoiceQuestion
+from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
 import tablib
 from django.urls import reverse
 from tablib import Dataset
@@ -36,6 +36,25 @@ class ClassListView(generic.ListView):
     template_name = 'class_list.html'
 
 
+def studentPageView(request, id):
+        stud = Student.objects.all().filter(classes = id).values()
+        template = loader.get_template('addStudent.html')
+        context = {
+            'student_list': stud,
+        }
+        return HttpResponse(template.render(context, request))
+
+def addStudentrecord(request, id):
+    if request.method == 'POST': 
+        selectedStudent = request.POST.getlist('selectedStudent')
+        for studentID in selectedStudent:
+            stud =Student.get(studentID)
+            stud.classes.add(Class.get(id))
+            stud.save()
+
+    #Returns file for the response
+    return HttpResponseRedirect(reverse('addStudent'))
+
 class ClassGradebookView(generic.ListView):
     model = Grade
     template_name = 'gradebook.html'
@@ -50,14 +69,17 @@ class ClassStatsView(generic.ListView):
 class questionPageView(generic.ListView):
     model = Question
     template_name = 'questionPage.html'
+    def get_context_data(self, **kwargs):
+        ctx = super(questionPageView, self).get_context_data(**kwargs)
+        ctx['ques'] = Question.objects.all().values()
+        ctx['opts'] =Options.objects.all().values()
+        ctx['ans'] = Answer.objects.all().values()
+        return ctx
     def index(request):
-        ques = Question.objects.all().values()
+    
         template = loader.get_template('questionPage.html')
         temp = ["MC", "PMC", "PP"]
-        context = {
-            'question_list': ques,
-        }
-        return HttpResponse(template.render(context, request, temp))
+        return HttpResponse(template.render(request, temp))
   
 
 #Creates a microsoft Excel sheet that contains all the selected questions(user can now select individual questions or all questions) from the database
@@ -81,7 +103,7 @@ def export_xcl(request):
     filesheet = file.add_sheet("Questions")
     row_number = 0
     #Fills out the header with column names for each attribute
-    columns = ['ID', 'Question' , 'Type', 'Hint', 'Tags']
+    columns = ['ID', 'Question' , 'Type','Answer', 'Options', 'Hint', 'Tags']
     for col_num in range(len(columns)):
         filesheet.write(row_number, col_num, columns[col_num])
 
@@ -95,8 +117,16 @@ def export_xcl(request):
             tempTwo = ''
             col_num = 0
             #puts all the tags into one string
+            leng = row.tag.all().count()
+            con = 1
             for k in row.tag.all():
-                    tempTwo = tempTwo + str(k.tag) + ' '
+                    if con != 1 and con < leng + 1:
+                        tempTwo = tempTwo + '|' + str(k.tag)
+                        con = con + 1
+                    else:
+                        tempTwo = tempTwo + str(k.tag) + ''
+                        con = con + 1
+            #resultStringTwo = '|'.join(tempTwo)
             #puts each attribute for each question in corresponding cell
             for col_num in range(len(columns)):
                 if col_num == 0:
@@ -104,15 +134,50 @@ def export_xcl(request):
                 elif col_num == 1:
                     filesheet.write(row_number, col_num, row.stem)
                 elif col_num == 2:
-                    if row.type == 0:
-                        filesheet.write(row_number, col_num, 'MC')
-                    elif row.type == 1:
-                        filesheet.write(row_number, col_num, 'PMC')
-                    elif row.type == 2:
-                        filesheet.write(row_number, col_num, 'PP')
+                    filesheet.write(row_number, col_num, row.type)
+                    # if row.type == 0:
+                    #     filesheet.write(row_number, col_num, 'MC')
+                    # elif row.type == 1:
+                    #     filesheet.write(row_number, col_num, 'PMC')
+                    # elif row.type == 2:
+                    #     filesheet.write(row_number, col_num, 'PP')
                 elif col_num == 3:
-                    filesheet.write(row_number, col_num, row.explain)
+                    tempthree = []
+                    tempf = 0
+                    for y in Answer.objects.all().filter(question_id=row.id):
+                        tempf = y.opt.id
+                    leng2 = Options.objects.all().filter(id=tempf).count()
+                    con2 = 1
+                    for x in Options.objects.all().filter(id=tempf):
+                        if con2 != 1 and con2 < leng2 + 1:
+
+                            tempthree.append('|')
+                            tempthree.append(x.content)
+                            con2 = con2 + 1
+                        else:
+                            tempthree.append(x.content)
+                            con2 = con2 + 1
+                    filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 4:
+                    tempthree = []
+                    tempf = 0
+                    for y in Answer.objects.all().filter(question_id=row.id):
+                        tempf = y.opt.id
+                    leng2 = Options.objects.all().filter(question_id=row.id).count()
+                    con2 = 1
+                    for x in Options.objects.all().filter(question_id=row.id):
+                        if x.id != tempf:
+                            if con2 != 1 and con2 < leng2 + 1:
+                                tempthree.append('|')
+                                tempthree.append(x.content)
+                                con2 = con2 + 1
+                            else:
+                                tempthree.append(x.content)
+                                con2 = con2 + 1
+                    filesheet.write(row_number, col_num, tempthree)
+                elif col_num == 5:
+                    filesheet.write(row_number, col_num, row.explain)
+                elif col_num == 6:
                     filesheet.write(row_number, col_num, tempTwo)
                 
     file.save(response)
@@ -138,19 +203,34 @@ def import_xcl(request):
     imported_data = dataset.load(new_questions.read(), format = 'xls')
     for data in imported_data:
         temp = []
-        for tag in data[4].split('|'):
-            h = Tag(tag = tag)
-            h.save()
+        for tag in data[6].split('|'): # tag
+            if not Tag.objects.all().filter(tag=tag).exists():
+                h = Tag(tag = tag)
+                h.save()
+            else:
+                h= Tag.objects.get(tag=tag)
             temp.append(h)
+        
         value = Question(
-            data[0],
+            data[0], # id
             data[1], # stem
             data[2], # type
-            data[3], # explain
+            data[5], # explain
         )
         value.save()
         value.tag.add(*temp)
         value.save()
+        quesob = Question.objects.get(id = data[0])
+        if not Options.objects.all().filter(content=data[3], question=quesob).exists(): #answer
+            q = Options(content=data[3], question=quesob)
+            q.save()
+            j = Answer(opt=q, question=quesob)
+            j.save()
+
+        for op in data[4].split('|'):
+            if not Options.objects.all().filter(content=op, question=quesob).exists():
+                h = Options(content=op, question=quesob)
+                h.save()
     return HttpResponseRedirect(reverse('questionPage'))
     
 # go back to the blog detail page after comment has been posted

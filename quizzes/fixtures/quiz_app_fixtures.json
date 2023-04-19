@@ -75,7 +75,77 @@
       "stem": "Whats 2+3?",
       "type": "0",
       "explain": "It's EZ",
+      "tag": ["1", "2"]
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Question",
+    "pk": "3",
+    "fields": {
+      "stem": "new question",
+      "type": "0",
+      "explain": "It's EZ",
       "tag": "2"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "1",
+    "fields": {
+      "options": "1",
+      "content": "fake answer",
+      "question": "1"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "2",
+    "fields": {
+      "options": "2",
+      "content": "real answer",
+      "question": "1"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Answer",
+    "pk": "1",
+    "fields": {
+      "options": "2",
+      "opt": "2",
+      "question": "1"
+    }
+  } ,
+  {
+    "model": "quizzes.Options",
+    "pk": "3",
+    "fields": {
+      "options": "1",
+      "content": "fish",
+      "question": "2"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "4",
+    "fields": {
+      "options": "2",
+      "content": "cat",
+      "question": "2"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Answer",
+    "pk": "2",
+    "fields": {
+      "options": "2",
+      "opt": "4",
+      "question": "2"
     }
   }
 ]

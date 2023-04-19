@@ -2,6 +2,7 @@ from django.db import models
 from datetime import timedelta
 from django.utils import timezone
 from django.urls import reverse
+from django.contrib.auth.models import AbstractUser
 
 
 # Author - Shawn Cai
@@ -50,7 +51,7 @@ class Question(models.Model):
 # Create the 'Options' model
 # Author - Shawn Cai
 class Options(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options')
+    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
     content = models.CharField(max_length=256, verbose_name='content')
     question = models.ForeignKey('Question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
@@ -60,10 +61,14 @@ class Options(models.Model):
         unique_together = ('question', 'content')  # Define a unique constraint for the combination of 'question' and 'content' fields
         ordering = ['options']  # Define the default ordering for the model
 
+    def __str__(self):
+             return self.content
+
 # Create the 'Answer' model
 # Author - Shawn Cai
 class Answer(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options')
+    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
+    opt = models.ForeignKey('Options', on_delete=models.CASCADE)
     question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
     class Meta:
@@ -162,3 +167,65 @@ class Class(models.Model):
 
     def get_absolute_url(self):
         return reverse('class_detail', kwargs={'class_id': self.pk})
+
+
+# Base User Model
+# 
+# This model is used to differentiate between the different
+# levels of authorization between teachers and students
+class User(AbstractUser):
+    id = models.CharField("ID", max_length=12, primary_key=True)
+    is_student = models.BooleanField(default=False)
+    is_teacher = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100, unique=True)
+    
+    #returns the name of the user.
+    def __str__(self):
+        return str(self.first_name) + " " + str(self.last_name)
+
+
+# Student Model - Place Holder
+#
+#
+#This is a place holder for the student model to have the
+#profile page up and running. It is not complex as it only
+#contains two fields. As the project continues, I implore
+#you to edit this to the needs it program as it evolves.
+#
+# @return self.name - The student's name.
+class Student(models.Model):
+    #Fields.
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Student_User", default=None)
+
+    classes = models.ManyToManyField(Class)
+
+    #For referencing the model.
+    class Meta:
+        verbose_name = 'Student'
+        verbose_name_plural = 'Students'
+
+    def get_absolute_url(self):
+        return reverse('student', kwargs={'student_id': self.user.id})
+    
+    def __str__(self):
+        return self.user.id
+    
+
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Teacher_User", default=None)
+
+    classes = models.ManyToManyField(Class)
+    
+    #For referencing the model.
+    class Meta:
+        verbose_name = 'Teacher'
+        verbose_name_plural = 'Teachers'
+
+    
+    def get_absolute_url(self):
+        return reverse('teacher', kwargs={'teacher_id': self.user.id})
+    
+    def __str__(self):
+        return self.user.id

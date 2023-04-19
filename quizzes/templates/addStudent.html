@@ -1,0 +1,38 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<!-- Add additional CSS in static file -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+
+<h1>Student List</h1>
+    <table>
+      
+      <th class="text-left" style= "font-size :x-large">Student Name</th>
+      <th class="text-left" style= "font-size :x-large">Select to add class</th>
+      
+      {% for student in student_list %}
+    <tr>
+      <p> 
+        <td class="text-left"> {{student.user.__str__}} </td>
+        <form action="{% url ''  %}" method="post">
+          {%csrf_token%}
+          <td class="text-center"> <div class="form-check">
+          <input type="checkbox" value= "{{student.id}}" 
+                  id=student name="selectedStudent"></input>
+                </div>
+              </td>
+      </p>
+    </tr>
+
+    {% endfor %}         
+    </table>
+
+    <p></p>
+    <button type ="submit">Add Students</button>
+    
+   
+  </form>
+{% endblock %}
