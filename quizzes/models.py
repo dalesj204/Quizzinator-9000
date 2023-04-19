@@ -222,4 +222,4 @@ class Teacher(models.Model):
         return reverse('teacher', kwargs={'teacher_id': self.user.id})
     
     def __str__(self):
-        return self.user.id
+        return self.user.first_name + " " + self.user.last_name

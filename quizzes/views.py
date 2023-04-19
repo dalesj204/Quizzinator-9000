@@ -20,6 +20,7 @@ from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
+import datetime
 # Create your views here.
 def index(request):
     
@@ -39,41 +40,36 @@ def ClassListRedirectView(request):
     this_user = User.objects.get(id=request.user.id)
     if this_user.is_student:
         return redirect(ClassListViewStudent, permanent=True)
-    if this_user.is_teacher:
-        return redirect(ClassListViewTeacher, permanent=True)
+    # if this_user.is_teacher:
+    #     return redirect(ClassListViewTeacher, permanent=True)
 
 
 @login_required(login_url='login')
-class ClassListViewStudent(generic.ListView):
+def ClassListViewStudent(request):
+    this_user = User.objects.get(id=request.user.id)
+    student = Student.objects.get(user=this_user)
+    class_list = student.classes.all()
+    time = datetime.datetime.now()
+    context = {
+        'user': student,
+        'classes': class_list,
+        'current_time': time,
+    }
+    return render(request, 'class_list.html', context=context)
     
-    model = Student
-    #paginated_by = 10
-    template_name = 'class_list.html'    
     
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     this_user = User.objects.get(id=request.user.id)
-    #     student = Student.objects.get(user=this_user)
-    #     context['classes'] = student.object.all()
-    #     return context
-    
-
 @login_required(login_url='login')
-class ClassListViewTeacher(DetailView):        
-    model = Teacher
-    paginated_by = 10
-    template_name = 'class_list.html'
-
-    #def get_queryset(self):
-    #    return Student.objects.values('classes')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        this_user = User.objects.get(id=request.user.id)
-        teacher = Teacher.objects.get(user=this_user)
-        context['classes'] = teacher.object.all()
-        
-        return context
+def ClassListViewTeacher(request):
+    this_user = User.objects.get(id=request.user.id)
+    teacher = Teacher.objects.get(user=this_user)
+    class_list = teacher.classes.all()
+    time = datetime.datetime.now()
+    context = {
+        'user': teacher,
+        'classes': class_list,
+        'current_time': time,
+    }
+    return render(request, 'class_list.html', context=context)
 
 #class ClassListView(generic.ListView):
 #    model = Class
