@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block content %}
+<html>
+<head>
+    <title>Quiz Summary</title>
+</head>
+<body>
+    <h1>Quiz Summary</h1>
+    <p>Quiz Name: {{ quiz.name }}</p>
+    <p>Start Time: {{ quiz.start_time }}</p>
+    <p>End Time: {{ quiz.end_time }}</p>
+    <h2>Selected Questions:</h2>
+    <ul>
+        {% for question in questions %}
+            <li>{{ question.stem }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+{% endblock %}
