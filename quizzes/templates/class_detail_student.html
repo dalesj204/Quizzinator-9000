@@ -2,18 +2,34 @@
 
 {% block content %}
 <h1>{{class.name}}</h1>
-<p><strong>Instructor:</strong> {{ instructor.all|join:", " }}</p>
+<p>
+    <strong>Instructor:</strong> 
 
-<p><strong>Students: </strong> {{ roster.all|join:", " }}</p>
-<a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
-<h2>Quizzes for class: </h2>
+    {{ instructor.all|join:", " }}
+</p>
+
+<h2>Active Quizzes: </h2>
+<ul>
+    {% for quiz in class.quizzes.all %}
+        {% comment %}{% if quiz.start_time %}{% endcomment %}
+            <li>
+            <p>
+                <a href="{{ quiz.get_absolute_url }}" > {{quiz.name}} </a>
+            </p>
+            </li>
+            <li>
+                {{quiz.start_time}}
+            </li>
+        {% comment %}{% endif %}{% endcomment %}
+      {% endfor %}
+</ul>
+
+<h2>Past Quizzes: </h2>
 <ul>
     {% for quiz in classes.quizzes.all %}
     <li>
-      <p> 
-        <a href="{% url 'quiz-detail' quiz.pk %}" > {{quiz.name}} </a>
-      </p>
+      <p>{{quiz.name}}: {{quiz.grade}}</p>
     </li>
     {% endfor %}
-    </ul>
+</ul>
 {% endblock %}

@@ -20,7 +20,7 @@ from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
-import datetime
+from django.utils import timezone
 # Create your views here.
 def index(request):
     
@@ -35,41 +35,81 @@ def index(request):
         'index.html', context=context,
     )
 
+
 @login_required(login_url='login')
-def ClassListRedirectView(request):
+def ClassListView(request):
     this_user = User.objects.get(id=request.user.id)
     if this_user.is_student:
-        return redirect(ClassListViewStudent, permanent=True)
-    # if this_user.is_teacher:
-    #     return redirect(ClassListViewTeacher, permanent=True)
+        student = Student.objects.get(user=this_user)
+        class_list = student.classes.all()
+        time = timezone.now()
+        context = {
+            'user': student,
+            'classes': class_list,
+            'current_time': time,
+        }
+        return render(request, 'class_list.html', context=context)
+    elif this_user.is_teacher:
+        teacher = Teacher.objects.get(user=this_user)
+        class_list = teacher.classes.all()
+        time = timezone.now()
+        context = {
+            'user': teacher,
+            'classes': class_list,
+            'current_time': time,
+        }
+        return render(request, 'class_list.html', context=context)
 
 
+# def ClassDetailView(request, class_id):
+#     this_class = Class.objects.get(id=class_id)
+#     instructor = Teacher.objects.filter(classes=this_class)
+#     roster = Student.objects.filter(classes=this_class)
+
+#     context = {
+#         'class': this_class,
+#         'instructor': instructor,
+#         'roster': roster,
+#     }
+
+#     return render(request, 'class_detail.html', context)
+
+# @property
+# def PastStartTime(self):
+#     return timezone.now() >= self.start_time
+
 @login_required(login_url='login')
-def ClassListViewStudent(request):
+def ClassDetailView(request, class_id):
     this_user = User.objects.get(id=request.user.id)
-    student = Student.objects.get(user=this_user)
-    class_list = student.classes.all()
-    time = datetime.datetime.now()
-    context = {
-        'user': student,
-        'classes': class_list,
-        'current_time': time,
-    }
-    return render(request, 'class_list.html', context=context)
+    if this_user.is_student:
+        student = Student.objects.get(user=this_user)
+        try:
+            this_class = student.classes.get(pk=class_id) 
+            time = timezone.now()
+            context = {
+                'user': student,
+                'class': this_class,
+                'current_time': time,
+            }
+            return render(request, 'class_detail_student.html', context=context)
+        except:
+            return render(request, 'not_in_class.html')
+    elif this_user.is_teacher:
+        teacher = Teacher.objects.get(user=this_user)
+        try:
+            this_class = teacher.classes.get(pk=class_id)
+            time = timezone.now()
+            context = {
+                'user': teacher,
+                'class': this_class,
+                'current_time': time,
+            }
+            return render(request, 'class_detail_teacher.html', context=context)
+        except:
+            return render(request, 'not_in_class.html')
     
     
-@login_required(login_url='login')
-def ClassListViewTeacher(request):
-    this_user = User.objects.get(id=request.user.id)
-    teacher = Teacher.objects.get(user=this_user)
-    class_list = teacher.classes.all()
-    time = datetime.datetime.now()
-    context = {
-        'user': teacher,
-        'classes': class_list,
-        'current_time': time,
-    }
-    return render(request, 'class_list.html', context=context)
+
 
 #class ClassListView(generic.ListView):
 #    model = Class
@@ -422,18 +462,7 @@ def StudentHomeView(request):
     
             
 
-def ClassDetailView(request, class_id):
-    this_class = Class.objects.get(id=class_id)
-    instructor = Teacher.objects.filter(classes=this_class)
-    roster = Student.objects.filter(classes=this_class)
 
-    context = {
-        'class': this_class,
-        'instructor': instructor,
-        'roster': roster,
-    }
-
-    return render(request, 'class_detail.html', context)
 
 
 def StudentSignUpView(request):
