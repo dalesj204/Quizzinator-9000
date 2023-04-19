@@ -10,7 +10,8 @@ from django.contrib import messages
 from .forms import  questionForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
+from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz
+# , User, Student, Teacher
 import tablib
 from django.urls import reverse
 from tablib import Dataset
@@ -36,24 +37,24 @@ class ClassListView(generic.ListView):
     template_name = 'class_list.html'
 
 
-def studentPageView(request, id):
-        stud = Student.objects.all().filter(classes = id).values()
-        template = loader.get_template('addStudent.html')
-        context = {
-            'student_list': stud,
-        }
-        return HttpResponse(template.render(context, request))
+# def studentPageView(request, id):
+#         stud = Student.objects.all().filter(classes = id).values()
+#         template = loader.get_template('addStudent.html')
+#         context = {
+#             'student_list': stud,
+#         }
+#         return HttpResponse(template.render(context, request))
 
-def addStudentrecord(request, id):
-    if request.method == 'POST': 
-        selectedStudent = request.POST.getlist('selectedStudent')
-        for studentID in selectedStudent:
-            stud =Student.get(studentID)
-            stud.classes.add(Class.get(id))
-            stud.save()
+# def addStudentrecord(request, id):
+#     if request.method == 'POST': 
+#         selectedStudent = request.POST.getlist('selectedStudent')
+#         for studentID in selectedStudent:
+#             stud =Student.get(studentID)
+#             stud.classes.add(Class.get(id))
+#             stud.save()
 
-    #Returns file for the response
-    return HttpResponseRedirect(reverse('addStudent'))
+    # #Returns file for the response
+    # return HttpResponseRedirect(reverse('addStudent'))
 
 class ClassGradebookView(generic.ListView):
     model = Grade

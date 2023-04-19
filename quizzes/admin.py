@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Answer, Teacher, Student, User#, fakeMultipleChoiceQuestion
+from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Answer
+# Teacher, Student, User#, fakeMultipleChoiceQuestion
 
 # Register your models here.
 
