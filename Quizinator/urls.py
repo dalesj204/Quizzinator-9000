@@ -23,6 +23,7 @@ from quizzes.views import *
 urlpatterns = [
     path('quizzes/<int:quiz_id>/summary/', QuizSummaryView.as_view(), name='quiz_summary'),
     path('quiz_create/', QuizCreateView.as_view(), name='quiz_create'),
+    path('quiz_list/', QuizListView.as_view(), name='quiz_list'),
     path('questions/search/', search_questions, name='search_questions'),
     path('Questions/', QuestionView.as_view(), name='question_list'),
     path('Question/add/', QuestionAddView.as_view(), name='add_question'),
