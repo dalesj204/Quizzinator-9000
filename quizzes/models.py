@@ -68,7 +68,7 @@ class Options(models.Model):
 # Author - Shawn Cai
 class Answer(models.Model):
     options = models.IntegerField(choices=Option, verbose_name='options', null=True)
-    opt = models.ForeignKey('Options', on_delete=models.CASCADE, default=1) #we dont want to default
+    opt = models.ForeignKey('Options', on_delete=models.CASCADE, default=1) #we dont want to default, added association to list out the question page, import/export correctly
     question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
     class Meta:

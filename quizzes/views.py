@@ -38,7 +38,10 @@ class ClassListView(generic.ListView):
     paginated_by = 10
     template_name = 'class_list.html'
 
-
+#Lists out all the students currently in the class and all of the other students in the databes into two tables
+#precondition - n/a
+#postcondition - you add or remove students from class
+#parameter - class id, list of students associated and not associated with class
 def studentPageView(request, id):
         list2 =[]
         stud2 = Student.objects.all().filter(~Q(classes = id))
@@ -56,6 +59,10 @@ def studentPageView(request, id):
         }
         return HttpResponse(template.render(context, request))
 
+#This allows the teacher to select student in the database to be added to the class
+#precondition - student must not already be in the class
+#postcondition - student is now added to the class
+#parameter - class id, list of students to be added to the class
 def addStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent')
@@ -68,6 +75,11 @@ def addStudentrecord(request, id):
 
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
+
+#this allows the teacher to remove a student from a class
+#precondition - student must be already be in the class
+#postcondition - student is now removed from the class
+#parameter - class id, list of students to be removed from the class
 def deleteStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent2')
@@ -91,39 +103,31 @@ class ClassStatsView(generic.ListView):
 
 # Just  displays the questions, has a spot to import new ones, enter new question manually, delete questions and export the questions.
 # Returns a list of all questions in database 
-@login_required(login_url='login')
+#precondition - must be a teacher to view page
+#parameter - list of question objects
+#post condition - lists out all the questions with ability to add, delete, edit questions from database
 class questionPageView(generic.ListView):
-    this_user = User.objects.get(id=request.user.id)
-    if this_user.is_teacher:
         model = Question
         template_name = 'questionPage.html'
         def get_context_data(self, **kwargs):
             ctx = super(questionPageView, self).get_context_data(**kwargs)
-            ctx['ques'] = Question.objects.all().values()
+            ctx['ques'] = Question.objects.all()
             ctx['opts'] =Options.objects.all().values()
             ctx['ans'] = Answer.objects.all().values()
             return ctx
         def index(request):
-        
             template = loader.get_template('questionPage.html')
             temp = ["MC", "PMC", "PP"]
             return HttpResponse(template.render(request, temp))
-    else:
-        template_name = 'questionPage.html'
+
   
 
 #Creates a microsoft Excel sheet that contains all the selected questions(user can now select individual questions or all questions) from the database
 #and their attributes including the question, correct answer, distractors, hint, and tags
-#this is connected to our fake multiple choice question which we modeled after the MC question that was current at the time
-#So that we didn't mess with the other team members model while they were updating it this sprint
-#also only did MC because the other models did not exist yet.
 # Precondition - none
 # Parameter - none
-# Postcondition - Questions/IDs get exported to excel file named filename
+# Postcondition - Questions/IDs and options/answers get exported to excel file named filename
     #Fills out the header with column names for each attribute
-
-   
-       
 def export_xcl(request):
      #Creates Excel workbook
     response = HttpResponse(content_type = "application/ms-excel")
@@ -219,14 +223,11 @@ def importing(request):
     return HttpResponse(template.render({}, request))
 
 #takes a microsoft Excel sheet that contains  questions that will go into the database
-#and their attributes including the question, correct answer, distractors, hint, and tags
-#this is connected to our fake multiple choice question which we modeled after the MC question that was current at the time
-#So that we didn't mess with the other team members model while they were updating it this sprint
-#also only did MC because the other models did not exist yet.
+#and their attributes including the question, correct answer, distractors,answer, option hint, and tags
 # Warning - if you use an ID already in the question bank you will overwrite the question
 # Precondition - must be given an excel sheet, no other files
 # Parameter - root(question), correct_answer, distractors, hint, tags (all in the excel sheet)
-# Postcondition - Questions/IDs now exists in the database with the correct fields
+# Postcondition - Questions/IDs and options/answers now exists in the database with the correct fields
 def import_xcl(request):
     dataset = tablib.Dataset()
     new_questions = request.FILES['my_file']

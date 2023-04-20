@@ -61,9 +61,77 @@
     }
   },
   {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111112",
+      "username": "rosiewoman@gmail.com",
+      "email": "rosiewoman@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Rosie",
+      "last_name": "Woman",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111113",
+      "username": "hailey@gmail.com",
+      "email": "hailey@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "hailey",
+      "last_name": "Nobin",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111114",
+      "username": "grabowski@gmail.com",
+      "email": "grabowski@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "L",
+      "last_name": "Grabowski",
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": false,
+      "is_teacher": true,
+      "is_student": false
+    }
+  },
+  {
     "model": "quizzes.Student",
     "fields": {
-      "user": "111111111111"
+      "user": "111111111111",
+      "classes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111112",
+      "classes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111113",
+      "classes": "2"
+    }
+  },
+  {
+    "model": "quizzes.Teacher",
+    "fields": {
+      "user": "111111111114",
+      "classes": ["1", "2"]
     }
   },
   {
@@ -81,12 +149,26 @@
     }
   },
   {
+    "model": "quizzes.Tag",
+    "pk": "3",
+    "fields": {
+      "tag": "CIS 300"
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "3",
+    "fields": {
+      "tag": "CIS 405"
+    }
+  },
+  {
     "model": "quizzes.Question",
     "pk": "1",
     "fields": {
-      "stem": "Whats 2+2?",
+      "stem": "What does // mean?",
       "type": "0",
-      "explain": "It's EZ",
+      "explain": "Type of Comment",
       "tag": "1"
     }
   },
@@ -94,9 +176,9 @@
     "model": "quizzes.Question",
     "pk": "2",
     "fields": {
-      "stem": "Whats 2+3?",
+      "stem": "What does public mean",
       "type": "0",
-      "explain": "It's EZ",
+      "explain": "Not private",
       "tag": ["1", "2"]
     }
   }
@@ -105,10 +187,10 @@
     "model": "quizzes.Question",
     "pk": "3",
     "fields": {
-      "stem": "new question",
+      "stem": "What does a CPU stand for?",
       "type": "0",
-      "explain": "It's EZ",
-      "tag": "2"
+      "explain": "Central ...",
+      "tag": "3"
     }
   }
   ,
@@ -117,7 +199,7 @@
     "pk": "1",
     "fields": {
       "options": "1",
-      "content": "fake answer",
+      "content": "Multi line comment",
       "question": "1"
     }
   }
@@ -127,7 +209,7 @@
     "pk": "2",
     "fields": {
       "options": "2",
-      "content": "real answer",
+      "content": "Single Line Comment",
       "question": "1"
     }
   }
@@ -146,7 +228,7 @@
     "pk": "3",
     "fields": {
       "options": "1",
-      "content": "fish",
+      "content": "not accessible by any other class",
       "question": "2"
     }
   }
@@ -156,7 +238,7 @@
     "pk": "4",
     "fields": {
       "options": "2",
-      "content": "cat",
+      "content": "accessible by any other class",
       "question": "2"
     }
   }
@@ -168,6 +250,45 @@
       "options": "2",
       "opt": "4",
       "question": "2"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "5",
+    "fields": {
+      "options": "1",
+      "content": "Central Processing Unit",
+      "question": "3"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "6",
+    "fields": {
+      "options": "2",
+      "content": "Field Programmable Gate Array",
+      "question": "3"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "7",
+    "fields": {
+      "options": "2",
+      "content": "Program Counter",
+      "question": "3"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Answer",
+    "pk": "3",
+    "fields": {
+      "options": "2",
+      "opt": "5",
+      "question": "3"
     }
   }
 ]

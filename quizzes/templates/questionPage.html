@@ -54,10 +54,12 @@
         {% endif %}
     {% endfor %} </td>
     <td class="text-left"> {{question.explain}} </td>
-    <td class="text-left">{% for x in question.tag.all %}
+    <td class="text-left">
+    {% for x in question.tag.all %}
       print("hi")
       {{x.tag}}
     {% endfor %}
+    {% comment %}{% endcomment %}
   </td>
     <td class="text-center"> <a href="{% url 'delete' question.id %}">delete</a> </td>
     <td class="text-center"> <a href="{% url 'edit' question.id %}">edit</a> </td>
