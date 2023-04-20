@@ -10,13 +10,6 @@
       <p> 
         <a href="{{ class.get_absolute_url }}" > {{class}} </a>
       </p>
-      {% for quiz in class.quizzes.all %}
-        <li>
-          <p>
-            <a href="{{ quiz.get_absolute_url }}" > {{quiz}} </a>
-          </p>
-        </li>
-      {% endfor %}
     </li>
   {% endfor %}
   </ul>

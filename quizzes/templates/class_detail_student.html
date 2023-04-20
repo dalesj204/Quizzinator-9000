@@ -11,7 +11,7 @@
 <h2>Active Quizzes: </h2>
 <ul>
     {% for quiz in class.quizzes.all %}
-        {% comment %}{% if quiz.start_time %}{% endcomment %}
+        {% if is_active[{{forloop.counter}}] %}
             <li>
             <p>
                 <a href="{{ quiz.get_absolute_url }}" > {{quiz.name}} </a>
@@ -20,7 +20,7 @@
             <li>
                 {{quiz.start_time}}
             </li>
-        {% comment %}{% endif %}{% endcomment %}
+        {% endif %}
       {% endfor %}
 </ul>
 

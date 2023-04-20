@@ -35,6 +35,9 @@ def index(request):
         'index.html', context=context,
     )
 
+def isActiveQuiz(now, start, end):
+    return start < now and now < end
+    
 
 @login_required(login_url='login')
 def ClassListView(request):
@@ -86,10 +89,14 @@ def ClassDetailView(request, class_id):
         try:
             this_class = student.classes.get(pk=class_id) 
             time = timezone.now()
+            active_quizzes = []
+            for q in this_class.quizzes:
+                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
             context = {
                 'user': student,
                 'class': this_class,
                 'current_time': time,
+                'is_active': active_quizzes,
             }
             return render(request, 'class_detail_student.html', context=context)
         except:
