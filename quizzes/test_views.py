@@ -9,7 +9,7 @@ from xlwt import Workbook
 import openpyxl
 from django.core.files.uploadedfile import SimpleUploadedFile
 import json
-from datetime import datetime, timezone, timedelta
+from django.utils import timezone
 
 class questionListViewTest(TestCase):
     @classmethod
@@ -364,16 +364,14 @@ class QuizCreateViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse('quiz_create')
-        start_time = datetime.now(timezone.utc).isoformat()
-        end_time = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
         self.data = {
             'quiz_name': 'Test Quiz',
-            'start_time': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M'),
-            'end_time': (datetime.now(timezone.utc) + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M'),
+            'start_time': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
+            'end_time': (timezone.localtime() + timezone.timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
             'stem': 'test',
             'questions': ['test question'],
         }
-
+        
     #Tests the get request.
     def test_get(self):
         response = self.client.get(self.url)
@@ -387,7 +385,7 @@ class QuizCreateViewTest(TestCase):
         self.assertTemplateUsed(response, 'quiz_summary.html')
         self.assertTrue(Quiz.objects.filter(name='Test Quiz').exists())
 
-# QuizSummaryViewTest - Tests is the if  QuizSumamaryView is working.
+# QuizSummaryViewTest - Tests is the if QuizSumamaryView is working.
 #
 # Author - Jacob Fielder
 class QuizSummaryViewTest(TestCase):
@@ -401,19 +399,19 @@ class QuizSummaryViewTest(TestCase):
         super().tearDownClass()
         print(colored('View: QuizSummaryView is Tested!', 'green'))
 
-    #Create a Quiz
+    # Create a Quiz
     def setUp(self):
         self.quiz = Quiz.objects.create(name='Test Quiz')
         self.url = reverse('quiz_summary', args=[self.quiz.id])
 
-        #Check if it returns a 200 code and the template works.
+    # Check if it returns a 200 code and the template works.
     def test_quiz_summary_view(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_summary.html')
         self.assertEqual(response.context['quiz'], self.quiz)
         
-# SearchQuestionsTest - Tests is the question search is functioning as intented.
+# SearchQuestionsTest - Tests if the question search is functioning as intended.
 #
 # Author - Jacob Fielder
 class SearchQuestionsTest(TestCase):
@@ -432,12 +430,56 @@ class SearchQuestionsTest(TestCase):
         self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1")
         self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2")
 
+    #test the search.
     def test_search_questions_view(self):
-        #print(colored('UnitTest is Testing: SearchQuestionsView', 'red'))
         url = reverse('search_questions')
         response = self.client.get(url, {'stem': 'capital'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content), [
+        expected_data = [
             {'id': self.question1.id, 'stem': self.question1.stem},
             {'id': self.question2.id, 'stem': self.question2.stem},
-        ])
+        ]
+        self.assertJSONEqual(response.content, expected_data)
+
+# QuizListView - Tests if the quiz is is listed after creation.
+#
+# Author - Jacob Fielder
+class QuizListViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored('QuizListView:', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('View: QuizListView is Tested!\n', 'green'))
+        
+    @classmethod
+    def setUpTestData(cls):
+        # Create some quizzes to test with
+        Quiz.objects.create(name='Quiz 1')
+        Quiz.objects.create(name='Quiz 2')
+        Quiz.objects.create(name='Quiz 3')
+
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse('quiz_list')
+
+    #Test the get request.
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'quiz_list.html')
+        expected_quizzes = set(Quiz.objects.all())
+        response_quizzes = set(response.context['quizzes'])
+        self.assertSetEqual(expected_quizzes, response_quizzes)
+
+    #Test the post request.
+    def test_post(self):
+        response = self.client.post(self.url, {'query': '1'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'quiz_list.html')
+        self.assertQuerysetEqual(response.context['quizzes'], Quiz.objects.filter(name__icontains='1'))
+

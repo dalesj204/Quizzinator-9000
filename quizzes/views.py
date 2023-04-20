@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 import datetime
 from datetime import datetime
+
 
 # Create your views here.
 def index(request):
@@ -482,10 +483,10 @@ class QuizCreateView(View):
         quiz.end_time = timezone.make_aware(quiz.end_time, timezone.get_current_timezone())
 
         quiz.save() # Save the quiz to the database to generate an ID
+        self.process_question_selection(request, quiz)
 
-        # Retrieve questions based on stem
-        stem = request.POST['stem']
-        questions = Question.objects.filter(stem__icontains=stem)
+        # Retrieve the questions that were added to the quiz
+        questions = quiz.questions.all()
 
         # Render the quiz summary page with quiz details and selected questions
         return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
@@ -493,17 +494,31 @@ class QuizCreateView(View):
     def process_question_selection(self, request, quiz):
         if request.method == 'POST':
             # Get the selected questions from the form
-            selected_question_ids = request.POST.getlist('question_ids')
+            selected_question_ids = request.POST.getlist('question_ids[]')
 
             # Add selected questions to the quiz
             for question_id in selected_question_ids:
                 question = Question.objects.get(id=question_id)
                 quiz.questions.add(question)
 
-            # Redirect to quiz summary page
-            return redirect('quiz_summary', quiz_id=quiz.id)
+# QuizList - Displays all quizzes in the database
+#
+# Author - Jacob Fielder
+class QuizListView(View):
+    def get(self, request):
+        # Retrieve all quizzes from the database
+        quizzes = Quiz.objects.all()
 
+        # Render the quiz list page with quizzes
+        return render(request, 'quiz_list.html', {'quizzes': quizzes})
 
+    def post(self, request):
+        # Retrieve quizzes based on search query
+        query = request.POST['query']
+        quizzes = Quiz.objects.filter(name__icontains=query)
+
+        # Render the quiz list page with filtered quizzes
+        return render(request, 'quiz_list.html', {'quizzes': quizzes})
 
 # QuizSummaryView - Create a Summary of the Quiz after
 # creation.
@@ -512,10 +527,13 @@ class QuizCreateView(View):
 class QuizSummaryView(View):
     def get(self, request, quiz_id):
         # Get the quiz instance from the database
-        quiz = Quiz.objects.get(id=quiz_id)
+        quiz = Quiz.objects.prefetch_related('questions').get(id=quiz_id)
 
-        # Render the quiz summary page
-        return render(request, 'quiz_summary.html', {'quiz': quiz})
+        # Retrieve the questions that were added to the quiz
+        questions = quiz.questions.all()
+
+        # Render the quiz summary page with quiz details and selected questions
+        return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
 
 #As the user types in the question, perform a search.
 def search_questions(request):

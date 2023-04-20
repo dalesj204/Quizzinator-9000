@@ -11,9 +11,9 @@
     <p>Quiz Name: {{ quiz.name }}</p>
     <p>Start Time: {{ quiz.start_time }}</p>
     <p>End Time: {{ quiz.end_time }}</p>
-    <h2>Selected Questions:</h2>
+    <h2>Questions:</h2>
     <ul>
-        {% for question in questions %}
+        {% for question in quiz.questions.all %}
             <li>{{ question.stem }}</li>
         {% endfor %}
     </ul>
