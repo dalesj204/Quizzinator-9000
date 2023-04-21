@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>{{ name }}</h1>
+
+  <ol>
+    {% for ques in questions %}
+      <h3>{{ forloop.counter }}) {{ ques.stem }}</h3>
+      <ol>
+        {% for opt in ques.order %}
+        <p>{{ opt }} {% if opt.isCorrect %}I'm the correct answer!{% endif %}</p>
+        {% endfor %}
+      </ol>
+    {% endfor %}
+  </ol>
+
+{% endblock %}

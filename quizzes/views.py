@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 import datetime
 from datetime import datetime
+import random
 
 
 # Create your views here.
@@ -546,3 +547,26 @@ def search_questions(request):
             'stem': question.stem  # Include the 'stem' field in the JSON response
         })
     return JsonResponse(data, safe=False)
+
+def randomizeAnswers(answers):
+    new_array = [None for a in answers]
+    for a in answers:
+        temp = random.randint(0, len(answers) - 1)
+        while not new_array[temp] == None:
+            temp = random.randint(0, len(answers) - 1)
+        new_array[temp] = a
+    return new_array
+
+
+def TakeQuizView(request, quiz_id):
+    this_quiz = Quiz.objects.get(id=quiz_id)
+    name = this_quiz.name
+    questions = this_quiz.questions.all()
+    for q in questions:
+        q.order = (randomizeAnswers(q.options.all()))
+
+    context = {
+        'name': name,
+        'questions': questions,
+    }
+    return render(request, 'take_quiz.html', context=context)
