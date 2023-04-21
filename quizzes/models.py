@@ -47,6 +47,9 @@ class Question(models.Model):
     class Meta:
         db_table = 'questions'  # Define the database table name
         verbose_name = 'Question'  # Define the verbose name for the model
+    
+    def __str__(self):
+        return self.stem #So i can grab the Question Stem.
 
 # Create the 'Options' model
 # Author - Shawn Cai
@@ -89,6 +92,10 @@ class Quiz(models.Model):
     class Meta:
         db_table = 'quizzes'  # Define the database table name
         verbose_name = 'Quiz'  # Define the verbose name for the model
+
+    def __str__(self):
+        return self.name #So I can grab the Quiz Name
+    
 # The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
 # while the questions/question bank reamins unchanged by us so that the others can finish
 # Do not touch

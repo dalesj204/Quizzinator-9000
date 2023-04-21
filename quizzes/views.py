@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
@@ -18,6 +18,8 @@ from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
+import datetime
+from datetime import datetime
 from django.db.models import Q
 # Create your views here.
 def index(request):
@@ -556,3 +558,95 @@ def LogoutView(request):
     logout(request)
     messages.info(request, "Logged out successfully.")
     return redirect(index, permanent=True)
+
+
+# QuizCreateView - Give the user the ability to create
+# and instance of the quiz model.
+#
+# Author - Jacob Fielder
+class QuizCreateView(View):
+    def get(self, request):
+        # Render the quiz creation form
+        return render(request, 'quiz_create.html')
+
+    def post(self, request):
+        # Get the quiz details from the form
+        quiz_name = request.POST['quiz_name']
+        start_time_str = request.POST['start_time']
+        end_time_str = request.POST['end_time']
+
+        # Parse the datetime strings into datetime objects
+        start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+        end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
+
+        # Create a new quiz instance
+        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time)
+
+        # Convert the naive datetime objects to aware datetime objects
+        quiz.start_time = timezone.make_aware(quiz.start_time, timezone.get_current_timezone())
+        quiz.end_time = timezone.make_aware(quiz.end_time, timezone.get_current_timezone())
+
+        quiz.save() # Save the quiz to the database to generate an ID
+        self.process_question_selection(request, quiz)
+
+        # Retrieve the questions that were added to the quiz
+        questions = quiz.questions.all()
+
+        # Render the quiz summary page with quiz details and selected questions
+        return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
+
+    def process_question_selection(self, request, quiz):
+        if request.method == 'POST':
+            # Get the selected questions from the form
+            selected_question_ids = request.POST.getlist('question_ids[]')
+
+            # Add selected questions to the quiz
+            for question_id in selected_question_ids:
+                question = Question.objects.get(id=question_id)
+                quiz.questions.add(question)
+
+# QuizList - Displays all quizzes in the database
+#
+# Author - Jacob Fielder
+class QuizListView(View):
+    def get(self, request):
+        # Retrieve all quizzes from the database
+        quizzes = Quiz.objects.all()
+
+        # Render the quiz list page with quizzes
+        return render(request, 'quiz_list.html', {'quizzes': quizzes})
+
+    def post(self, request):
+        # Retrieve quizzes based on search query
+        query = request.POST['query']
+        quizzes = Quiz.objects.filter(name__icontains=query)
+
+        # Render the quiz list page with filtered quizzes
+        return render(request, 'quiz_list.html', {'quizzes': quizzes})
+
+# QuizSummaryView - Create a Summary of the Quiz after
+# creation.
+#
+# Author - Jacob Fielder
+class QuizSummaryView(View):
+    def get(self, request, quiz_id):
+        # Get the quiz instance from the database
+        quiz = Quiz.objects.prefetch_related('questions').get(id=quiz_id)
+
+        # Retrieve the questions that were added to the quiz
+        questions = quiz.questions.all()
+
+        # Render the quiz summary page with quiz details and selected questions
+        return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
+
+#As the user types in the question, perform a search.
+def search_questions(request):
+    stem = request.GET.get('stem', '')
+    questions = Question.objects.filter(stem__icontains=stem)
+    data = []
+    for question in questions:
+        data.append({
+            'id': question.id,
+            'stem': question.stem  # Include the 'stem' field in the JSON response
+        })
+    return JsonResponse(data, safe=False)
