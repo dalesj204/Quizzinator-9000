@@ -66,7 +66,6 @@ def studentPageView(request, id):
 def addStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent')
-        print(selectedStudent)
         for studentID in selectedStudent:
             stud = User.objects.get(id = studentID)
             stud2 = Student.objects.get(user = stud)
@@ -83,7 +82,6 @@ def addStudentrecord(request, id):
 def deleteStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent2')
-        print(selectedStudent)
         for studentID in selectedStudent:
             stud = User.objects.get(id = studentID)
             stud2 = Student.objects.get(user = stud)
