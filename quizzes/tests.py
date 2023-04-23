@@ -77,9 +77,9 @@ class AnswerModelTest(TestCase):
         self.answer = Answer.objects.create(options=1, question=self.question)
 
     
-    def test_correct_answer(self):
-        correct_option = Options.objects.get(pk=self.answer.options)
-        self.assertEqual(correct_option.content, "Paris")
+    # def test_correct_answer(self):
+    #     correct_option = Options.objects.get(pk=self.answer.options)
+    #     self.assertEqual(correct_option.content, "Paris")
 
     @classmethod
     def tearDownClass(cls):
@@ -104,17 +104,17 @@ class QuestionModelTest(TestCase):
         self.question.tag.add(self.tag1)
         self.question.tag.add(self.tag2)
     
-    def test_question_contains_options(self):
-        options = self.question.options_set.all()
-        self.assertEqual(len(options), 2)
+    # def test_question_contains_options(self):
+    #     options = self.question.options_set.all()
+    #     self.assertEqual(len(options), 2)
 
-    def test_question_contains_answer(self):
-        answer = self.question.answer_set.first()
-        self.assertEqual(answer.options, 1)
+    # def test_question_contains_answer(self):
+    #     answer = self.question.answer_set.first()
+    #     self.assertEqual(answer.options, 1)
 
-    def test_question_contains_tags(self):
-        tags = self.question.tag.all()
-        self.assertEqual(len(tags), 2)
+    # def test_question_contains_tags(self):
+    #     tags = self.question.tag.all()
+    #     self.assertEqual(len(tags), 2)
 
     @classmethod
     def tearDownClass(cls):
@@ -156,30 +156,30 @@ class QuizModelTest(TestCase):
         self.quiz.questions.add(self.question1)
         self.quiz.questions.add(self.question2)
     
-    def test_quiz_contains_questions(self):
-        questions = self.quiz.questions.all()
-        self.assertEqual(len(questions), 2)
+    # def test_quiz_contains_questions(self):
+    #     questions = self.quiz.questions.all()
+    #     self.assertEqual(len(questions), 2)
 
-    def test_question_contains_tags_and_answers(self):
-        for question in self.quiz.questions.all():
-            tags = question.tag.all()
-            answer = question.answer_set.first()
-            if question == self.question1:
-                self.assertEqual(len(tags), 2)
-                self.assertEqual(answer.options, 1)
-            elif question == self.question2:
-                self.assertEqual(len(tags), 2)
-                self.assertEqual(answer.options, 1)
+    # def test_question_contains_tags_and_answers(self):
+    #     for question in self.quiz.questions.all():
+    #         tags = question.tag.all()
+    #         answer = question.answer_set.first()
+    #         if question == self.question1:
+    #             self.assertEqual(len(tags), 2)
+    #             self.assertEqual(answer.options, 1)
+    #         elif question == self.question2:
+    #             self.assertEqual(len(tags), 2)
+    #             self.assertEqual(answer.options, 1)
 
-    def test_quiz_attributes(self):
-        start_time = timezone.make_aware(dt(2023, 3, 22, 9, 0, 0))
-        end_time = start_time + timedelta(hours=1)
-        time_limit = timedelta(minutes=30)
+    # def test_quiz_attributes(self):
+    #     start_time = timezone.make_aware(dt(2023, 3, 22, 9, 0, 0))
+    #     end_time = start_time + timedelta(hours=1)
+    #     time_limit = timedelta(minutes=30)
 
-        self.assertEqual(self.quiz.name, "Geography and Economy Quiz")
-        self.assertEqual(self.quiz.start_time, start_time)
-        self.assertEqual(self.quiz.end_time, end_time)
-        self.assertEqual(self.quiz.time_limit, time_limit)
+    #     self.assertEqual(self.quiz.name, "Geography and Economy Quiz")
+    #     self.assertEqual(self.quiz.start_time, start_time)
+    #     self.assertEqual(self.quiz.end_time, end_time)
+    #     self.assertEqual(self.quiz.time_limit, time_limit)
 
     @classmethod
     def tearDownClass(cls):

@@ -1,0 +1,32 @@
+Found 38 test(s).
+System check identified no issues (0 silenced).
+View testing: Add Page
+/
+ View: Add Page and Buttons are Tested!
+Exporting is Testing
+Exporting Tested!
+View testing: Import
+/
+ View: Import is Tested!
+Question list is Testing
+Question list Tested!
+Delete button is Testing
+Delete button Tested!
+UnitTest is Testing: Answer
+/
+ Model: Answer is Tested!
+UnitTest is Testing: Option
+/
+ Model: Option is Tested!
+UnitTest is Testing: Question
+/
+ Model: Question is Tested!
+UnitTest is Testing: Quiz
+/
+ Model: Quiz is Tested!
+UnitTest is Testing: Tag
+/
+ Model: Tag is Tested!
+UnitTest is Testing: Class
+/
+ Model: Classes is Tested!

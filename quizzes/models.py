@@ -54,7 +54,7 @@ class Question(models.Model):
 # Create the 'Options' model
 # Author - Shawn Cai
 class Options(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options')
+    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
     content = models.CharField(max_length=256, verbose_name='content')
     question = models.ForeignKey('Question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
@@ -64,10 +64,14 @@ class Options(models.Model):
         unique_together = ('question', 'content')  # Define a unique constraint for the combination of 'question' and 'content' fields
         ordering = ['options']  # Define the default ordering for the model
 
+    def __str__(self):
+             return self.content
+
 # Create the 'Answer' model
 # Author - Shawn Cai
 class Answer(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options')
+    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
+    opt = models.ForeignKey('Options', on_delete=models.CASCADE, default=1) #we dont want to default, added association to list out the question page, import/export correctly
     question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
 
     class Meta:

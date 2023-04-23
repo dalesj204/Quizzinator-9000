@@ -5,6 +5,7 @@
 <p><strong>Instructor:</strong> {{ instructor.all|join:", " }}</p>
 
 <p><strong>Students: </strong> {{ roster.all|join:", " }}</p>
+<a href="{% url 'addStudent' class.pk %}" > Edit</a>
 <a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
 <h2>Quizzes for class: </h2>
 <ul>
