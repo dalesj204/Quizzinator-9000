@@ -8,54 +8,82 @@
 
 
 <h1>Questions</h1>
-    <table>
-      
-      <th class="text-left" style= "font-size :x-large">ID</th>
-      <th class="text-left" style= "font-size :x-large">Question</th>
-      <th class="text-left" style= "font-size :x-large">Type</th>
-      <th class="text-left" style= "font-size :x-large">Hint</th>
-      <th class="text-left" style= "font-size :x-large">Tags</th>
+<div class="row">
+  <div class="col-md">
+    <div class="card card body">
+      <table class="table">
+        <tr>
+          <th>ID</th>
+          <th>Question</th>
+          <th>Type</th>
+          <th>Answer</th>
+          <th>Options</th>
+          <th>Hint</th>
+          <th>Tags</th>
+          <th>Delete</th>
+          <th>Edit</th>
+          <th>Select</th>
+          <th><label><input type="checkbox" onclick="for(c in document.getElementsByName('selectedQues')) document.getElementsByName('selectedQues').item(c).checked = this.checked"> Select All For Export</label></th>
+        </tr>
 
-      <th class="text-left" style= "font-size :x-large">Delete</th>
-      <th class="text-left" style= "font-size :x-large">Edit</th>
-      <th class="text-left" style= "font-size :x-large">Select for Export</th>
-      <label><input type="checkbox" onclick="for(c in document.getElementsByName('selectedQues')) document.getElementsByName('selectedQues').item(c).checked = this.checked"> Select All For Export</label>
-   
-      {% for question in question_list %}
-    <tr>
-      <p> 
-        <td class="text-left"> {{question.ID}} </td>
-        <td class="text-left"> {{question.stem}} </td>
-        <td class="text-left"> {% if question.type == 0 %} MC 
-          {% elif question.type == 1 %} PMC 
-          {% elif question.type == 2 %} PP 
-        {% endif %}</td>
-        <td class="text-left"> {{question.explain}} </td>
-        <td class="text-left">{% for x in question.tag.all %}
-         {{x.tag}}
-        {% endfor %}
-      </td>
-        <td class="text-center"> <a href="{% url 'delete' question.pk %}">delete</a> </td>
-        <td class="text-center"> <a href="{% url 'edit' question.pk %}">edit</a> </td>
-        <form action="{% url 'export_xcl'  %}" method="post">
-          {%csrf_token%}
-          <td class="text-center"> <div class="form-check">
-          <input type="checkbox" value= "{{question.id}}" 
-                  id=question name="selectedQues"></input>
-                </div>
-              </td>
-      </p>
-    </tr>
+  {% for question in ques %}
+<tr>
+  <p> 
+    <td class="text-left"> {{question.id}} </td>
+    <td class="text-left"> {{question.stem}} </td>
+    <td class="text-left"> {% if question.type == 0 %} MC 
+      {% elif question.type == 1 %} PMC 
+      {% elif question.type == 2 %} PP 
+      {% endif %}</td>
+      <td class="text-left"> {% for answer in ans %}
+        {% if answer.question_id == question.id %}
+          {% for option in opts %}
+            {% if answer.opt_id == option.id %}
+               {{option.content}} 
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+    {% endfor %} </td>
+    <td class="text-left">  {% for option in opts %}
+        {% if option.question_id == question.id %}
+          {% for answer in ans %}
+              {% if answer.opt_id != option.id and answer.question_id == question.id %}
+                {{option.content}} 
+              {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %} </td>
+    <td class="text-left"> {{question.explain}} </td>
+    <td class="text-left">
+    {% for x in question.tag.all %}
+      {{x.tag}}
+    {% endfor %}
+    {% comment %}{% endcomment %}
+  </td>
+    <td class="text-center"> <a href="{% url 'delete' question.id %}">delete</a> </td>
+    <td class="text-center"> <a href="{% url 'edit' question.id %}">edit</a> </td>
+    <form action="{% url 'export_xcl'  %}" method="post">
+      {%csrf_token%}
+      <td class="text-center"> <div class="form-check">
+      <input type="checkbox" value= "{{question.id}}" 
+              id=question name="selectedQues"></input>
+            </div>
+          </td>
+  </p>
+</tr>
 
-    {% endfor %}         
-    </table>
+{% endfor %}
+</table>
+</div>
+</div>
+</div>
 
-    <p></p>
-    <button><a href="add/">Add Question</a></button>
-    <p></p>
-    <button><a href="{% url 'importing'  %}">Import</a></button>
-    <button type ="submit">Export</button>
-    
-   
-  </form>
+<p></p>
+<button><a href="add/">Add Question</a></button>
+<p></p>
+<button><a href="{% url 'importing'  %}">Import</a></button>
+<button type ="submit">Export</button>
+
+
+</form>
 {% endblock %}

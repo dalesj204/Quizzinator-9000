@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from quizzes.forms import questionForm
-from .models import Quiz, Question, Tag, Option, Type, User, Student
+from .models import Quiz, Question, Tag, Option, Type, User, Student, Options, Answer, Class, Grade
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -11,23 +11,88 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import json
 from django.utils import timezone
 
-class questionListViewTest(TestCase):
+class studentInClassTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Students in Class is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Students in Class is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
-        print("Question list is Testing")
-        print("Question list Tested!")
+        User.objects.create(id = '111111111111',is_student = True, is_teacher = False,first_name = 'Jasmine', last_name = 'James', email = 'jj@me.com')
+        studentOneUser = User.objects.get(id = '111111111111')
+        studentOneUser.set_password("SlappedHam123")
+        studentOneUser.save()
+        # User.objects.create(id = '111111111112',is_student = True, is_teacher = False,first_name = 'Belle', last_name = 'Brown', email = 'BelleBrown@me.com')
+        # studentTwoUser = User.objects.get(id = '111111111112')
+        # studentTwoUser.set_password("SlappedHam1234")
+        # studentTwoUser.save()
+        # User.objects.create(id = '111111111113',is_student = True, is_teacher = False,first_name = 'Snow', last_name = 'Smith', email = 'SS@me.com')
+        # studentThreeUser = User.objects.get(id = '111111111113')
+        # studentThreeUser.set_password("SlappedHam1235")
+        classer = Class(name = "CIS201", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
+        classer.save()
+        studentOne = Student.objects.create(user = studentOneUser)
+        studentOne.classes.add(classer)
+        studentOne.save()
+        # studentTwo = Student.objects.create(user = studentTwoUser,classes = classOne)
+        # studentTwo.save()
+
+    def test_num_students_class(self):
+        self.assertEqual(len(Student.objects.all().filter(classes=1)), 1)
+    
+    # def test_remove_student_class(self):
+    #     data = {'selectedStudent2': ['1']}
+    #     response = self.client.post('addStudent/deleteStudentrecord/1', data)
+    #     self.assertEqual(response.status_code, 200)
+class questionListViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('QuestionList is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: QuestionList is Tested!', 'green'))
+
+    @classmethod
+    def setUpTestData(self):
+        
         # Create 3 questions
         number_of_questions = 3
-
+        count = 1
         for question_id in range(number_of_questions):
-            self.ques =Question.objects.create(
+            ques =Question.objects.create(
                 stem=f'What is one plus one?',
                 type=0,
                 explain=f'It is odd',
             )
+            ques.save()
             tag1 = Tag.objects.create(tag =f'CIS201')
             tag2 = Tag.objects.create(tag =f'CIS202')
-            self.ques.tag.add(tag1, tag2)
+            ques.tag.add(tag1, tag2)
+            ques.save()
+            q = Question.objects.get(id = count)
+            op = Options.objects.create(
+                content = "fake answer",
+                question = q
+            )
+            op.save()
+            op2 = Options.objects.create(
+                content = "real answer",
+                question = q
+            )
+            op2.save()
+            ans = Answer.objects.create(
+                opt = op2,
+                question = q
+            )
+            ans.save()
+            count = count + 1
+    
             
 
     def test_question_page_view_url_exists_at_desired_location(self):
@@ -48,12 +113,50 @@ class questionListViewTest(TestCase):
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 3)
-        
-        
 
+    def test_question_content(self):
+        self.assertEqual(Question.objects.get(id = 1).stem, 'What is one plus one?')
+        self.assertEqual(Question.objects.get(id = 1).type, 0)
+        self.assertEqual(Question.objects.get(id = 1).explain, 'It is odd')
+    
+    @classmethod
+    def setUpClass(cls):
+        print(colored('OptionList is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: OptionList is Tested!', 'green'))
+    @classmethod
+    def setUpClass(cls):
+        print(colored('AnswerList is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: AnswerList is Tested!', 'green'))
+    def test_options_length(self):
+        self.assertEqual(len(Options.objects.all()), 6)
+    
+    def test_Answer_length(self):
+        self.assertEqual(len(Answer.objects.all()), 3)
+    
+    def test_options_content(self):
+        self.assertEqual(Options.objects.get(id = 1).content, 'fake answer')
+    
+    def test_Answer_content(self):
+         ans = Answer.objects.get(id = 1).opt
+         self.assertEqual(ans.content, 'real answer')
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Delete Question is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Delete Question is Tested!', 'green'))
     #Delete a question and test the length and if the id exists to see if it deletes
     def test_delete_button_view_url_accessible_by_name_and_deletion_works(self):
-        print("Delete button is Testing")
         ques = Question.objects.get(id=1)
         response = self.client.post(reverse('delete', args=(ques.id,)), follow=True)
         self.assertRedirects(response, reverse('questionPage'), status_code = 302)
@@ -61,13 +164,19 @@ class questionListViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 2)
         self.assertFalse(Question.objects.filter(pk=1).exists())
-        print("Delete button Tested!")
+       
 
 class editViewTest(TestCase):
+    # @classmethod
+    # def setUpClass(cls):
+    #     print(colored('Edit Question is Testing: ', 'blue'))
+    #     super().setUpClass()
+    # @classmethod
+    # def tearDownClass(cls):
+    #     super().tearDownClass()
+    #     print("/"+colored('\n Model: Edit Question is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
-        print("Edit question is Testing")
-        print("Edit question Tested!")
        # Create 1 question
         
         self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.")
@@ -96,9 +205,16 @@ class editViewTest(TestCase):
    
 class exportTest(TestCase):
     @classmethod
+    def setUpClass(cls):
+        print(colored('Exporting is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Exporting is Tested!', 'green'))
+    @classmethod
     def setUpTestData(self):
-        print("Exporting is Testing")
-        print("Exporting Tested!")
+
         self.ques =Question.objects.create(
             stem=f'What is one plus one?',
             type=0,
@@ -312,6 +428,14 @@ class importTest(TestCase):
 
 
 class LoginTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Login is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Login is Tested!', 'green'))
     @classmethod
     def setUp(self):
         
