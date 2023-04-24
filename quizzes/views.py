@@ -12,6 +12,8 @@ from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginFor
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz #, fakeMultipleChoiceQuestion
+from .decorators import user_is_teacher, user_is_student
+from django.utils.decorators import method_decorator
 import tablib
 from django.urls import reverse
 from tablib import Dataset
@@ -163,7 +165,6 @@ class questionPageView(generic.ListView):
     #Fills out the header with column names for each attribute
 
    
-       
 def export_xcl(request):
      #Creates Excel workbook
     response = HttpResponse(content_type = "application/ms-excel")
