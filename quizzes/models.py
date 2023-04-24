@@ -13,18 +13,6 @@ Type = (
     (2, 'PP')
 )
 
-# Author - Shawn Cai
-# Define the options for the 'Option' field of the 'Options' and 'Answer' models
-Option = (
-    (1, 'A'),
-    (2, 'B'),
-    (3, 'C'),
-    (4, 'D'),
-    (5, 'E'),
-    (6, 'F'),
-    (7, 'G'),
-    (8, 'H')
-)
 
 # Create the 'Tag' model
 class Tag(models.Model):
@@ -34,13 +22,13 @@ class Tag(models.Model):
         verbose_name = 'Tag'  # Define the verbose name for the model
     def tag_label_return(self, obj):
       return f"{obj.name}"
+    def __str__(self):
+        return self.tag
 
 # Create the 'Options' model
 # Author - Shawn Cai
 class Options(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options')
     content = models.CharField(max_length=256, verbose_name='content')
-    isCorrect = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'options'  # Define the database table name
@@ -56,7 +44,8 @@ class Question(models.Model):
     type = models.IntegerField(choices=Type, verbose_name='type')
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
     tag = models.ManyToManyField(Tag, blank=True)
-    options = models.ManyToManyField(Options)
+    options = models.ManyToManyField(Options, related_name="options")
+    correctOption = models.ForeignKey(Options, on_delete=models.CASCADE, related_name="correctOption", default=None, blank=True)
     order = []
     def get_type(self, ind):
         return f"{Type[ind]}"
@@ -64,6 +53,9 @@ class Question(models.Model):
     class Meta:
         db_table = 'questions'  # Define the database table name
         verbose_name = 'Question'  # Define the verbose name for the model
+
+    def __str__(self):
+        return self.stem
 
 # Create the 'Quiz' model
 # Author - Shawn Cai
@@ -73,6 +65,7 @@ class Quiz(models.Model):
     start_time = models.DateTimeField(default=timezone.now)
     end_time = models.DateTimeField(default=timezone.now)
     time_limit = models.DurationField(default=timedelta(minutes=30))
+    passingThreshold = models.PositiveSmallIntegerField(default=0)
     
     class Meta:
         db_table = 'quizzes'  # Define the database table name
@@ -80,41 +73,6 @@ class Quiz(models.Model):
 
     def __str__(self):
         return self.name #So I can grab the Quiz Name
-    
-# The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
-# while the questions/question bank reamins unchanged by us so that the others can finish
-# Do not touch
-# class fakeMultipleChoiceQuestion(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     root =models.TextField(default="")
-#     correct_answer = models.TextField(default="")
-#     distractors = models.TextField(default="")
-#     hint = models.TextField(blank=True, null=True)
-#     tags =models.TextField(default="")
-#     def __str__(self):
-#         return self.root
-
-# # quiz model contains name, course attributes, startDate, and endDate for quizzes
-# # A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first
-# # @return str self.name - The quiz's name.
-# # @return absolute_url quiz_detail - the detail view for that particular quiz
-# class Quiz(models.Model):
-#     # id = models.AutoField('ID',primary_key=True)
-#     name = models.CharField(max_length=100)
-#     course = models.CharField(max_length=100)
-#     startDate = models.DateField(help_text="Set the date for when you want this quiz to open:", null=True)
-#     endDate = models.DateField(help_text="Set the date for when you want this quiz to close:", blank = True, null=True)
-#     class Meta:
-#         verbose_name_plural = "quizzes"
-#         ordering = ["-endDate"]
-
-#     def __str__(self):
-#         return str(self.name)
-
-#     def get_absolute_url(self):
-#         return reverse('quiz_detail', kwargs={'pk': self.pk})
-    
-    
     
 # temporary model for the sake of getting the gradebook page running.
 class Grade(models.Model):

@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>{{quiz.name}} Results:</h1>
+
+<p>{{score}}</p>
+
+{% if retake %}
+  <a href="{% url 'take_quiz' quiz.pk %}" > Retake the Quiz </a>
+{% endif %}
+<p></p>
+<a href="{% url 'index' %}">Home</a>
+{% endblock %}

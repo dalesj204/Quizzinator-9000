@@ -35,28 +35,17 @@
       {% elif question.type == 1 %} PMC 
       {% elif question.type == 2 %} PP 
       {% endif %}</td>
-      <td class="text-left"> {% for answer in ans %}
-        {% if answer.question_id == question.id %}
-          {% for option in opts %}
-            {% if answer.opt_id == option.id %}
-               {{option.content}} 
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-    {% endfor %} </td>
-    <td class="text-left">  {% for option in opts %}
-        {% if option.question_id == question.id %}
-          {% for answer in ans %}
-              {% if answer.opt_id != option.id and answer.question_id == question.id %}
-                {{option.content}} 
-              {% endif %}
-            {% endfor %}
-        {% endif %}
-    {% endfor %} </td>
+      <td class="text-left">
+        {{question.correctOption}} </td>
+    <td class="text-left">
+      {% for o in question.options.all %}
+        {{o.content}} <p></p>
+      {% endfor %}
+    </td>
     <td class="text-left"> {{question.explain}} </td>
     <td class="text-left">
     {% for x in question.tag.all %}
-      {{x.tag}}
+      {{x.tag}} <p></p>
     {% endfor %}
     {% comment %}{% endcomment %}
   </td>

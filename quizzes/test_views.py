@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from quizzes.forms import questionForm
-from .models import Quiz, Question, Tag, Option, Type, User, Student, Options, Answer, Class, Grade
+from .models import Quiz, Question, Tag, Option, Type, User, Student, Options, Class, Grade
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -86,7 +86,7 @@ class questionListViewTest(TestCase):
                 question = q
             )
             op2.save()
-            ans = Answer.objects.create(
+            ans = Options.objects.create(
                 opt = op2,
                 question = q
             )
@@ -138,15 +138,9 @@ class questionListViewTest(TestCase):
     def test_options_length(self):
         self.assertEqual(len(Options.objects.all()), 6)
     
-    def test_Answer_length(self):
-        self.assertEqual(len(Answer.objects.all()), 3)
-    
     def test_options_content(self):
         self.assertEqual(Options.objects.get(id = 1).content, 'fake answer')
     
-    def test_Answer_content(self):
-         ans = Answer.objects.get(id = 1).opt
-         self.assertEqual(ans.content, 'real answer')
     @classmethod
     def setUpClass(cls):
         print(colored('Delete Question is Testing: ', 'blue'))

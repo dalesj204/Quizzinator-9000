@@ -3,7 +3,6 @@ from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Teacher, 
 
 admin.site.register(Tag)
 admin.site.register(Question)
-admin.site.register(Quiz)
 admin.site.register(Stats)
 admin.site.register(Class)
 admin.site.register(Grade)

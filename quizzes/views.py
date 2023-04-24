@@ -113,8 +113,6 @@ class questionPageView(generic.ListView):
         def get_context_data(self, **kwargs):
             ctx = super(questionPageView, self).get_context_data(**kwargs)
             ctx['ques'] = Question.objects.all()
-            ctx['opts'] =Options.objects.all().values()
-            ctx['ans'] = Answer.objects.all().values()
             return ctx
         def index(request):
             template = loader.get_template('questionPage.html')
@@ -179,36 +177,21 @@ def export_xcl(request):
                 elif col_num == 3:
                     tempthree = []
                     tempf = 0
-                    for y in Answer.objects.all().filter(question_id=row.id):
-                        tempf = y.opt.id
-                    leng2 = Options.objects.all().filter(id=tempf).count()
                     con2 = 1
-                    for x in Options.objects.all().filter(id=tempf):
+                    filesheet.write(row_number, col_num, row.correctOption.content)
+                elif col_num == 4:
+                    tempthree = []
+                    tempf = 0
+                    leng2 = row.options.all().count()
+                    con2 = 1
+                    for x in row.options.all():
                         if con2 != 1 and con2 < leng2 + 1:
-
                             tempthree.append('|')
                             tempthree.append(x.content)
                             con2 = con2 + 1
                         else:
                             tempthree.append(x.content)
                             con2 = con2 + 1
-                    filesheet.write(row_number, col_num, tempthree)
-                elif col_num == 4:
-                    tempthree = []
-                    tempf = 0
-                    for y in Answer.objects.all().filter(question_id=row.id):
-                        tempf = y.opt.id
-                    leng2 = Options.objects.all().filter(question_id=row.id).count()
-                    con2 = 1
-                    for x in Options.objects.all().filter(question_id=row.id):
-                        if x.id != tempf:
-                            if con2 != 1 and con2 < leng2 + 1:
-                                tempthree.append('|')
-                                tempthree.append(x.content)
-                                con2 = con2 + 1
-                            else:
-                                tempthree.append(x.content)
-                                con2 = con2 + 1
                     filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 5:
                     filesheet.write(row_number, col_num, row.explain)
@@ -243,26 +226,29 @@ def import_xcl(request):
                 h= Tag.objects.get(tag=tag)
             temp.append(h)
         
+        if(not(Options.objects.all().filter(content = data[3]).exists())):
+            o = Options(data[3])
+            o.save()
+        o = Options.objects.get(content = data[3])
         value = Question(
-            data[0], # id
-            data[1], # stem
-            data[2], # type
-            data[5], # explain
+            id = data[0], # id
+            stem = data[1], # stem
+            type = data[2], # type
+            correctOption = o, # correctOption
+            explain = data[5], # explain
         )
         value.save()
         value.tag.add(*temp)
         value.save()
-        quesob = Question.objects.get(id = data[0])
-        if not Options.objects.all().filter(content=data[3], question=quesob).exists(): #answer
-            q = Options(content=data[3], question=quesob)
-            q.save()
-            j = Answer(opt=q, question=quesob)
-            j.save()
-
+        
+        optionList = []
         for op in data[4].split('|'):
-            if not Options.objects.all().filter(content=op, question=quesob).exists():
-                h = Options(content=op, question=quesob)
+            if not Options.objects.all().filter(content=op).exists():
+                h = Options(content=op)
                 h.save()
+            optionList.append(Options.objects.get(content=op).id)
+        value.options.set(optionList)
+            
     return HttpResponseRedirect(reverse('questionPage'))
     
 # go back to the blog detail page after comment has been posted
@@ -286,29 +272,52 @@ def addrecord(request):
     y = request.POST['type']
     z = request.POST['explain']
     q = request.POST['tag']
-    ques = Question(stem=x, type=y, explain=z)
-    if 'Submit' in request.POST:
-        ques.save()
-        temp = []
-        for k in q.split('|'):
-            h = Tag(tag = k)
-            h.save()
-            temp.append(h)
-        ques.tag.add(*temp)
-        ques.save()
-        return HttpResponseRedirect(reverse('questionPage'))
-    elif 'Cancel' in request.POST:
-        return HttpResponseRedirect(reverse('questionPage'))
-    else:
-        ques.save()
-        temp = []
-        for k in q.split('|'):
-            h = Tag(tag = k)
-            h.save()
-            temp.append(h)
-        ques.tag.add(*temp)
-        ques.save()
-        return HttpResponseRedirect(reverse('add'))
+    o = request.POST['options']
+    c = request.POST['correctOption']
+    if(not Question.objects.all().filter(stem=x).exists()):
+        if not Options.objects.all().filter(content=c).exists():
+            w = Options(content = c)
+            w.save()
+        c = Options.objects.get(content = c)
+        ques = Question(stem=x, type=y, explain=z, correctOption = c)
+        if 'Submit' in request.POST:
+            ques.save()
+            temp = []
+            for k in q.split('|'):
+                h = Tag(tag = k)
+                h.save()
+                temp.append(h)
+            ques.tag.add(*temp)
+            optionList = []
+            for x in o.split('|'):
+                if not Options.objects.all().filter(content=x).exists():
+                    h = Options(content=x)
+                    h.save()
+                optionList.append(Options.objects.get(content=x).id)
+            ques.options.set(optionList)
+            ques.save()
+            return HttpResponseRedirect(reverse('questionPage'))
+        elif 'Cancel' in request.POST:
+            return HttpResponseRedirect(reverse('questionPage'))
+        else:
+            ques.save()
+            temp = []
+            for k in q.split('|'):
+                h = Tag(tag = k)
+                h.save()
+                temp.append(h)
+            optionList = []
+            for x in o.split('|'):
+                if not Options.objects.all().filter(content=x).exists():
+                    h = Options(content=x)
+                    h.save()
+                optionList.append(Options.objects.get(content=x).id)
+            ques.options.set(optionList)
+
+            ques.tag.add(*temp)
+            ques.save()
+            return HttpResponseRedirect(reverse('add'))
+    else: return HttpResponseRedirect(reverse('questionPage'))
     
 # Function that deletes the question from the question bank. 
 # And then returns you do the question page that should not have that question in the list anymore.
@@ -336,103 +345,6 @@ def edit(request, id):
     if 'Cancel' in request.POST:
         return HttpResponseRedirect(reverse('questionPage'))
     return HttpResponse(template.render({'question':question, 'form':form}, request))
-
-
-
-# Create QuestionView class to display questions
-# Author - Shawn Cai
-class QuestionView(ListView):
-    template_name = 'Questions/index.html'
-    model = Question
-
-# Create QuestionAddView class to add questions
-# Author - Shawn Cai
-class QuestionAddView(TemplateView):
-    template_name = 'Questions/question_add.html'
-    def post(self, request):
-        data = request.POST
-        res = {'status': 0, 'msg': 'Success!'}
-        try:
-            subject = Question()
-            subject.stem = data.get('stem')
-            subject.explain = data.get('explain')
-            subject.type = data.get('type')
-            print(data.getlist('option'))
-            print(data.getlist('content'))
-            print(data.getlist('explain'))
-            print(data.getlist('answer'))
-            subject.save()
-            for one in data.getlist('option'):
-                options = Options()
-                options.subject_id = subject.id
-
-                options.options = one
-                options.content = data.getlist('content')[int(one)-1]
-                options.save()
-            for one in data.getlist('answer'):
-                answer = Answer()
-                answer.subject_id = subject.id
-                answer.options = one
-                answer.save()
-        except Exception as e:
-            print(e)
-            res = {'status': 1, 'msg': 'Failed'}
-        return JsonResponse(res)
-
-# Create QuestionUpdateView class to update questions
-# Author - Shawn Cai
-class QuestionUpdateView(View):
-    def get(self, request):
-        return render(request, 'Questions/question_update.html')
-
-    def post(self, request):
-        data = request.POST
-        res = {'status': 0, 'msg': 'Success!'}
-        try:
-            Question = Question.objects.get(id=data.get('uid'))
-            print(Question)
-            Question.stem = data.get('stem')
-            Question.explain = data.get('explain')
-            Question.type = data.get('type')
-            print(data.getlist('option'))
-            print(data.getlist('content'))
-            print(data.getlist('answer'))
-            Question.save()
-            Options.objects.filter(subject_id=data.get('uid')).delete()
-            for one in data.getlist('option'):
-                options = Options()
-                options.subject_id = Question.id
-                options.options = one
-                options.content = data.getlist('content')[int(one)-1]
-                options.save()
-            Answer.objects.filter(subject_id=data.get('uid')).delete()
-            for one in data.getlist('answer'):
-                answer = Answer()
-                answer.subject_id = Question.id
-                answer.options = one
-                answer.save()
-        except Exception as e:
-            print(e)
-            res = {'status': 1, 'msg': 'Failed'}
-        return JsonResponse(res)
-
-# Create QuestionDeleteView class to delete questions
-# Author - Shawn Cai
-class QuestionDeleteView(View):
-    def get(self, request):
-        data = request.GET
-        res = {'status': 0, 'msg': 'Success!'}
-        try:
-            Question.objects.get(id=data.get('id')).delete()
-        except Exception as e:
-            print(e)
-            res = {'status': 1, 'msg': 'Failed'}
-        return JsonResponse(res)
-
-
-class QuizView(View):
-    def get(self, request):
-        ques_id = Question.objects.get
 
 
 @login_required(login_url='login')
@@ -662,7 +574,7 @@ def randomizeAnswers(answers):
     return new_array
 
 
-def TakeQuizView(request, quiz_id):
+def TakeQuizView(request, quiz_id, error="none"):
     this_quiz = Quiz.objects.get(id=quiz_id)
     name = this_quiz.name
     questions = this_quiz.questions.all()
@@ -672,5 +584,35 @@ def TakeQuizView(request, quiz_id):
     context = {
         'name': name,
         'questions': questions,
+        'quiz_id': quiz_id,
+        'error': error
     }
     return render(request, 'take_quiz.html', context=context)
+
+def SubmitQuiz(request, quiz_id):
+    if request.method == 'POST':
+        selectedOpt = request.POST.getlist('selectedOpt')
+        this_quiz = Quiz.objects.get(id=quiz_id)
+        name = this_quiz.name
+        questions = this_quiz.questions.all()
+        if(not (len(selectedOpt) == len(questions))):
+            return TakeQuizView(request, quiz_id, error="MMChoices")
+        count = 0
+        for q in range(len(questions)):
+            if(selectedOpt[q] == str(questions[q].correctOption.id)):
+                count+=1
+        score = count / len(questions)
+        score = round(score * 100, 2)
+        if(this_quiz.passingThreshold >= score):
+            retake = True
+        else:
+            retake = False
+        context = {
+            "score": str(score) + "%",
+            "questions": questions,
+            "quiz": this_quiz,
+            'retake': retake
+
+        }
+        return render(request, 'quiz_results.html', context=context)
+
