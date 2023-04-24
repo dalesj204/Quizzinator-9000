@@ -48,11 +48,13 @@ class Options(models.Model):
 # The Question model builds a quiz
 # 
 # The model stores a lot of information, listed below in comments
-# When creating the models in a script, create the options first
 # The field correctOption MUST ALWAYS be filled upon INITIAL creation of the model
 # The field options MUST contain the option stored in correctOption as well
 # There is only ONE correctOption that can be stored, meaning
 # there cannot be a question with more than one correct answer
+# 
+# ###SCRIPTING###
+# When creating the models in a script, create the options first
 # 
 # Author - Shawn Cai
 # Revised - Hayden Dustin - 4/23/23
@@ -91,21 +93,38 @@ class Question(models.Model):
 # This is the main model for the program
 # 
 # This model also stores a lot of information, which is described in comments within
-# When creating these models in a script, create the questions FIRST (Follow other scripting instructions as well)
+# All questions are displayed on the same page
+# 
+# ###SCRIPTING###
+# When creating these models in a script, create the
+# questions FIRST (Follow other scripting instructions as well)
 # 
 # 
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
 class Quiz(models.Model):
+
+    # The quiz's title
     name = models.CharField(max_length=255)
+
+    # The list of questions contained in the quiz
     questions = models.ManyToManyField(Question)
+
+    # The time the quiz becomes available
     start_time = models.DateTimeField(default=timezone.now)
+
+    # The time the quiz becomes unavailable
     end_time = models.DateTimeField(default=timezone.now)
+
+    # The amount of time given from the first attempt before the quiz automatically closes
     time_limit = models.DurationField(default=timedelta(minutes=30))
+
+    # The grade the student must match or exceed for the quiz to be considered passed
     passingThreshold = models.PositiveSmallIntegerField(default=0)
     
     class Meta:
-        db_table = 'quizzes'  # Define the database table name
-        verbose_name = 'Quiz'  # Define the verbose name for the model
+        db_table = 'quizzes'    # Define the database table name
+        verbose_name = 'Quiz'   # Define the verbose name for the model
 
     def __str__(self):
         return self.name #So I can grab the Quiz Name
@@ -170,13 +189,11 @@ class User(AbstractUser):
     def __str__(self):
         return str(self.first_name) + " " + str(self.last_name)
 
-# Student Model - Place Holder
+# Student Model
 #
-#
-#This is a place holder for the student model to have the
-#profile page up and running. It is not complex as it only
-#contains two fields. As the project continues, I implore
-#you to edit this to the needs it program as it evolves.
+# Only stores the classes as new information
+# This model attaches to the User model as a base
+# for all user information and functionality
 #
 # @return self.name - The student's name.
 class Student(models.Model):
@@ -196,7 +213,13 @@ class Student(models.Model):
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name
 
-
+# Teacher Model
+#
+# Only stores the classes as new information
+# This model attaches to the User model as a base
+# for all user information and functionality
+#
+# @return self.name - The teachers's name.
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Teacher_User", default=None)
 

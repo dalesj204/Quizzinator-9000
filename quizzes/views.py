@@ -564,6 +564,11 @@ def search_questions(request):
         })
     return JsonResponse(data, safe=False)
 
+
+# A simple helper method for TakeQuizView
+# 
+# @param an array of the answers
+# @return a randomized array of the same type
 def randomizeAnswers(answers):
     new_array = [None for a in answers]
     for a in answers:
@@ -574,6 +579,13 @@ def randomizeAnswers(answers):
     return new_array
 
 
+# Renders the quiz with all answers in a random order
+# 
+# Constructs: "take_quiz.html"
+# Reverse Name: "take_quiz"
+# 
+# Utilizes randomizeAnswers method defined above
+# Has an optional "error" section to display misinputs on the user's end
 def TakeQuizView(request, quiz_id, error="none"):
     this_quiz = Quiz.objects.get(id=quiz_id)
     name = this_quiz.name
@@ -589,24 +601,59 @@ def TakeQuizView(request, quiz_id, error="none"):
     }
     return render(request, 'take_quiz.html', context=context)
 
+
+# Post processing method for TakeQuizView
+# 
+# Constructs: "quiz_results.html"
+# Reverse Name: "submitQuiz"
+# 
+# Recieves the submitted question IDs and proceses the grade
+# 
+# If the grade is sufficient, it creates a page with the
+# grade visible and a return home button
+# If the grade is insufficient, it makes the same page,
+# but adds a retake quiz button
+# 
+# If the user inputs an incorrect amount of choices
+# (ie. too many or too few) it redirects you back to
+# the quiz so that you can retake it and submit the
+# appropriate amount of answers
 def SubmitQuiz(request, quiz_id):
     if request.method == 'POST':
+        # Declaration of variables
         selectedOpt = request.POST.getlist('selectedOpt')
         this_quiz = Quiz.objects.get(id=quiz_id)
-        name = this_quiz.name
         questions = this_quiz.questions.all()
+
+        # Checks if the appropriate amount of answers were submitted
         if(not (len(selectedOpt) == len(questions))):
+            # KNOW BUG: The url of the reroute will be the
+            # summary page, but display the quiz still
             return TakeQuizView(request, quiz_id, error="MMChoices")
+        
+        # Total answers correct
+        # 
+        # Because each question can only have one answer,
+        # each selected option will correspond to exactly
+        # one question in the exact order that they were
+        # stored in the "questions" field of the Quiz model
+        #
+        # This means a for loop counter will always match
+        # the choice to the appropriate question
         count = 0
-        for q in range(len(questions)):
-            if(selectedOpt[q] == str(questions[q].correctOption.id)):
+        for i in range(len(questions)):
+            # Compares correctOption *ID* with that question's answer's *ID*
+            if(selectedOpt[i] == str(questions[i].correctOption.id)):
                 count+=1
+        # Quick score calculation and check against the passingThreshold
         score = count / len(questions)
         score = round(score * 100, 2)
         if(this_quiz.passingThreshold >= score):
             retake = True
         else:
             retake = False
+        
+        # The retake boolean is processed in the HTML page
         context = {
             "score": str(score) + "%",
             "questions": questions,

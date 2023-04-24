@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from quizzes.forms import questionForm
-from .models import Quiz, Question, Tag, Option, Type, User, Student, Options, Class, Grade
+from .forms import questionForm
+from .models import Quiz, Question, Tag, Type, User, Student, Options, Class, Grade
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
