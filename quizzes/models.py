@@ -25,39 +25,75 @@ class Tag(models.Model):
     def __str__(self):
         return self.tag
 
-# Create the 'Options' model
+# The Options model helps build a question
+# 
+# The model stores just a string
+# This allows a fixture script to create it on startup
+# The question stores this model in a ManyToManyField
+# The correct answer is now determined in the Question model
+#
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
 class Options(models.Model):
+    # The text to be displayed describing the choice in the question
     content = models.CharField(max_length=256, verbose_name='content')
 
     class Meta:
-        db_table = 'options'  # Define the database table name
-        verbose_name = 'Option'  # Define the verbose name for the model
+        db_table = 'options'    # Define the database table name
+        verbose_name = 'Option' # Define the verbose name for the model
 
     def __str__(self):
         return self.content
 
-# Create the 'Question' model
+# The Question model builds a quiz
+# 
+# The model stores a lot of information, listed below in comments
+# When creating the models in a script, create the options first
+# The field correctOption MUST ALWAYS be filled upon INITIAL creation of the model
+# The field options MUST contain the option stored in correctOption as well
+# There is only ONE correctOption that can be stored, meaning
+# there cannot be a question with more than one correct answer
+# 
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
 class Question(models.Model):
+
+    # The question being asked
     stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
+
+    # Determines multiple choice, parsons, etc.
     type = models.IntegerField(choices=Type, verbose_name='type')
+
+    # A hint for the question
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
+
+    # A list of tags for searching for questions
     tag = models.ManyToManyField(Tag, blank=True)
+
+    # A list of options assigned to the question
     options = models.ManyToManyField(Options, related_name="options")
+
+    # The correct answer for the question
     correctOption = models.ForeignKey(Options, on_delete=models.CASCADE, related_name="correctOption", default=None, blank=True)
+
+    # An array used for calculating the random order of the options
     order = []
     def get_type(self, ind):
         return f"{Type[ind]}"
     
     class Meta:
-        db_table = 'questions'  # Define the database table name
-        verbose_name = 'Question'  # Define the verbose name for the model
+        db_table = 'questions'      # Define the database table name
+        verbose_name = 'Question'   # Define the verbose name for the model
 
     def __str__(self):
         return self.stem
 
-# Create the 'Quiz' model
+# This is the main model for the program
+# 
+# This model also stores a lot of information, which is described in comments within
+# When creating these models in a script, create the questions FIRST (Follow other scripting instructions as well)
+# 
+# 
 # Author - Shawn Cai
 class Quiz(models.Model):
     name = models.CharField(max_length=255)
