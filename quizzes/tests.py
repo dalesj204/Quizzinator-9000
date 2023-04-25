@@ -15,7 +15,10 @@ class TagTestCase(TestCase):
         super().setUpClass()
 
     def setUp(self):
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
+        opt = Options(content="temp")
+        opt.save()
+        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.", correctOption_id = opt.id)
+        self.question.options.add(opt)
         self.tag1 = Tag.objects.create(tag='Geography')
         self.tag2 = Tag.objects.create(tag='Europe')
     
