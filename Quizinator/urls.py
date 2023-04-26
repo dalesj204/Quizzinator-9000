@@ -21,44 +21,9 @@ from django.urls import include
 from quizzes.views import *
 
 urlpatterns = [
-    path('quizzes/<int:quiz_id>/summary/', QuizSummaryView.as_view(), name='quiz_summary'),
-    
-    path('quizzes/take/<int:quiz_id>', views.TakeQuizView, name='take_quiz'), #
-    
-    path('quizzes/take/summary/<int:quiz_id>', views.SubmitQuiz, name='submitQuiz'),
-    
-    path('quiz_create/', user_is_teacher(QuizCreateView.as_view()), name='quiz_create'), #
-    
-    path('quiz_list/', QuizListView.as_view(), name='quiz_list'), #
-    
-    path('questions/search/', search_questions, name='search_questions'), # ?
-    
-    path('admin/', admin.site.urls), #
-    
-    path('quiz_home/', include('quizzes.urls')), #
-    
+    path('quiz_home/', include('quizzes.urls')),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
-    
-    path('class_list/', views.ClassListView, name='class_list'),# part of home now
-    
-    path('class_list/<int:class_id>', views.ClassDetailView, name='class_detail'), # change url to class_detail
-    
-    path('class_list/<int:class_id>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),
-    
-    path('class_list/stats', views.ClassStatsView.as_view(), name='stats'), # page does not exist yet
-    
-    path('questions/', user_is_teacher(views.questionPageView.as_view()), name = 'questionPage'), #
-    
-    path('export_xcl/', views.export_xcl, name = 'export_xcl'),
-    path('questions/importing/', views.importing, name = 'importing'),
-    path('questions/importing/import_xcl/', views.import_xcl, name='importxcl'),
-    path('questions/delete/<int:id>', views.delete, name='delete'),
-    path('questions/add/', views.add, name='add'),
-    path('questions/add/addrecord/', views.addrecord, name='addrecord'),
-    path('addStudent/<int:id>', views.studentPageView, name='addStudent'),
-    path('addStudent/addStudentrecord/<int:id>', views.addStudentrecord, name='addStudentrecord'),
-    path('addStudent/deleteStudentrecord/<int:id>', views.deleteStudentrecord, name='deleteStudentrecord'),
-    path('questions/edit_question/<int:id>', views.edit, name='edit'),
+    path('admin/', admin.site.urls),
     
     path('login/', views.LoginView, name='login'),
     path('logout/', views.LogoutView, name='logout'),
@@ -66,6 +31,30 @@ urlpatterns = [
     path('register/student', views.StudentSignUpView, name='studentRegistration'),
     path('register/teacher', views.TeacherSignUpView, name='teacherRegistration'),
     
-    # path('teacher_profile/', views.TeacherHomeView, name='teacher'), # part of home now
-    # path('student_profile/', views.StudentHomeView, name='student'), # part of home now
+    path('class_detail/<int:class_id>', views.ClassDetailView, name='class_detail'), 
+    
+    path('quizzes/take/<int:quiz_id>', views.TakeQuizView, name='take_quiz'),
+    path('quizzes/take/summary/<int:quiz_id>', views.SubmitQuiz, name='submitQuiz'),
+    
+    path('quiz_create/', user_is_teacher(QuizCreateView.as_view()), name='quiz_create'),
+    path('questions/search/', search_questions, name='search_questions'),
+    path('quiz_list/', user_is_teacher(QuizListView.as_view()), name='quiz_list'),
+    path('quizzes/<int:quiz_id>/summary/', user_is_teacher(QuizSummaryView.as_view()), name='quiz_summary'),
+    
+    path('questions/', user_is_teacher(views.questionPageView.as_view()), name = 'questionPage'),
+    path('export_xcl/', views.export_xcl, name = 'export_xcl'), 
+    path('questions/importing/', views.importing, name = 'importing'),
+    path('questions/importing/import_xcl/', views.import_xcl, name='importxcl'),
+    path('questions/delete/<int:id>', views.delete, name='delete'), # needs confirmation page
+    path('questions/add/', views.add, name='add'), # needs error handling and maybe some drop down menus
+    path('questions/add/addrecord/', views.addrecord, name='addrecord'),
+    path('questions/edit_question/<int:id>', views.edit, name='edit'),
+    
+    path('addStudent/<int:id>', views.studentPageView, name='addStudent'),
+    path('addStudent/addStudentrecord/<int:id>', views.addStudentrecord, name='addStudentrecord'),
+    path('addStudent/deleteStudentrecord/<int:id>', views.deleteStudentrecord, name='deleteStudentrecord'),
+    
+    
+    path('class_detail/<int:class_id>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),# page does not exist yet
+    path('class_detail/stats', views.ClassStatsView.as_view(), name='stats'), # page does not exist yet
 ]

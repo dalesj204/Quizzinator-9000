@@ -1,5 +1,8 @@
 {% extends "base_generic.html" %}
 
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
 {% block content %}
 <h1>Welcome {{name}}!</h1>
 
@@ -10,22 +13,14 @@
 <form action={% url 'quiz_list' %} method="link">
   <button type="submit">List of Quizzes</button>
 </form>
-<form action={% url 'questionPage' %} method="link">
-  <button type="submit">List of Questions</button>
-</form>
 
 
-<h3>Classes</h3>
+<h2>Classes</h2>
     
-    <ul>
-    {% for class in classes %}
-    <li>
-      <p> 
-        <a href="{{ class.get_absolute_url }}" > {{class}} </a>
-      </p>
-    </li>
-    {% endfor %}
-    </ul>
-
+{% for class in classes %}
+    <p> 
+      <a href="{{ class.get_absolute_url }}" > {{class}} </a>
+    </p>
+{% endfor %}
 
 {% endblock %}

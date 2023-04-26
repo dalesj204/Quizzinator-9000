@@ -11,5 +11,14 @@
     <button type = "submit">Import</button>
 
  </form>
+{% if messages %}
+    {% for message in messages %}
+    <div{% if message.tags %} class="{{ message.tags }}"{% endif %}><font color="Red">{{ message }}</font></div>
+    {% endfor %}
+{% endif %}
+ <p></p>
+ <form action={% url 'questionPage' %} method="link">
+    <button type="submit">Back</button>
+  </form>
 
 {% endblock %}

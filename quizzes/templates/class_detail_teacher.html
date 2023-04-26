@@ -7,27 +7,20 @@
 <p><strong>Students: </strong> <a href="{% url 'addStudent' class.pk %}" >edit</a></p> 
 {% comment %}
 <a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>{% endcomment %}
-<ul>
   {% for student in student_list %}
-  <li>
     <p> 
       {{student.user.first_name}} {{student.user.last_name}}
     </p>
-  </li>
   {% endfor %}
-  </ul>
 <h2>Quizzes for class: </h2>
-<ul>
   {% for active, quiz in quiz_info %}
     {% if active %}
-      <li>
         <p>
           {{quiz.name}} <font color="Blue">Active</font>
         </p>
-      </li>
-      <li>
-        Ends: {{quiz.end_time}}
-      </li>
+        <ul>
+          <li>Ends: {{quiz.end_time}}</li>
+        </ul>
     {% else %}
       <li>
         <p>
