@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+{% if error == "MMChoices" %}
+  <p>INCORRECT NUMBER OF CHOICES SELECTED</p>
+{% endif %}
+
+<h1>{{ name }}</h1>
+
+  <ol>
+    {% for ques in questions %}
+      <h3>{{ forloop.counter }}) {{ ques.stem }}</h3>
+      <ol>
+        {% for opt in ques.order %}
+        <form action="{% url 'submitQuiz' quiz_id %}" method="post">
+          {%csrf_token%}
+          <td class="text-center"> <div class="form-check">
+          <input type="checkbox" value= "{{opt.id}}" 
+                  id=opt name="selectedOpt">{{ opt }}</input>
+                </div>
+              </td>
+        {% endfor %}
+      </ol>
+    {% endfor %}
+  </ol>
+  <button type ="submit">Submit</button>
+</form>
+{% endblock %}

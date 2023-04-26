@@ -1,4 +1,139 @@
 [
+  
+  {
+    "model": "quizzes.Tag",
+    "pk": "1",
+    "fields": {
+      "tag": "CIS 201"
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "2",
+    "fields": {
+      "tag": "CIS 202"
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "3",
+    "fields": {
+      "tag": "CIS 300"
+    }
+  },
+  {
+    "model": "quizzes.Tag",
+    "pk": "3",
+    "fields": {
+      "tag": "CIS 405"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "1",
+    "fields": {
+      "content": "Multi line comment"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "2",
+    "fields": {
+      "content": "Single Line Comment"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "3",
+    "fields": {
+      "content": "not accessible by any other class"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "4",
+    "fields": {
+      "content": "accessible by any other class"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "5",
+    "fields": {
+      "content": "Central Processing Unit"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "6",
+    "fields": {
+      "content": "Field Programmable Gate Array"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "7",
+    "fields": {
+      "content": "Program Counter"
+    }
+  },
+  {
+    "model": "quizzes.Question",
+    "pk": "1",
+    "fields": {
+      "stem": "What does // mean?",
+      "type": "0",
+      "explain": "Type of Comment",
+      "tag": "1",
+      "options": ["1", "2"],
+      "correctOption": "2"
+    }
+  },
+  {
+    "model": "quizzes.Question",
+    "pk": "2",
+    "fields": {
+      "stem": "What does public mean",
+      "type": "0",
+      "explain": "Not private",
+      "tag": ["1", "2"],
+      "options": ["3", "4"],
+      "correctOption": "4"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Question",
+    "pk": "3",
+    "fields": {
+      "stem": "What does a CPU stand for?",
+      "type": "0",
+      "explain": "Central ...",
+      "tag": "3",
+      "options": ["5", "6", "7"],
+      "correctOption": "5"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Quiz",
+    "pk": "1",
+    "fields":{
+      "name": "test quiz",
+      "questions": ["1", "2"],
+      "start_time": "2023-01-01 12:00:00.000000",
+      "end_time": "2024-01-01 12:00:00.000000",
+      "time_limit": "00:30:00",
+      "passingThreshold": "60"
+    }
+  }
+  ,
   {
     "model": "quizzes.Grade",
     "pk": "1",
@@ -21,7 +156,7 @@
     "fields": {
       "name": "Class 1234",
       "gradebook": "1",
-      "quizzes": ""
+      "quizzes": "1"
     }
   },
   {
@@ -61,43 +196,77 @@
     }
   },
   {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111112",
+      "username": "rosiewoman@gmail.com",
+      "email": "rosiewoman@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Rosie",
+      "last_name": "Woman",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111113",
+      "username": "hailey@gmail.com",
+      "email": "hailey@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "hailey",
+      "last_name": "Nobin",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111114",
+      "username": "grabowski@gmail.com",
+      "email": "grabowski@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "L",
+      "last_name": "Grabowski",
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": false,
+      "is_teacher": true,
+      "is_student": false
+    }
+  },
+  {
     "model": "quizzes.Student",
     "fields": {
-      "user": "111111111111"
+      "user": "111111111111",
+      "classes": "1"
     }
   },
   {
-    "model": "quizzes.Tag",
-    "pk": "1",
+    "model": "quizzes.Student",
     "fields": {
-      "tag": "CIS 201"
+      "user": "111111111112",
+      "classes": "1"
     }
   },
   {
-    "model": "quizzes.Tag",
-    "pk": "2",
+    "model": "quizzes.Student",
     "fields": {
-      "tag": "CIS 202"
+      "user": "111111111113",
+      "classes": "2"
     }
   },
   {
-    "model": "quizzes.Question",
-    "pk": "1",
+    "model": "quizzes.Teacher",
     "fields": {
-      "stem": "Whats 2+2?",
-      "type": "0",
-      "explain": "It's EZ",
-      "tag": "1"
-    }
-  },
-  {
-    "model": "quizzes.Question",
-    "pk": "2",
-    "fields": {
-      "stem": "Whats 2+3?",
-      "type": "0",
-      "explain": "It's EZ",
-      "tag": "2"
+      "user": "111111111114",
+      "classes": ["1", "2"]
     }
   }
 ]

@@ -2,21 +2,39 @@
 
 {% block content %}
 <h1>{{class.name}}</h1> {% comment %} add an edit button {% endcomment %}
-<p><strong>Instructor:</strong> {{ instructor.all|join:", " }}</p> {% comment %} add an edit button {% endcomment %}
+<p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p> {% comment %} add an edit button {% endcomment %}
 
-<p><strong>Students: </strong> Add</p> 
-<p>{{ roster.all|join:", " }}</p> 
-
-<a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>
-
+<p><strong>Students: </strong> <a href="{% url 'addStudent' class.pk %}" >edit</a></p> 
+{% comment %}
+<a href="{% url 'grade_list' class.gradebook.pk %}" > {{class.gradebook}} </a>{% endcomment %}
+<ul>
+  {% for student in student_list %}
+  <li>
+    <p> 
+      {{student.user.first_name}} {{student.user.last_name}}
+    </p>
+  </li>
+  {% endfor %}
+  </ul>
 <h2>Quizzes for class: </h2>
 <ul>
-    {% for quiz in classes.quizzes.all %}
-    <li>
-      <p> 
-        <a href="{% url 'quiz-detail' quiz.pk %}" > {{quiz.name}} </a>
-      </p>
-    </li>
-    {% endfor %}
-    </ul>
+  {% for active, quiz in quiz_info %}
+    {% if active %}
+      <li>
+        <p>
+          {{quiz.name}} <font color="Blue">Active</font>
+        </p>
+      </li>
+      <li>
+        Ends: {{quiz.end_time}}
+      </li>
+    {% else %}
+      <li>
+        <p>
+          {{quiz.name}}
+        </p>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
 {% endblock %}

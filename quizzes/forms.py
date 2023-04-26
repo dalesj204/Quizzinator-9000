@@ -12,7 +12,7 @@ from .models import Question, User, Student, Teacher
 class questionForm(ModelForm):
     class Meta:
         model = Question
-        fields = ('stem', 'type', 'explain', 'tag')
+        fields = ('stem', 'type', 'explain', 'tag', 'options', 'correctOption')
 
 ids = []
 # generates random unique id  

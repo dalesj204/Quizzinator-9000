@@ -1,12 +1,19 @@
 {% extends "base_generic.html" %}
 
-{% comment %} the following commented if statements are to be implemented once authentication and permissions have been implemented
-{% if user.is_authenticated %}
-
-{% if User.has_permission and User.return_int(user.id) == teacher_id %}
-{% endcomment %}
 {% block content %}
 <h1>Welcome {{name}}!</h1>
+
+
+<form action={% url 'quiz_create' %} method="link">
+  <button type="submit">Create Quiz</button>
+</form>
+<form action={% url 'quiz_list' %} method="link">
+  <button type="submit">List of Quizzes</button>
+</form>
+<form action={% url 'questionPage' %} method="link">
+  <button type="submit">List of Questions</button>
+</form>
+
 
 <h3>Classes</h3>
     
@@ -22,21 +29,3 @@
 
 
 {% endblock %}
-
-{% comment %}
-{% else %}
-
-{% endif %}
-{% endcomment %}
-
-{% comment %}
-{% if !User.is_authenticated %}
-  {% block content %}
-    <h3>Please login to view this page. <a href='login'>Login</a></h3>
-  {% endblock %}
-{% else %}
-  {% block content %}
-    <h3>You do not have permission to view this page.</h3>
-  {% endblock %}
-{% endif %}
-{% endcomment %}

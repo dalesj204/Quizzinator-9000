@@ -1,0 +1,109 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    <h2>Create a Quiz</h2>
+    <label for="quiz_name">Quiz Name:</label>
+    <input type="text" name="quiz_name" id="quiz_name" required>
+    <br>
+    <label for="start_time">Start Time:</label>
+    <input type="datetime-local" name="start_time" id="start_time" required>
+    <br>
+    <label for="end_time">End Time:</label>
+    <input type="datetime-local" name="end_time" id="end_time" required>
+    <br>
+    <label for="stem">Question:</label>
+    <input type="text" name="stem" id="stem">
+    <br>
+    <div id="search_results">
+      <h3>Search Results:</h3>
+      <ul id="question_ids" class="scroll-box">
+        <!-- Display search results dynamically here -->
+      </ul>
+    </div>
+    <div id="selected_questions">
+      <h3>Selected Questions:</h3>
+      <ul id="selected_question_ids" class="scroll-box">
+        <!-- Display selected questions dynamically here -->
+      </ul>
+    </div>
+    <input type="submit" value="Create Quiz">
+  </form>
+
+  <script>
+    // Get the selected questions and display them in the selected questions section
+    const selectedQuestionsList = document.getElementById('selected_question_ids');
+    document.getElementById('search_results').addEventListener('change', function(event) {
+      if (event.target.tagName === 'INPUT' && event.target.type === 'checkbox') {
+        if (event.target.checked) {
+          const li = document.createElement('li');
+          li.textContent = event.target.nextElementSibling.textContent;
+          li.setAttribute('data-question-id', event.target.value);
+          selectedQuestionsList.appendChild(li);
+        } else {
+          const questionId = event.target.value;
+          const liToRemove = selectedQuestionsList.querySelector(`li[data-question-id="${questionId}"]`);
+          selectedQuestionsList.removeChild(liToRemove);
+        }
+      }
+    });
+
+    // Remove a selected question if it is double-clicked
+    selectedQuestionsList.addEventListener('dblclick', function(event) {
+      if (event.target.tagName === 'LI') {
+        const questionId = event.target.getAttribute('data-question-id');
+        const inputToRemove = document.querySelector(`input[value="${questionId}"]`);
+        inputToRemove.checked = false;
+        selectedQuestionsList.removeChild(event.target);
+      }
+    });
+
+    // Search for questions and display them dynamically as user types in the question stem
+    document.getElementById('stem').addEventListener('input', function() {
+      const stem = this.value;
+      searchQuestions(stem);
+    });
+
+    function searchQuestions(stem) {
+      const xhr = new XMLHttpRequest();
+      const url = `/questions/search/?stem=${stem}`;
+      xhr.open('GET', url);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          const questions = JSON.parse(xhr.responseText);
+          const questionIdsSelect = document.getElementById('question_ids');
+          questionIdsSelect.innerHTML = '';
+          questions.forEach(function(question) {
+            const li = document.createElement('li');
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.name = 'question_ids[]';
+            input.value = question.id;
+            const label = document.createElement('label');
+            label.textContent = question.stem;
+            li.appendChild(input);
+            li.appendChild(label);
+            questionIdsSelect.appendChild(li);
+          });
+      } else {
+        console.error('Error:', xhr.statusText);
+      }
+    };
+    xhr.onerror = function() {
+      console.error('Error:', xhr.statusText);
+    };
+    xhr.send();
+  };
+</script>
+
+<style>
+  .scroll-box {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+</style>
+{% endblock %}

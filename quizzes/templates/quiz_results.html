@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>{{quiz.name}} Results:</h1>
+
+<p>Score: {{score}}</p>
+
+{% if retake %}
+  <form action={% url 'take_quiz' quiz.pk %} method="link">
+    <button type="submit"> Retake the Quiz</button>
+  </form>
+{% endif %}
+<p></p>
+<form action={% url 'index' %} method="link">
+  <button type="submit">Home</button>
+</form>
+{% endblock %}

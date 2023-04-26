@@ -2,19 +2,15 @@
 
 {% block content %}
 <h1>{{class.name}}</h1>
-<p>
-    <strong>Instructor:</strong> 
-
-    {{ instructor.all|join:", " }}
-</p>
+<p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p>
 
 <h2>Active Quizzes: </h2>
 <ul>
-    {% for quiz in class.quizzes.all %}
-        {% if is_active[{{forloop.counter}}] %}
+    {% for active, quiz in quiz_info %}
+        {% if active %}
             <li>
             <p>
-                <a href="{{ quiz.get_absolute_url }}" > {{quiz.name}} </a>
+                <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a>
             </p>
             </li>
             <li>
