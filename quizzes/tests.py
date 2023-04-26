@@ -1,13 +1,14 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from .models import Class, Grade, Quiz,Tag, Question, Options
+from .models import Class, Grade, Quiz, Tag, Question, Options
 from datetime import datetime as dt, timedelta
 from django.utils import timezone
 from termcolor import colored
 
 # Create the 'Tag' Test
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/46/23
 class TagTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -15,10 +16,20 @@ class TagTestCase(TestCase):
         super().setUpClass()
 
     def setUp(self):
-        opt = Options(content="temp")
-        opt.save()
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.", correctOption_id = opt.id)
-        self.question.options.add(opt)
+        self.opt = Options(content="temp")
+        self.opt.save()
+        self.opt2 = Options(content = "temp2")
+        self.opt2.save()
+
+        self.question = Question(
+            stem="What is the capital of France?",
+            type=0,
+            explain="The capital of France is Paris.",
+            correctOption = self.opt
+            )
+        self.question.save()
+        self.question.options.set([self.opt, self.opt2])
+
         self.tag1 = Tag.objects.create(tag='Geography')
         self.tag2 = Tag.objects.create(tag='Europe')
     
