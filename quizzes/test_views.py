@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from quizzes.forms import questionForm
-from .models import Quiz, Question, Tag, Option, Type, User, Student, Options, Answer, Class, Grade
+from .forms import questionForm
+from .models import Quiz, Question, Tag, Type, User, Student, Options, Class, Grade
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -57,43 +57,56 @@ class questionListViewTest(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         print("/"+colored('\n Model: QuestionList is Tested!', 'green'))
-
+    @classmethod
+    def setUpClass(cls):
+        print(colored('OptionList is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: OptionList is Tested!', 'green'))
+    @classmethod
+    def setUpClass(cls):
+        print(colored('AnswerList is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: AnswerList is Tested!', 'green'))
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Delete Question is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Delete Question is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
         
         # Create 3 questions
         number_of_questions = 3
         count = 1
+        ans = Options.objects.create(content = "Correct answer")
+        ans.save()
+        op = Options.objects.create(content = "fake answer")
+        op.save()
+        op2 = Options.objects.create(content = "fake answer two")
+        op2.save()
         for question_id in range(number_of_questions):
             ques =Question.objects.create(
                 stem=f'What is one plus one?',
                 type=0,
                 explain=f'It is odd',
+                correctOption_id=ans.id,
             )
             ques.save()
             tag1 = Tag.objects.create(tag =f'CIS201')
             tag2 = Tag.objects.create(tag =f'CIS202')
             ques.tag.add(tag1, tag2)
+            ques.options.add(op, op2)
             ques.save()
-            q = Question.objects.get(id = count)
-            op = Options.objects.create(
-                content = "fake answer",
-                question = q
-            )
-            op.save()
-            op2 = Options.objects.create(
-                content = "real answer",
-                question = q
-            )
-            op2.save()
-            ans = Answer.objects.create(
-                opt = op2,
-                question = q
-            )
-            ans.save()
             count = count + 1
-    
-            
 
     def test_question_page_view_url_exists_at_desired_location(self):
         response = self.client.get('/questions/')
@@ -115,46 +128,36 @@ class questionListViewTest(TestCase):
         self.assertEqual(len(response.context['question_list']), 3)
 
     def test_question_content(self):
-        self.assertEqual(Question.objects.get(id = 1).stem, 'What is one plus one?')
-        self.assertEqual(Question.objects.get(id = 1).type, 0)
-        self.assertEqual(Question.objects.get(id = 1).explain, 'It is odd')
+        ques = Question.objects.get(id = 1)
+        tempop = ques.options.all()
+        op = tempop[0]
+        optwo = tempop[1]
+        self.assertEqual(ques.stem, 'What is one plus one?')
+        self.assertEqual(ques.type, 0)
+        self.assertEqual(ques.explain, 'It is odd')
+        self.assertEqual(op.content, 'fake answer')
+        self.assertEqual(optwo.content, 'fake answer two')
+        self.assertEqual(ques.correctOption.content, 'Correct answer')
+
+    def test_second_question_content(self):
+        ques = Question.objects.get(id = 2)
+        tempop = ques.options.all()
+        op = tempop[0]
+        optwo = tempop[1]
+        self.assertEqual(ques.stem, 'What is one plus one?')
+        self.assertEqual(ques.type, 0)
+        self.assertEqual(ques.explain, 'It is odd')
+        self.assertEqual(op.content, 'fake answer')
+        self.assertEqual(optwo.content, 'fake answer two')
+        self.assertEqual(ques.correctOption.content, 'Correct answer')
     
-    @classmethod
-    def setUpClass(cls):
-        print(colored('OptionList is Testing: ', 'blue'))
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: OptionList is Tested!', 'green'))
-    @classmethod
-    def setUpClass(cls):
-        print(colored('AnswerList is Testing: ', 'blue'))
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: AnswerList is Tested!', 'green'))
+   
     def test_options_length(self):
-        self.assertEqual(len(Options.objects.all()), 6)
-    
-    def test_Answer_length(self):
-        self.assertEqual(len(Answer.objects.all()), 3)
+        self.assertEqual(len(Options.objects.all()), 3)
     
     def test_options_content(self):
-        self.assertEqual(Options.objects.get(id = 1).content, 'fake answer')
+        self.assertEqual(Options.objects.get(id = 1).content, 'Correct answer')
     
-    def test_Answer_content(self):
-         ans = Answer.objects.get(id = 1).opt
-         self.assertEqual(ans.content, 'real answer')
-    @classmethod
-    def setUpClass(cls):
-        print(colored('Delete Question is Testing: ', 'blue'))
-        super().setUpClass()
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: Delete Question is Tested!', 'green'))
     #Delete a question and test the length and if the id exists to see if it deletes
     def test_delete_button_view_url_accessible_by_name_and_deletion_works(self):
         ques = Question.objects.get(id=1)
@@ -163,45 +166,112 @@ class questionListViewTest(TestCase):
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 2)
-        self.assertFalse(Question.objects.filter(pk=1).exists())
+        self.assertFalse(Question.objects.filter(id=1).exists())
+        self.assertTrue(Options.objects.filter(pk=1).exists())
        
 
 class editViewTest(TestCase):
-    # @classmethod
-    # def setUpClass(cls):
-    #     print(colored('Edit Question is Testing: ', 'blue'))
-    #     super().setUpClass()
-    # @classmethod
-    # def tearDownClass(cls):
-    #     super().tearDownClass()
-    #     print("/"+colored('\n Model: Edit Question is Tested!', 'green'))
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Edit Question is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Edit Question is Tested!', 'green'))
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Question Form is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Model: Question Form is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
        # Create 1 question
-        
-        self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.")
+        opt = Options(content="temp")
+        opt.save()
+        opttwo = Options(content="tempTwo")
+        opttwo.save()
+        self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.", correctOption_id = opt.id)
         self.question.tag.create(tag='math')
+        self.question.options.add(opttwo)
         self.question.save()
-            
-    # #should not create a new question but alter existing question, so length of question list should stay the same
-    # def test_edit_button_view_url_accessible_by_name_and_length_is_same(self):
-    #     self.assertEqual(self.question.stem, "what is two plus two")
-    #     ques = questionForm(instance = self.question).initial
-    #     ques['stem'] ='What is an apple?'
-    #     ques['type'] =1
-    #     ques['explain'] ='It is a fruit'
-    #     #this needs selenium to click the tags
-    #     ques['tag']  = 
-    #     ques['Update'] = True
         
-    #     self.assertEqual(ques['stem'], "What is an apple?")
-    #     response = self.client.post(url = 'edit', path = '/questions/edit_question/1',data = ques)
-    #     self.assertEqual(response.status_code, 200)
-    #     response = self.client.get(reverse('questionPage'))
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(len(response.context['question_list']), 1)
-    #     self.question.refresh_from_db()
-    #     self.assertEqual(self.question.stem, "What is an apple?")
+    def test_empty_form(self):
+        form = questionForm()
+        self.assertInHTML(
+            '<tr> <th><label for="id_stem">Stem:</label></th> <td> <input type="text" name="stem" maxlength="1024" required id="id_stem"></td></tr><tr><th><label for="id_type">Type:</label></th><td><select name="type" required id="id_type"><option value="" selected>---------</option><option value="0">MC</option><option value="1">PMC</option><option value="2">PP</option></select></td></tr><tr><th><label for="id_explain">Explain:</label></th><td><input type="text" name="explain" maxlength="512" required id="id_explain"></td></tr><tr><th><label for="id_tag">Tag:</label></th><td><select name="tag" id="id_tag" multiple><option value="1">math</option></select></td></tr><tr><th><label for="id_options">Options:</label></th> <td><select name="options" required id="id_options" multiple><option value="1">temp</option> <option value="2">tempTwo</option></select></td></tr><tr><th><label for="id_correctOption">CorrectOption:</label></th><td><select name="correctOption" id="id_correctOption"><option value="" selected>---------</option><option value="1">temp</option><option value="2">tempTwo</option></select> </td></tr>', str(form)
+        )
+    def test_valid_form(self):
+        opt = Options(content="other")
+        opt.save()
+        opttwo = Options(content="otherTwo")
+        opttwo.save()
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques.tag.create(tag='example')
+        ques.options.add(opttwo)
+        ques.save()
+        data = {
+            'stem': ques.stem, 
+            'type': ques.type,
+            'explain': ques.explain,
+            'correctOption': ques.correctOption,
+            'options': ques.options.all(),
+            'tag':ques.tag.all(),
+        }
+        form = questionForm(data=data)
+        self.assertTrue(form.is_valid())
+    #testing invalid form by leaving out field
+    def test_invalid_form(self):
+        opt = Options(content="other")
+        opt.save()
+        opttwo = Options(content="otherTwo")
+        opttwo.save()
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques.tag.create(tag='example')
+        ques.options.add(opttwo)
+        ques.save()
+        data = {
+            'stem': ques.stem, 
+            'type': ques.type,
+            'correctOption': ques.correctOption,
+            'options': ques.options.all(),
+            'tag':ques.tag.all(),
+        }
+        form = questionForm(data=data)
+        self.assertFalse(form.is_valid()) 
+
+    # #should not create a new question but alter existing question, so length of question list should stay the same
+    def test_edit_button_view_url_accessible_by_name_and_length_is_same(self):
+        opt = Options(content="other")
+        opt.save()
+        opttwo = Options(content="otherTwo")
+        opttwo.save()
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques.tag.create(tag='example')
+        ques.options.add(opttwo)
+        ques.save()
+        self.assertEqual(ques.stem, "newQues")
+        data = {
+            'stem': "What is an apple?", 
+            'type': ques.type,
+            'explain': ques.explain,
+            'correctOption': ques.correctOption,
+            'options': ques.options.all(),
+            'tag':ques.tag.all(),
+        }
+        # form = questionForm(data=data)
+        # self.assertTrue(form.is_valid())
+        response = self.client.post(reverse("edit", args=[ques.id]),Update = 'Update', data = data)
+        # response = self.client.post(url = 'edit', path = '/questions/edit_question/1',data = data)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['question_list']), 2)
+        # ques.refresh_from_db()
+        # self.assertEqual(ques.stem, "What is an apple?")
    
 class exportTest(TestCase):
     @classmethod
@@ -214,31 +284,42 @@ class exportTest(TestCase):
         print("/"+colored('\n Model: Exporting is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
-
+        opt1 = Options.objects.create(content = "one")
+        opt1.save()
+        opt2 = Options.objects.create(content = "two")
+        opt2.save()
+        opt3 = Options.objects.create(content = "three")
+        opt3.save()
         self.ques =Question.objects.create(
             stem=f'What is one plus one?',
             type=0,
-            explain=f'It is odd',
+            explain=f'It is even',
+            correctOption = opt2
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt3)
         self.ques =Question.objects.create(
-            stem=f'What is one plus one?',
+            stem=f'What is one plus zero?',
             type=0,
             explain=f'It is odd',
+            correctOption = opt1
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt2, opt3)
         self.ques =Question.objects.create(
-            stem=f'What is one plus one?',
+            stem=f'What is one plus two?',
             type=0,
             explain=f'It is odd',
+            correctOption = opt3
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2)
 
     def test_export_view_url_exists_at_desired_location(self):
         response = self.client.get('/export_xcl/')
@@ -265,29 +346,62 @@ class exportTest(TestCase):
             response['Content-Disposition'],
             'attachment; filename=filename.xls'
         )
-#         print(response.context)
-#         workbook = xlrd.open_workbook(response.content)
 
-#         #Get the first sheet in the workbook by index
-#         sheet1 = workbook.sheet_by_index(0)
-
-#         #Get each row in the sheet as a list and print the list
-#         for rowNumber in range(sheet1.nrows):
-#             row = sheet1.row_values(rowNumber)
-#             print(row)
 
 
 class addPageTest(TestCase):
     @classmethod
+    def setUpClass(cls):
+        print(colored('Add Page is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n View: Add Page is Tested!', 'green'))
+    @classmethod
     def setUpTestData(self):
-        print(colored('View testing: ', 'blue')+colored('Add Page', 'red'))
-        # Create 1 question
+        # Create 3 questions
         
-        self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.")
-        self.tag1 = Tag.objects.create(tag='math')
-        self.tag2 = Tag.objects.create(tag='addition')
+        opt1 = Options.objects.create(content = "five")
+        opt1.save()
+        opt2 = Options.objects.create(content = "seven")
+        opt2.save()
+        opt3 = Options.objects.create(content = "nine")
+        opt3.save()
+        opt4 = Options.objects.create(content = "eleven")
+        opt4.save()
+        self.ques =Question.objects.create(
+            stem='What is two plus three?',
+            type=1,
+            explain="it's not four",
+            correctOption = opt1
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is three plus four?',
+            type=1,
+            explain='eight minus one',
+            correctOption = opt2
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is what is three times three?',
+            type=1,
+            explain='same as three plus three plus three',
+            correctOption = opt3
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Multiplication')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        
             
-        
     def test_add_page_view_url_exists_at_desired_location(self):
         # print("Tested Add Page View exists at the correct URL.")
         response = self.client.get('/questions/add/')
@@ -307,54 +421,89 @@ class addPageTest(TestCase):
     def test_add_and_submit_button(self):
         # print("Tested the 'Add and Submit' Button.")
         response = self.client.get(reverse('questionPage'))
-        self.assertEqual(len(response.context['question_list']), 1)
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi'})
+        self.assertEqual(len(response.context['question_list']), 3)
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['question_list']), 2)
+        self.assertEqual(len(response.context['question_list']), 4)
     
     def test_submit_and_add_another_button(self):
         # print("Tested the 'Submit and Add Another' Button.")
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('add'))
         
-        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag num here'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt1|opt2', 'correctOption':'correct'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         
+        self.assertEqual(len(response.context['question_list']), 5)
+
+
+    def test_cancel_button(self):
+        response = self.client.get("/questions/add/")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 3)
-              
-    # # need help with the cancel button
-    # def test_cancel_button(self):
-    #     print("Tested the Cancel Button.")
-        
-    #     response = self.client.get("/questions/add/")
-    #     self.assertEqual(response.status_code, 200)
-    #     response = self.client.get(reverse('questionPage'))
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(len(response.context['question_list']), 1)
     
+    
+class importTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Import is Testing: ', 'blue'))
+        super().setUpClass()
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        print("/"+colored('\n View: Add Page and Buttons are Tested!', 'green'))
-class importTest(TestCase):
+        print("/"+colored('\n View: Import is Tested!', 'green'))
     @classmethod
     def setUpTestData(self):
         print(colored('View testing: ', 'blue')+colored('Import', 'red'))
-        # Create 2 questions
-        self.question = Question.objects.create(stem="What is the capital of New York?", type=1, explain="The capital of New York is Albany.")
-        self.tag1 = Tag.objects.create(tag='Geography')
-        self.tag2 = Tag.objects.create(tag='New York')
         
-        self.question2 = Question.objects.create(stem="What color is the sky?", type=2, explain="The sky is blue.")
-        self.tag3 = Tag.objects.create(tag='Colors')
+        # Create 3 questions
+        opt1 = Options.objects.create(content = "five")
+        opt1.save()
+        opt2 = Options.objects.create(content = "seven")
+        opt2.save()
+        opt3 = Options.objects.create(content = "nine")
+        opt3.save()
+        opt4 = Options.objects.create(content = "eleven")
+        opt4.save()
+        self.ques =Question.objects.create(
+            stem='What is two plus three?',
+            type=1,
+            explain="it's not four",
+            correctOption = opt1
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is three plus four?',
+            type=1,
+            explain='eight minus one',
+            correctOption = opt2
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is what is three times three?',
+            type=1,
+            explain='same as three plus three plus three',
+            correctOption = opt3
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Multiplication')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
         
         
-
     def test_import_view_url_exists_at_desired_location(self):
         response = self.client.get('/questions/importing/')
         self.assertEqual(response.status_code, 200)
@@ -363,21 +512,9 @@ class importTest(TestCase):
         response = self.client.get(reverse('importing'))
         self.assertEqual(response.status_code, 200)
 
-    def test_add_view_url_exists_at_desired_location(self):
-        response = self.client.get('/questions/add/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_add_view_url_accessible_by_name(self):
-        response = self.client.get(reverse('add'))
-        self.assertEqual(response.status_code, 200)
         
     def test_importing_file(self):
         response = self.client.get(reverse('questionPage'))
-        self.assertEqual(response.status_code, 200)
-        # response = self.client.get(reverse('importing'))
-        # self.assertEqual(response.status_code, 200)
-        # response = self.client.get(reverse('importxcl'))
-        # self.assertEqual(response.status_code, 200)
         
         # create file to import
         wb = Workbook()
@@ -385,46 +522,30 @@ class importTest(TestCase):
         sheet.write(0, 0, 'ID')
         sheet.write(0, 1, 'Question')
         sheet.write(0, 2, 'Type')
-        sheet.write(0, 3, 'Hint')
-        sheet.write(0, 4, 'Tags')
-        sheet.write(1, 0, '1')
+        sheet.write(0, 3, 'Answer')
+        sheet.write(0, 4, 'Options')
+        sheet.write(0, 5, 'Hint')
+        sheet.write(0, 6, 'Tags')
+        sheet.write(1, 0, '4')
         sheet.write(1, 1, 'What does // mean?')
         sheet.write(1, 2, 'PP')
-        sheet.write(1, 3, 'it is a type of comment')
-        sheet.write(1, 4, 'Java|CIS')
-        sheet.write(2, 0, '2')
-        sheet.write(2, 1, 'What is two times two?')
-        sheet.write(2, 2, 'MC')
-        sheet.write(2, 3, 'the same as addition')
-        sheet.write(2, 4, 'Math|Multiplication')
+        sheet.write(1, 3, 'a single line comment')
+        sheet.write(1, 4, 'multi-line|single line|no line|idk')
+        sheet.write(1, 5, 'it is a type of comment')
+        sheet.write(1, 6, 'Java|CIS')
         wb.save('import_test_file.xls')
         
-        # data = SimpleUploadedFile('import_test_file.xls', content_type="xls")
-        # response = self.client.post(reverse('importxcl'),content='import_test_file.xls' )
+        # file = {'my_file':'import_test_form.xls'}
+        # response = self.client.post(reverse('importing'), file)
         # self.assertEqual(response.status_code, 200)
+        # self.assertTemplateUsed(response, 'import_form.html')
         
-        # os.remove("import_test_file.xls") # delete file after test is done
-        # for row in sheet.iter_rows():
-        #     temp = []
-        #     for tag in data[4].split('|'):
-        #         h = Tag(tag = tag)
-        #         h.save()
-        #         temp.append(h)
-        #     value = Question(
-        #         row[0], # ID
-        #         row[1], # stem
-        #         row[2], # type
-        #         row[3], # explain
-        #     )
-        #     value.save()
-        #     value.tag.add(*temp)
-        #     value.save()
-        # return HttpResponseRedirect(reverse('questionPage'))
-    
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n View: Import is Tested!', 'green'))
+        # response = self.client.post(reverse('importxcl'))
+        # self.assertEqual(response.status_code, 200)
+        # response = self.client.get(reverse('questionPage'))
+        # self.assertEqual(response.status_code, 200)
+        # self.assertEqual(len(response.context['question_list']), 4)
+        
 
 
 class LoginTest(TestCase):
@@ -551,8 +672,12 @@ class SearchQuestionsTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1")
-        self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2")
+        opt1 = Options.objects.create(content = "one")
+        opt1.save()
+        opt2 = Options.objects.create(content = "two")
+        opt2.save()
+        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1", correctOption= opt1)
+        self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2", correctOption=opt2)
 
     #test the search.
     def test_search_questions_view(self):

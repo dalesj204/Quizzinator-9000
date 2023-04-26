@@ -163,13 +163,70 @@
     }
   },
   {
+    "model": "quizzes.Options",
+    "pk": "1",
+    "fields": {
+      "content": "Multi line comment"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "2",
+    "fields": {
+      "content": "Single Line Comment"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "3",
+    "fields": {
+      "content": "not accessible by any other class"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "4",
+    "fields": {
+      "content": "accessible by any other class"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "5",
+    "fields": {
+      "content": "Central Processing Unit"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "6",
+    "fields": {
+      "content": "Field Programmable Gate Array"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Options",
+    "pk": "7",
+    "fields": {
+      "content": "Program Counter"
+    }
+  },
+  {
     "model": "quizzes.Question",
     "pk": "1",
     "fields": {
       "stem": "What does // mean?",
       "type": "0",
       "explain": "Type of Comment",
-      "tag": "1"
+      "tag": "1",
+      "options": ["1", "2"],
+      "correctOption": "2"
     }
   },
   {
@@ -179,7 +236,9 @@
       "stem": "What does public mean",
       "type": "0",
       "explain": "Not private",
-      "tag": ["1", "2"]
+      "tag": ["1", "2"],
+      "options": ["3", "4"],
+      "correctOption": "4"
     }
   }
   ,
@@ -190,105 +249,9 @@
       "stem": "What does a CPU stand for?",
       "type": "0",
       "explain": "Central ...",
-      "tag": "3"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Options",
-    "pk": "1",
-    "fields": {
-      "options": "1",
-      "content": "Multi line comment",
-      "question": "1"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Options",
-    "pk": "2",
-    "fields": {
-      "options": "2",
-      "content": "Single Line Comment",
-      "question": "1"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Answer",
-    "pk": "1",
-    "fields": {
-      "options": "2",
-      "opt": "2",
-      "question": "1"
-    }
-  } ,
-  {
-    "model": "quizzes.Options",
-    "pk": "3",
-    "fields": {
-      "options": "1",
-      "content": "not accessible by any other class",
-      "question": "2"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Options",
-    "pk": "4",
-    "fields": {
-      "options": "2",
-      "content": "accessible by any other class",
-      "question": "2"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Answer",
-    "pk": "2",
-    "fields": {
-      "options": "2",
-      "opt": "4",
-      "question": "2"
-    }
-  },
-  {
-    "model": "quizzes.Options",
-    "pk": "5",
-    "fields": {
-      "options": "1",
-      "content": "Central Processing Unit",
-      "question": "3"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Options",
-    "pk": "6",
-    "fields": {
-      "options": "2",
-      "content": "Field Programmable Gate Array",
-      "question": "3"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Options",
-    "pk": "7",
-    "fields": {
-      "options": "2",
-      "content": "Program Counter",
-      "question": "3"
-    }
-  }
-  ,
-  {
-    "model": "quizzes.Answer",
-    "pk": "3",
-    "fields": {
-      "options": "2",
-      "opt": "5",
-      "question": "3"
+      "tag": "3",
+      "options": ["5", "6", "7"],
+      "correctOption": "5"
     }
   }
 ]

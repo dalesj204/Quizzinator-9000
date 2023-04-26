@@ -1,9 +1,8 @@
 from django.contrib import admin
-from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Answer, Teacher, Student, User
+from .models import Class, Grade, Stats, Quiz, Tag, Question, Options, Teacher, Student, User
 
 admin.site.register(Tag)
 admin.site.register(Question)
-admin.site.register(Answer)
 admin.site.register(Stats)
 admin.site.register(Class)
 admin.site.register(Grade)

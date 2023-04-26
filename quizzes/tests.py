@@ -1,13 +1,14 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from .models import Class, Grade, Quiz,Tag, Question, Options, Answer
+from .models import Class, Grade, Quiz, Tag, Question, Options
 from datetime import datetime as dt, timedelta
 from django.utils import timezone
 from termcolor import colored
 
 # Create the 'Tag' Test
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/46/23
 class TagTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -15,7 +16,20 @@ class TagTestCase(TestCase):
         super().setUpClass()
 
     def setUp(self):
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
+        self.opt = Options(content="temp")
+        self.opt.save()
+        self.opt2 = Options(content = "temp2")
+        self.opt2.save()
+
+        self.question = Question(
+            stem="What is the capital of France?",
+            type=0,
+            explain="The capital of France is Paris.",
+            correctOption = self.opt
+            )
+        self.question.save()
+        self.question.options.set([self.opt, self.opt2])
+
         self.tag1 = Tag.objects.create(tag='Geography')
         self.tag2 = Tag.objects.create(tag='Europe')
     
@@ -34,157 +48,6 @@ class TagTestCase(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         print("/"+colored('\n Model: Tag is Tested!', 'green'))
-
-# Create the 'Option' Test
-# Author - Shawn Cai
-class OptionModelTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        print(colored('UnitTest is Testing: ', 'blue')+colored('Option', 'red'))
-        super().setUpClass()
-
-    def setUp(self):
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
-        self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
-        self.option2 = Options.objects.create(options=2, content="London", question=self.question)
-
-    
-    def test_options_content(self):
-        self.assertEqual(self.option1.content, "Paris")
-        self.assertEqual(self.option2.content, "London")
-
-    def test_options_question(self):
-        self.assertEqual(self.option1.question, self.question)
-        self.assertEqual(self.option2.question, self.question)
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: Option is Tested!', 'green'))
-
-# Create the 'Answer' Test
-# Author - Shawn Cai
-class AnswerModelTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        print(colored('UnitTest is Testing: ', 'blue')+colored('Answer', 'red'))
-        super().setUpClass()
-
-    def setUp(self):
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
-        self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
-        self.option2 = Options.objects.create(options=2, content="London", question=self.question)
-        self.answer = Answer.objects.create(options=1, question=self.question)
-
-    
-    # def test_correct_answer(self):
-    #     correct_option = Options.objects.get(pk=self.answer.options)
-    #     self.assertEqual(correct_option.content, "Paris")
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: Answer is Tested!', 'green'))
-
-# Create the 'Question' Test
-# Author - Shawn Cai
-class QuestionModelTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        print(colored('UnitTest is Testing: ', 'blue')+colored('Question', 'red'))
-        super().setUpClass()
-
-    def setUp(self):
-        self.question = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
-        self.option1 = Options.objects.create(options=1, content="Paris", question=self.question)
-        self.option2 = Options.objects.create(options=2, content="London", question=self.question)
-        self.answer = Answer.objects.create(options=1, question=self.question)
-        self.tag1 = Tag.objects.create(tag='Geography')
-        self.tag2 = Tag.objects.create(tag='Europe')
-        self.question.tag.add(self.tag1)
-        self.question.tag.add(self.tag2)
-    
-    # def test_question_contains_options(self):
-    #     options = self.question.options_set.all()
-    #     self.assertEqual(len(options), 2)
-
-    # def test_question_contains_answer(self):
-    #     answer = self.question.answer_set.first()
-    #     self.assertEqual(answer.options, 1)
-
-    # def test_question_contains_tags(self):
-    #     tags = self.question.tag.all()
-    #     self.assertEqual(len(tags), 2)
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: Question is Tested!', 'green'))
-        
-# Create the 'Quiz' Test
-# Author - Shawn Cai
-class QuizModelTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        print(colored('UnitTest is Testing: ', 'blue')+colored('Quiz', 'red'))
-        super().setUpClass()
-
-    def setUp(self):
-        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="The capital of France is Paris.")
-        self.option1 = Options.objects.create(options=1, content="Paris", question=self.question1)
-        self.option2 = Options.objects.create(options=2, content="London", question=self.question1)
-        self.answer1 = Answer.objects.create(options=1, question=self.question1)
-        self.tag1 = Tag.objects.create(tag='Geography')
-        self.tag2 = Tag.objects.create(tag='Europe')
-        self.question1.tag.add(self.tag1)
-        self.question1.tag.add(self.tag2)
-
-        self.question2 = Question.objects.create(stem="What is the currency of Japan?", type=0, explain="The currency of Japan is the yen.")
-        self.option3 = Options.objects.create(options=1, content="Yen", question=self.question2)
-        self.option4 = Options.objects.create(options=2, content="Dollar", question=self.question2)
-        self.answer2 = Answer.objects.create(options=1, question=self.question2)
-        self.tag3 = Tag.objects.create(tag='Economy')
-        self.tag4 = Tag.objects.create(tag='Asia')
-        self.question2.tag.add(self.tag3)
-        self.question2.tag.add(self.tag4)
-
-        start_time = timezone.make_aware(dt(2023, 3, 22, 9, 0, 0))
-        end_time = start_time + timedelta(hours=1)
-        time_limit = timedelta(minutes=30)
-
-        self.quiz = Quiz.objects.create(name="Geography and Economy Quiz", start_time=start_time, end_time=end_time, time_limit=time_limit)
-        self.quiz.questions.add(self.question1)
-        self.quiz.questions.add(self.question2)
-    
-    # def test_quiz_contains_questions(self):
-    #     questions = self.quiz.questions.all()
-    #     self.assertEqual(len(questions), 2)
-
-    # def test_question_contains_tags_and_answers(self):
-    #     for question in self.quiz.questions.all():
-    #         tags = question.tag.all()
-    #         answer = question.answer_set.first()
-    #         if question == self.question1:
-    #             self.assertEqual(len(tags), 2)
-    #             self.assertEqual(answer.options, 1)
-    #         elif question == self.question2:
-    #             self.assertEqual(len(tags), 2)
-    #             self.assertEqual(answer.options, 1)
-
-    # def test_quiz_attributes(self):
-    #     start_time = timezone.make_aware(dt(2023, 3, 22, 9, 0, 0))
-    #     end_time = start_time + timedelta(hours=1)
-    #     time_limit = timedelta(minutes=30)
-
-    #     self.assertEqual(self.quiz.name, "Geography and Economy Quiz")
-    #     self.assertEqual(self.quiz.start_time, start_time)
-    #     self.assertEqual(self.quiz.end_time, end_time)
-    #     self.assertEqual(self.quiz.time_limit, time_limit)
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        print("/"+colored('\n Model: Quiz is Tested!', 'green'))
 
 # Create the 'Class' Test
 # Author - Shawn Cai
@@ -255,3 +118,96 @@ class TestClassModel(TestCase):
         pracClass = Class.objects.create(name = "Assembly", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
         self.assertEqual(pracClass.gradebook.name, "quiz one")
         self.assertEqual(pracClass.gradebook.grade, 55)
+
+
+class QuizModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Quiz Model is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n The Quiz Model is Tested!', 'green'))
+    @classmethod
+    def setUpTestData(self):
+        # ###QUESTION 1 SETUP###
+        # Options
+        opt1_ques1 = Options.objects.create(content = "Computer Part University")
+        opt1_ques1.save()
+        opt2_ques1 = Options.objects.create(content = "Central Processing Unit")
+        opt2_ques1.save()
+        opt3_ques1 = Options.objects.create(content = "Computer Processing Unit")
+        opt3_ques1.save()
+
+        # Tags
+        tag1_ques1 = Tag.objects.create(tag = "Hardware")
+        tag1_ques1.save()
+
+        # Question
+        ques1 = Question.objects.create(
+            stem = "What is a CPU?",
+            type = 0,
+            explain = "It has nothing to do with University",
+            tag = tag1_ques1,
+            options = [opt1_ques1, opt2_ques1, opt3_ques1],
+            correctOption = opt2_ques1
+            )
+        ques1.save()
+        
+        ###QUESTION 2 SETUP###
+        # Options
+        opt1_ques2 = Options.objects.create(content = "Turring Machine")
+        opt1_ques2.save()
+        opt2_ques2 = Options.objects.create(content = "Turbine Machine")
+        opt2_ques2.save()
+        opt3_ques2 = Options.objects.create(content = "Macbook Home")
+        opt3_ques2.save()
+
+        # Tags
+        tag1_ques2 = Tag.objects.create(tag = "History")
+        tag1_ques2.save()
+
+        # Question
+        ques2 = Question.objects.create(
+            stem = "What was the first computer called?",
+            type = 0,
+            explain = "It had machine in its name",
+            tag = tag1_ques2,
+            options = [opt1_ques2, opt2_ques2, opt3_ques2],
+            correctOption = opt1_ques2
+            )
+        ques2.save()
+        
+        ###QUESTION 3 SETUP###
+        # Options
+        opt1_ques3 = Options.objects.create(content = "Chicken")
+        opt1_ques3.save()
+        opt2_ques3 = Options.objects.create(content = "Egg")
+        opt2_ques3.save()
+        opt3_ques3 = Options.objects.create(content = "Who cares?")
+        opt3_ques3.save()
+
+        # Tags
+        tag1_ques3 = Tag.objects.create(tag = "Impossible")
+        tag1_ques3.save()
+
+        # Question
+        ques3 = Question.objects.create(
+            stem = "What came first?",
+            type = 0,
+            explain = "This question is definitely asked WAY too much",
+            tag = tag1_ques3,
+            options = [opt1_ques3, opt2_ques3, opt3_ques3],
+            correctOption = opt3_ques3
+            )
+        ques3.save()
+        
+        # Quiz Setup
+        quiz = Quiz.objects.create(name = "Example Quiz", questions = [ques1, ques2, ques3], start_time = timezone.now, end_time = timezone.now, pasingThreshold = 70)
+        quiz.save()
+
+        questions = list(quiz.questions.all())
+        self.assertEqual(questions[1], opt2_ques1)
+        self.assertEqual(questions[2], opt1_ques2)
+        self.assertEqual(questions[3], opt3_ques3)

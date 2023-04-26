@@ -13,18 +13,6 @@ Type = (
     (2, 'PP')
 )
 
-# Author - Shawn Cai
-# Define the options for the 'Option' field of the 'Options' and 'Answer' models
-Option = (
-    (1, 'A'),
-    (2, 'B'),
-    (3, 'C'),
-    (4, 'D'),
-    (5, 'E'),
-    (6, 'F'),
-    (7, 'G'),
-    (8, 'H')
-)
 
 # Create the 'Tag' model
 class Tag(models.Model):
@@ -34,102 +22,112 @@ class Tag(models.Model):
         verbose_name = 'Tag'  # Define the verbose name for the model
     def tag_label_return(self, obj):
       return f"{obj.name}"
-# Create the 'Question' model
+    def __str__(self):
+        return self.tag
+
+# The Options model helps build a question
+# 
+# The model stores just a string
+# This allows a fixture script to create it on startup
+# The question stores this model in a ManyToManyField
+# The correct answer is now determined in the Question model
+#
 # Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
+class Options(models.Model):
+    # The text to be displayed describing the choice in the question
+    content = models.CharField(max_length=256, verbose_name='content')
+
+    class Meta:
+        db_table = 'options'    # Define the database table name
+        verbose_name = 'Option' # Define the verbose name for the model
+
+    def __str__(self):
+        return self.content
+
+# The Question model builds a quiz
+# 
+# The model stores a lot of information, listed below in comments
+# The field correctOption MUST ALWAYS be filled upon INITIAL creation of the model
+# The field options MUST contain the option stored in correctOption as well
+# There is only ONE correctOption that can be stored, meaning
+# there cannot be a question with more than one correct answer
+# 
+# ###SCRIPTING###
+# When creating the models in a script, create the options first
+# 
+# Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
 class Question(models.Model):
+
+    # The question being asked
     stem = models.CharField(max_length=1024, verbose_name='stem', blank=False, null=False)
+
+    # Determines multiple choice, parsons, etc.
     type = models.IntegerField(choices=Type, verbose_name='type')
+
+    # A hint for the question
     explain = models.CharField(max_length=512, verbose_name='explain', blank=False, null=False)
+
+    # A list of tags for searching for questions
     tag = models.ManyToManyField(Tag, blank=True)
+
+    # A list of options assigned to the question
+    options = models.ManyToManyField(Options, related_name="options")
+
+    # The correct answer for the question
+    correctOption = models.ForeignKey(Options, on_delete=models.CASCADE, related_name="correctOption", default=None, blank=True)
+
+    # An array used for calculating the random order of the options
+    order = []
     def get_type(self, ind):
         return f"{Type[ind]}"
     
     class Meta:
-        db_table = 'questions'  # Define the database table name
-        verbose_name = 'Question'  # Define the verbose name for the model
-    
-    def __str__(self):
-        return self.stem #So i can grab the Question Stem.
-
-# Create the 'Options' model
-# Author - Shawn Cai
-class Options(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
-    content = models.CharField(max_length=256, verbose_name='content')
-    question = models.ForeignKey('Question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
-
-    class Meta:
-        db_table = 'options'  # Define the database table name
-        verbose_name = 'Option'  # Define the verbose name for the model
-        unique_together = ('question', 'content')  # Define a unique constraint for the combination of 'question' and 'content' fields
-        ordering = ['options']  # Define the default ordering for the model
+        db_table = 'questions'      # Define the database table name
+        verbose_name = 'Question'   # Define the verbose name for the model
 
     def __str__(self):
-             return self.content
+        return self.stem
 
-# Create the 'Answer' model
+# This is the main model for the program
+# 
+# This model also stores a lot of information, which is described in comments within
+# All questions are displayed on the same page
+# 
+# ###SCRIPTING###
+# When creating these models in a script, create the
+# questions FIRST (Follow other scripting instructions as well)
+# 
+# 
 # Author - Shawn Cai
-class Answer(models.Model):
-    options = models.IntegerField(choices=Option, verbose_name='options', null=True)
-    opt = models.ForeignKey('Options', on_delete=models.CASCADE, default=1) #we dont want to default, added association to list out the question page, import/export correctly
-    question = models.ForeignKey('question', on_delete=models.CASCADE)  # Define a foreign key relationship to the 'Question' model
-
-    class Meta:
-        db_table = 'answers'  # Define the database table name
-        verbose_name = 'Answer'  # Define the verbose name for the model
-        unique_together = ('question', 'options')  # Define a unique constraint for the combination of 'question' and 'options' fields
-        ordering = ['options']  # Define the default ordering for the model
-
-# Create the 'Quiz' model
-# Author - Shawn Cai
+# Revised - Hayden Dustin - 4/23/23
 class Quiz(models.Model):
+
+    # The quiz's title
     name = models.CharField(max_length=255)
+
+    # The list of questions contained in the quiz
     questions = models.ManyToManyField(Question)
+
+    # The time the quiz becomes available
     start_time = models.DateTimeField(default=timezone.now)
+
+    # The time the quiz becomes unavailable
     end_time = models.DateTimeField(default=timezone.now)
+
+    # The amount of time given from the first attempt before the quiz automatically closes
     time_limit = models.DurationField(default=timedelta(minutes=30))
+
+    # The grade the student must match or exceed for the quiz to be considered passed
+    passingThreshold = models.PositiveSmallIntegerField(default=0)
     
     class Meta:
-        db_table = 'quizzes'  # Define the database table name
-        verbose_name = 'Quiz'  # Define the verbose name for the model
+        db_table = 'quizzes'    # Define the database table name
+        verbose_name = 'Quiz'   # Define the verbose name for the model
 
     def __str__(self):
         return self.name #So I can grab the Quiz Name
-    
-# The models with fake in front are for Jordan and I to mess around with for the use of getting the import/export working
-# while the questions/question bank reamins unchanged by us so that the others can finish
-# Do not touch
-# class fakeMultipleChoiceQuestion(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     root =models.TextField(default="")
-#     correct_answer = models.TextField(default="")
-#     distractors = models.TextField(default="")
-#     hint = models.TextField(blank=True, null=True)
-#     tags =models.TextField(default="")
-#     def __str__(self):
-#         return self.root
-
-# # quiz model contains name, course attributes, startDate, and endDate for quizzes
-# # A list of Quizzes will be listed in order of endDate for quiz, so it displays the quizzes that will end first
-# # @return str self.name - The quiz's name.
-# # @return absolute_url quiz_detail - the detail view for that particular quiz
-# class Quiz(models.Model):
-#     # id = models.AutoField('ID',primary_key=True)
-#     name = models.CharField(max_length=100)
-#     course = models.CharField(max_length=100)
-#     startDate = models.DateField(help_text="Set the date for when you want this quiz to open:", null=True)
-#     endDate = models.DateField(help_text="Set the date for when you want this quiz to close:", blank = True, null=True)
-#     class Meta:
-#         verbose_name_plural = "quizzes"
-#         ordering = ["-endDate"]
-
-#     def __str__(self):
-#         return str(self.name)
-
-#     def get_absolute_url(self):
-#         return reverse('quiz_detail', kwargs={'pk': self.pk})
-    
-    
     
 # temporary model for the sake of getting the gradebook page running.
 class Grade(models.Model):
@@ -191,13 +189,11 @@ class User(AbstractUser):
     def __str__(self):
         return str(self.first_name) + " " + str(self.last_name)
 
-# Student Model - Place Holder
+# Student Model
 #
-#
-#This is a place holder for the student model to have the
-#profile page up and running. It is not complex as it only
-#contains two fields. As the project continues, I implore
-#you to edit this to the needs it program as it evolves.
+# Only stores the classes as new information
+# This model attaches to the User model as a base
+# for all user information and functionality
 #
 # @return self.name - The student's name.
 class Student(models.Model):
@@ -217,7 +213,13 @@ class Student(models.Model):
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name
 
-
+# Teacher Model
+#
+# Only stores the classes as new information
+# This model attaches to the User model as a base
+# for all user information and functionality
+#
+# @return self.name - The teachers's name.
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="Teacher_User", default=None)
 
