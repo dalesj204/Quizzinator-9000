@@ -13,10 +13,13 @@
     <p>End Time: {{ quiz.end_time }}</p>
     <h2>Questions:</h2>
     <ul>
-        {% for question in quiz.questions.all %}
+        {% for question in questions %}
             <li>{{ question.stem }}</li>
         {% endfor %}
     </ul>
+    <form action={% url 'index' %} method="link">
+        <button type="submit">Return</button>
+    </form>
 </body>
 </html>
 {% endblock %}

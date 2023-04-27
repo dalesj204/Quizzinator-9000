@@ -1,16 +1,19 @@
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.views import generic
 from import_export import fields
 from import_export.widgets import ManyToManyWidget
 from quizzes import views
 import xlwt
 from django.shortcuts import redirect
-from django.views.generic import CreateView,View, ListView, TemplateView
+from django.views.generic import CreateView,View, ListView, TemplateView, DetailView
 from django.contrib import messages
 from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
+from .decorators import user_is_teacher, user_is_student
+from django.utils.decorators import method_decorator
 import tablib
 from django.urls import reverse
 from tablib import Dataset
@@ -18,33 +21,118 @@ from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import *
+from django.utils import timezone
 import datetime
 from datetime import datetime
 import random
 from django.db.models import Q
 # Create your views here.
-def index(request):
-    
-    num_quizzes = 0#Quiz.objects.all().count()
-    
-    context = {
-        'num_quizzes': num_quizzes,
-    }
-    
-    return render(
-        request,
-        'index.html', context=context,
-    )
 
-class ClassListView(generic.ListView):
-    model = Class
-    paginated_by = 10
-    template_name = 'class_list.html'
+# The home page displays a list of classes that the user is a part of
+@login_required(login_url='login')
+def index(request):
+    this_user = User.objects.get(id=request.user.id)
+    if this_user.is_student:
+        student = Student.objects.get(user=this_user)
+        classes = student.classes.all()
+        name = this_user.__str__()
+
+        context = {
+            'student': student,
+            'classes': classes,
+            'name': name,
+            'student_id': request.user.id,
+        }
+
+        return render(request, 'student_home.html', context)
+    
+    if this_user.is_teacher:
+        teacher = Teacher.objects.get(user=this_user)
+        classes = teacher.classes.all()
+        name = this_user.__str__()
+
+        context = {
+            'teacher': teacher,
+            'classes': classes,
+            'name': name,
+            'teacher_id': request.user.id,
+        }
+
+        return render(request, 'teacher_home.html', context)
+    else:
+        return redirect(LoginView)
+    
+
+def isActiveQuiz(now, start, end):
+    return start < now and now < end
+
+
+# Displays information about a class to a student/teacher
+@login_required(login_url='login')
+def ClassDetailView(request, class_id):
+    this_user = User.objects.get(id=request.user.id)
+    if this_user.is_student:
+        student = Student.objects.get(user=this_user)
+        try:
+            this_class = student.classes.get(pk=class_id) 
+            time = timezone.now()
+            active_quizzes = []
+            for q in this_class.quizzes.all():
+                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+                
+            teacher_list = Teacher.objects.all()
+            teachers_in_class = []
+            for t in teacher_list:
+                if t.classes.filter(pk=class_id).count() == 1:
+                    teachers_in_class.append(t)
+            context = {
+                'user': student,
+                'class': this_class,
+                'current_time': time,
+                'teacher_list': teachers_in_class,
+                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+            }
+            return render(request, 'class_detail_student.html', context=context)
+        except:
+            return render(request, 'not_in_class.html')
+    elif this_user.is_teacher:
+        teacher = Teacher.objects.get(user=this_user)
+        try:
+            this_class = teacher.classes.get(pk=class_id)
+            student_list = Student.objects.all()
+            students_in_class = []
+            for s in student_list:
+                if s.classes.filter(pk=class_id).count() == 1:
+                    students_in_class.append(s)
+                    
+            teacher_list = Teacher.objects.all()
+            teachers_in_class = []
+            for t in teacher_list:
+                if t.classes.filter(pk=class_id).count() == 1:
+                    teachers_in_class.append(t)
+            
+            time = timezone.now()
+            active_quizzes = []
+            for q in this_class.quizzes.all():
+                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+            context = {
+                'user': teacher,
+                'class': this_class,
+                'current_time': time,
+                'student_list': students_in_class,
+                'teacher_list': teachers_in_class,
+                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+            }
+            return render(request, 'class_detail_teacher.html', context=context)
+        except:
+            return render(request, 'not_in_class.html')
 
 #Lists out all the students currently in the class and all of the other students in the databes into two tables
 #precondition - n/a
 #postcondition - you add or remove students from class
 #parameter - class id, list of students associated and not associated with class
+@login_required(login_url='login')
+@user_is_teacher
 def studentPageView(request, id):
         list2 =[]
         stud2 = Student.objects.all().filter(~Q(classes = id))
@@ -66,6 +154,8 @@ def studentPageView(request, id):
 #precondition - student must not already be in the class
 #postcondition - student is now added to the class
 #parameter - class id, list of students to be added to the class
+@login_required(login_url='login')
+@user_is_teacher
 def addStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent')
@@ -82,6 +172,8 @@ def addStudentrecord(request, id):
 #precondition - student must be already be in the class
 #postcondition - student is now removed from the class
 #parameter - class id, list of students to be removed from the class
+@login_required(login_url='login')
+@user_is_teacher
 def deleteStudentrecord(request, id):
     if request.method == 'POST': 
         selectedStudent = request.POST.getlist('selectedStudent2')
@@ -127,6 +219,8 @@ class questionPageView(generic.ListView):
 # Parameter - none
 # Postcondition - Questions/IDs and options/answers get exported to excel file named filename
     #Fills out the header with column names for each attribute
+@login_required(login_url='login')
+@user_is_teacher
 def export_xcl(request):
      #Creates Excel workbook
     response = HttpResponse(content_type = "application/ms-excel")
@@ -201,7 +295,10 @@ def export_xcl(request):
     file.save(response)
     #Returns file for the response
     return response
+
 #Import form gives a form/template to give the file/filename that you will be importing
+@login_required(login_url='login')
+@user_is_teacher
 def importing(request):
     template = loader.get_template('import_form.html')
     return HttpResponse(template.render({}, request))
@@ -212,51 +309,61 @@ def importing(request):
 # Precondition - must be given an excel sheet, no other files
 # Parameter - root(question), correct_answer, distractors, hint, tags (all in the excel sheet)
 # Postcondition - Questions/IDs and options/answers now exists in the database with the correct fields
+@login_required(login_url='login')
+@user_is_teacher
 def import_xcl(request):
-    dataset = tablib.Dataset()
-    new_questions = request.FILES['my_file']
-    imported_data = dataset.load(new_questions.read(), format = 'xls')
-    for data in imported_data:
-        temp = []
-        for tag in data[6].split('|'): # tag
-            if not Tag.objects.all().filter(tag=tag).exists():
-                h = Tag(tag = tag)
-                h.save()
-            else:
-                h= Tag.objects.get(tag=tag)
-            temp.append(h)
-        
-        if(not(Options.objects.all().filter(content = data[3]).exists())):
-            o = Options(data[3])
-            o.save()
-        o = Options.objects.get(content = data[3])
-        value = Question(
-            id = data[0], # id
-            stem = data[1], # stem
-            type = data[2], # type
-            correctOption = o, # correctOption
-            explain = data[5], # explain
-        )
-        value.save()
-        value.tag.add(*temp)
-        value.save()
-        
-        optionList = []
-        for op in data[4].split('|'):
-            if not Options.objects.all().filter(content=op).exists():
-                h = Options(content=op)
-                h.save()
-            optionList.append(Options.objects.get(content=op).id)
-        value.options.set(optionList)
+    try:
+        dataset = tablib.Dataset()
+        new_questions = request.FILES['my_file']
+        imported_data = dataset.load(new_questions.read(), format = 'xls')
+        for data in imported_data:
+            temp = []
+            for tag in data[6].split('|'): # tag
+                if not Tag.objects.all().filter(tag=tag).exists():
+                    h = Tag(tag = tag)
+                    h.save()
+                else:
+                    h= Tag.objects.get(tag=tag)
+                temp.append(h)
             
-    return HttpResponseRedirect(reverse('questionPage'))
+            if(not(Options.objects.all().filter(content = data[3]).exists())):
+                o = Options(content = data[3])
+                o.save()
+            o = Options.objects.get(content = data[3])
+            value = Question(
+                id = data[0], # id
+                stem = data[1], # stem
+                type = data[2], # type
+                correctOption = o, # correctOption
+                explain = data[5], # explain
+            )
+            value.save()
+            value.tag.add(*temp)
+            value.save()
+            
+            optionList = []
+            for op in data[4].split('|'):
+                if not Options.objects.all().filter(content=op).exists():
+                    h = Options(content=op)
+                    h.save()
+                optionList.append(Options.objects.get(content=op).id)
+            value.options.set(optionList)
+                
+        return HttpResponseRedirect(reverse('questionPage'))
+    except:
+        messages.error(request, "File must be an excel file", extra_tags='excel')
+        return HttpResponseRedirect(reverse('importing'))
     
 # go back to the blog detail page after comment has been posted
+@login_required(login_url='login')
+@user_is_teacher
 def get_success_url(self):
     return reverse('questionPage')
 
   
 #Takes you to a page to fill out the fields to create a question manually 
+@login_required(login_url='login')
+@user_is_teacher
 def add(request):
     template = loader.get_template('add.html')
     return HttpResponse(template.render({}, request))
@@ -267,6 +374,8 @@ def add(request):
 # Precondition - Every field except for the hint has to be filled in
 # Parameter - root(question), correct_answer, distractors, hint, tags
 # Postcondition - Question/ID now exists in the database with the correct fields
+@login_required(login_url='login')
+@user_is_teacher
 def addrecord(request):
     x = request.POST['stem']
     y = request.POST['type']
@@ -324,6 +433,8 @@ def addrecord(request):
 # Precondition - Question/ID must exist
 # Parameter - Must be given question id to give
 # Postcondition - Question/ID no longer exist/is not being used anymore
+@login_required(login_url='login')
+@user_is_teacher
 def delete(request, id):
     ques = Question.objects.get(id=id)
     ques.delete()
@@ -334,6 +445,8 @@ def delete(request, id):
 # Precondition - Question/ID must exist
 # Parameter - Must be given question id to give
 # Postcondition - Question is now updated
+@login_required(login_url='login')
+@user_is_teacher
 def edit(request, id):
     question = Question.objects.get(id=id)
     template = loader.get_template('edit_question.html')
@@ -345,76 +458,9 @@ def edit(request, id):
     if 'Cancel' in request.POST:
         return HttpResponseRedirect(reverse('questionPage'))
     return HttpResponse(template.render({'question':question, 'form':form}, request))
+     
 
-
-@login_required(login_url='login')
-def TeacherHomeView(request):
-    # checks for authentication
-    if request.user.is_authenticated:
-        this_user = User.objects.get(id=request.user.id)
-        
-        # checks to make sure the user is a student
-        if this_user.is_teacher:
-            teacher = Teacher.objects.get(user=this_user)
-            classes = teacher.classes.all()
-            name = this_user.__str__()
-
-            context = {
-                'teacher': teacher,
-                'classes': classes,
-                'name': name,
-                'teacher_id': request.user.id,
-            }
-
-            return render(request, 'teacher_home.html', context)
-        
-        # redirects user to student home if they are a teacher instead
-        elif this_user.is_student:
-            return redirect(StudentHomeView, student_id=request.user.id)
-            
-
-@login_required(login_url='login')
-def StudentHomeView(request):
-    # checks for authentication
-    if request.user.is_authenticated:
-        this_user = User.objects.get(id=request.user.id)
-        
-        # checks to make sure the user is a student
-        if this_user.is_student:
-            student = Student.objects.get(user=this_user)
-            classes = student.classes.all()
-            name = this_user.__str__()
-
-            context = {
-                'student': student,
-                'classes': classes,
-                'name': name,
-                'student_id': request.user.id,
-            }
-
-            return render(request, 'student_home.html', context)
-        
-        # redirects user to teacher home if they are a teacher instead
-        elif this_user.is_teacher:
-            return redirect(TeacherHomeView, teacher_id=request.user.id)
-        
-    
-            
-
-def ClassDetailView(request, class_id):
-    this_class = Class.objects.get(id=class_id)
-    instructor = Teacher.objects.filter(classes=this_class)
-    roster = Student.objects.filter(classes=this_class)
-
-    context = {
-        'class': this_class,
-        'instructor': instructor,
-        'roster': roster,
-    }
-
-    return render(request, 'class_detail.html', context)
-
-
+# allows a user to register as a student
 def StudentSignUpView(request):
     if request.method == 'POST':
         form = StudentSignUpForm(request.POST)
@@ -431,7 +477,8 @@ def StudentSignUpView(request):
         form = TeacherSignUpForm()
     return render(request, 'student_registration.html', {'form' : form})
 
-    
+
+# allows a user to register as a teacher
 def TeacherSignUpView(request):
     if request.method == 'POST':
         form = TeacherSignUpForm(request.POST)
@@ -448,6 +495,8 @@ def TeacherSignUpView(request):
         form = TeacherSignUpForm()
     return render(request, 'teacher_registration.html', {'form' : form})
     
+    
+# shows the options to register as either a student or a teacher
 def RegistrationView(request):
     return render(request, 'registration.html')
 
@@ -461,15 +510,15 @@ def LoginView(request):
             login(request, user)
             return redirect(index, permanent=True)
         else:
-            messages.error(request, 'Invalid email or password.')
+            messages.error(request, 'Invalid email or password.', extra_tags='login')
     form = LoginForm()
     return render(request, 'login.html', {'form' : form}) 
 
 
-#@login_required
+@login_required(login_url='login')
 def LogoutView(request):
     logout(request)
-    messages.info(request, "Logged out successfully.")
+    messages.info(request, "Logged out successfully.", extra_tags='logout')
     return redirect(index, permanent=True)
 
 
@@ -586,6 +635,8 @@ def randomizeAnswers(answers):
 # 
 # Utilizes randomizeAnswers method defined above
 # Has an optional "error" section to display misinputs on the user's end
+@login_required(login_url='login')
+@user_is_student
 def TakeQuizView(request, quiz_id, error="none"):
     this_quiz = Quiz.objects.get(id=quiz_id)
     name = this_quiz.name
@@ -618,6 +669,8 @@ def TakeQuizView(request, quiz_id, error="none"):
 # (ie. too many or too few) it redirects you back to
 # the quiz so that you can retake it and submit the
 # appropriate amount of answers
+@login_required(login_url='login')
+@user_is_student
 def SubmitQuiz(request, quiz_id):
     if request.method == 'POST':
         # Declaration of variables

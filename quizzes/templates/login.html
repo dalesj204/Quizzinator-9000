@@ -8,20 +8,25 @@
       {% csrf_token %}
       <table>
       <fieldset class="form-group">
-      {% comment %}{{ form.as_p }}{% endcomment %}{{ form.as_table }}
+      {{ form.as_table }}
       </fieldset>
-      {% comment %}
-      Email:
-          <input type="text" name="email" value="" id="email" size="30" />
-      <br />
-          Password:
-          <input type="password" name="password" value="" id="password" size="30" />
-          <br />
-          {% endcomment %}
     </table>
+    {% if messages %}
+      {% for message in messages %}
+        {% if forloop.count is 1%}{% endif %}
+          {% if 'login' in message.tags %}
+            <div class="{{ message.error }}"><font color="Red">{{ message }}</font></div>
+          {% endif %}
+          {% if 'logout' in message.tags %}
+            <div class="{{ message.info }}"><font color="Red">{{ message }}</font></div>
+          {% endif %}
+        
+      {% endfor %}
+    {% endif %}
+    <p></p>
       <button type="submit">login</button>
   </form>
-  {% comment %}<p>If you are not already registered, click <a href="{% url 'registration' %}">here</a></P>{% endcomment %}
+  <p></p>
   <form action={% url 'registration' %} method="link">
       <button type="submit">signup</button>
   </form>

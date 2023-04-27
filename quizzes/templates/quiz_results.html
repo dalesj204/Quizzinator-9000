@@ -4,11 +4,15 @@
 
 <h1>{{quiz.name}} Results:</h1>
 
-<p>{{score}}</p>
+<p>Score: {{score}}</p>
 
 {% if retake %}
-  <a href="{% url 'take_quiz' quiz.pk %}" > Retake the Quiz </a>
+  <form action={% url 'take_quiz' quiz.pk %} method="link">
+    <button type="submit"> Retake the Quiz</button>
+  </form>
 {% endif %}
 <p></p>
-<a href="{% url 'index' %}">Home</a>
+<form action={% url 'index' %} method="link">
+  <button type="submit">Home</button>
+</form>
 {% endblock %}

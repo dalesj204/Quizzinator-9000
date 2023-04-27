@@ -1,139 +1,5 @@
 [
-  {
-    "model": "quizzes.Grade",
-    "pk": "1",
-    "fields": {
-      "name": "Grade 1",
-      "grade": "90"
-    }
-  },
-  {
-    "model": "quizzes.Grade",
-    "pk": "2",
-    "fields": {
-      "name": "Grade 2",
-      "grade": "90"
-    }
-  },
-  {
-    "model": "quizzes.Class",
-    "pk": "1",
-    "fields": {
-      "name": "CIS 203",
-      "gradebook": "1",
-      "quizzes": ""
-    }
-  },
-  {
-    "model": "quizzes.Class",
-    "pk": "2",
-    "fields": {
-      "name": "CIS 201",
-      "gradebook": "2",
-      "quizzes": ""
-    }
-  },
-  {
-    "model": "quizzes.User",
-    "fields": {
-      "id": "999999999999",
-      "username": "admin",
-      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "Admin",
-      "is_superuser": true,
-      "is_staff": true,
-      "is_active": true
-    }
-  },
-  {
-    "model": "quizzes.User",
-    "fields": {
-      "id": "111111111111",
-      "username": "richieman@gmail.com",
-      "email": "richieman@gmail.com",
-      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "Richie",
-      "last_name": "Man",
-      "is_superuser": false,
-      "is_staff": false,
-      "is_active": false,
-      "is_student": true
-    }
-  },
-  {
-    "model": "quizzes.User",
-    "fields": {
-      "id": "111111111112",
-      "username": "rosiewoman@gmail.com",
-      "email": "rosiewoman@gmail.com",
-      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "Rosie",
-      "last_name": "Woman",
-      "is_superuser": false,
-      "is_staff": false,
-      "is_active": false,
-      "is_student": true
-    }
-  },
-  {
-    "model": "quizzes.User",
-    "fields": {
-      "id": "111111111113",
-      "username": "hailey@gmail.com",
-      "email": "hailey@gmail.com",
-      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "Hailey",
-      "last_name": "Nobin",
-      "is_superuser": false,
-      "is_staff": false,
-      "is_active": false,
-      "is_student": true
-    }
-  },
-  {
-    "model": "quizzes.User",
-    "fields": {
-      "id": "111111111114",
-      "username": "grabowski@gmail.com",
-      "email": "grabowski@gmail.com",
-      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "L.",
-      "last_name": "Grabowski",
-      "is_superuser": false,
-      "is_staff": true,
-      "is_active": false,
-      "is_teacher": true,
-      "is_student": false
-    }
-  },
-  {
-    "model": "quizzes.Student",
-    "fields": {
-      "user": "111111111111",
-      "classes": "1"
-    }
-  },
-  {
-    "model": "quizzes.Student",
-    "fields": {
-      "user": "111111111112",
-      "classes": "1"
-    }
-  },
-  {
-    "model": "quizzes.Student",
-    "fields": {
-      "user": "111111111113",
-      "classes": "2"
-    }
-  },
-  {
-    "model": "quizzes.Teacher",
-    "fields": {
-      "user": "111111111114",
-      "classes": ["1", "2"]
-    }
-  },
+  
   {
     "model": "quizzes.Tag",
     "pk": "1",
@@ -252,6 +118,155 @@
       "tag": "3",
       "options": ["5", "6", "7"],
       "correctOption": "5"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Quiz",
+    "pk": "1",
+    "fields":{
+      "name": "test quiz",
+      "questions": ["1", "2"],
+      "start_time": "2023-01-01 12:00:00.000000",
+      "end_time": "2024-01-01 12:00:00.000000",
+      "time_limit": "00:30:00",
+      "passingThreshold": "60"
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Grade",
+    "pk": "1",
+    "fields": {
+      "name": "Grade 1",
+      "grade": "90"
+    }
+  },
+  {
+    "model": "quizzes.Grade",
+    "pk": "2",
+    "fields": {
+      "name": "Grade 2",
+      "grade": "90"
+    }
+  },
+  {
+    "model": "quizzes.Class",
+    "pk": "1",
+    "fields": {
+      "name": "CIS 203",
+      "gradebook": "1",
+      "quizzes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Class",
+    "pk": "2",
+    "fields": {
+      "name": "CIS 201",
+      "gradebook": "2",
+      "quizzes": ""
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "999999999999",
+      "username": "admin",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Admin",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111111",
+      "username": "richieman@gmail.com",
+      "email": "richieman@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Richie",
+      "last_name": "Man",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111112",
+      "username": "rosiewoman@gmail.com",
+      "email": "rosiewoman@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Rosie",
+      "last_name": "Woman",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111113",
+      "username": "hailey@gmail.com",
+      "email": "hailey@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "Hailey",
+      "last_name": "Nobin",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "is_student": true
+    }
+  },
+  {
+    "model": "quizzes.User",
+    "fields": {
+      "id": "111111111114",
+      "username": "grabowski@gmail.com",
+      "email": "grabowski@gmail.com",
+      "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
+      "first_name": "L.",
+      "last_name": "Grabowski",
+      "is_superuser": false,
+      "is_staff": true,
+      "is_active": false,
+      "is_teacher": true,
+      "is_student": false
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111111",
+      "classes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111112",
+      "classes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "111111111113",
+      "classes": "2"
+    }
+  },
+  {
+    "model": "quizzes.Teacher",
+    "fields": {
+      "user": "111111111114",
+      "classes": ["1", "2"]
     }
   }
 ]

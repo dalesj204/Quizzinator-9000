@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>{{class.name}}</h1>
+<p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p>
+
+<h2>Active Quizzes: </h2>
+    {% for active, quiz in quiz_info %}
+        {% if active %}
+            <p>
+                <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font>
+            </p>
+            <ul>
+                <li>Ends: {{quiz.end_time}}</li>
+            </ul>
+        {% endif %}
+    {% endfor %}
+
+<h2>Past Quizzes: </h2>
+    {% for quiz in classes.quizzes.all %}
+      <p>{{quiz.name}}: {{quiz.grade}}</p>
+    {% endfor %}
+{% endblock %}

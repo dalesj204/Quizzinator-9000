@@ -11,5 +11,16 @@
     <button type = "submit">Import</button>
 
  </form>
+{% if messages %}
+    {% for message in messages %}
+      {% if 'excel' in message.tags %}
+        <div class="{{ message.error }}"><font color="Red">{{ message }}</font></div>
+      {% endif %}
+    {% endfor %}
+{% endif %}
+ <p></p>
+ <form action={% url 'questionPage' %} method="link">
+    <button type="submit">Back</button>
+  </form>
 
 {% endblock %}
