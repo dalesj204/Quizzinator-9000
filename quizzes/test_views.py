@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from .forms import questionForm
-from .models import Quiz, Question, Tag, Type, User, Student, Options, Class, Grade
+from .models import Quiz, Question, Tag, Type, User, Student, Teacher, Options, Class, Grade
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -107,27 +107,49 @@ class questionListViewTest(TestCase):
             ques.options.add(op, op2)
             ques.save()
             count = count + 1
+            
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
 
     def test_question_page_view_url_exists_at_desired_location(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get('/questions/')
         self.assertEqual(response.status_code, 200)
 
     def test_question_page_view_url_accessible_by_name(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
 
     def test_question_page_view_uses_correct_template(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'questionPage.html')
 
 
     def test_question_page_lists_all_questions(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 3)
 
     def test_question_content(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         ques = Question.objects.get(id = 1)
         tempop = ques.options.all()
         op = tempop[0]
@@ -140,6 +162,7 @@ class questionListViewTest(TestCase):
         self.assertEqual(ques.correctOption.content, 'Correct answer')
 
     def test_second_question_content(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         ques = Question.objects.get(id = 2)
         tempop = ques.options.all()
         op = tempop[0]
@@ -160,6 +183,7 @@ class questionListViewTest(TestCase):
     
     #Delete a question and test the length and if the id exists to see if it deletes
     def test_delete_button_view_url_accessible_by_name_and_deletion_works(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         ques = Question.objects.get(id=1)
         response = self.client.post(reverse('delete', args=(ques.id,)), follow=True)
         self.assertRedirects(response, reverse('questionPage'), status_code = 302)
@@ -198,6 +222,23 @@ class editViewTest(TestCase):
         self.question.tag.create(tag='math')
         self.question.options.add(opttwo)
         self.question.save()
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
         
     def test_empty_form(self):
         form = questionForm()
@@ -245,6 +286,7 @@ class editViewTest(TestCase):
 
     # #should not create a new question but alter existing question, so length of question list should stay the same
     def test_edit_button_view_url_accessible_by_name_and_length_is_same(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         opt = Options(content="other")
         opt.save()
         opttwo = Options(content="otherTwo")
@@ -320,20 +362,41 @@ class exportTest(TestCase):
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2)
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
 
     def test_export_view_url_exists_at_desired_location(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get('/export_xcl/')
         self.assertEqual(response.status_code, 200)
 
     def test_export_view_url_accessible_by_name(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('export_xcl'))
         self.assertEqual(response.status_code, 200)
     def test_export_question_page_lists_all_questions(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['question_list']), 3)
 
     def test_export(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
         data = {'file_format': str("xls")}
@@ -401,25 +464,46 @@ class addPageTest(TestCase):
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
         
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
+        
             
     def test_add_page_view_url_exists_at_desired_location(self):
         # print("Tested Add Page View exists at the correct URL.")
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get('/questions/add/')
         self.assertEqual(response.status_code, 200)
 
     def test_add_page_view_url_accessible_by_name(self):
         # print("Tested that Add Page URL is accessible by name.")
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('add'))
         self.assertEqual(response.status_code, 200)
 
     def test_add_page_view_uses_correct_template(self):
         # print("Tested that Add Page URL uses the correct template.")
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('add'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'add.html')  
     
     def test_add_and_submit_button(self):
         # print("Tested the 'Add and Submit' Button.")
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(len(response.context['question_list']), 3)
         response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct'})
@@ -430,6 +514,7 @@ class addPageTest(TestCase):
     
     def test_submit_and_add_another_button(self):
         # print("Tested the 'Submit and Add Another' Button.")
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('add'))
@@ -443,6 +528,7 @@ class addPageTest(TestCase):
 
 
     def test_cancel_button(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get("/questions/add/")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('questionPage'))
@@ -503,17 +589,37 @@ class importTest(TestCase):
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
         
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
+        
         
     def test_import_view_url_exists_at_desired_location(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get('/questions/importing/')
         self.assertEqual(response.status_code, 200)
 
     def test_import_view_url_accessible_by_name(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('importing'))
         self.assertEqual(response.status_code, 200)
 
         
     def test_importing_file(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         
         # create file to import
@@ -579,7 +685,7 @@ class LoginTest(TestCase):
     def test_create_user(self):
         this_user = User.objects.all().first()
         student = Student.objects.all().first()
-        response = self.client.get(reverse('student'))#, kwargs={'student_id': student.user.id}
+        response = self.client.get(reverse('index'))#, kwargs={'student_id': student.user.id}
         # Redirects to the login page as intended - hence 302 status code
         self.assertEqual(response.status_code, 302)
 
@@ -588,7 +694,7 @@ class LoginTest(TestCase):
         student = Student.objects.all().first()
         self.client.login(username="test@test.com", password="SlappedHam123")
         
-        response = self.client.get(reverse('student'))#, kwargs={'student_id': student.user.id}
+        response = self.client.get(reverse('index'))#, kwargs={'student_id': student.user.id}
         # No longer redirects because you are logged in as Richie Man
         self.assertEqual(response.status_code, 200)
 
@@ -617,14 +723,33 @@ class QuizCreateViewTest(TestCase):
             'questions': ['test question'],
         }
         
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
+        
     #Tests the get request.
     def test_get(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_create.html')
 
     #Tests the post request.
     def test_post(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.post(self.url, data=self.data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_summary.html')
@@ -648,9 +773,27 @@ class QuizSummaryViewTest(TestCase):
     def setUp(self):
         self.quiz = Quiz.objects.create(name='Test Quiz')
         self.url = reverse('quiz_summary', args=[self.quiz.id])
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
 
     # Check if it returns a 200 code and the template works.
     def test_quiz_summary_view(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_summary.html')
@@ -678,9 +821,27 @@ class SearchQuestionsTest(TestCase):
         opt2.save()
         self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1", correctOption= opt1)
         self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2", correctOption=opt2)
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
 
     #test the search.
     def test_search_questions_view(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         url = reverse('search_questions')
         response = self.client.get(url, {'stem': 'capital'})
         self.assertEqual(response.status_code, 200)
@@ -715,9 +876,27 @@ class QuizListViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse('quiz_list')
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
 
     #Test the get request.
     def test_get(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_list.html')
@@ -727,6 +906,7 @@ class QuizListViewTest(TestCase):
 
     #Test the post request.
     def test_post(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.post(self.url, {'query': '1'})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'quiz_list.html')

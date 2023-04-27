@@ -92,7 +92,7 @@ class TestClassModel(TestCase):
           
     def test_get_absolute_url(self):
         className = Class.objects.get(id=1)
-        self.assertEqual(className.get_absolute_url(), '/class_list/1')
+        self.assertEqual(className.get_absolute_url(), '/class_detail/1')
 
     @classmethod
     def tearDownClass(cls):

@@ -21,7 +21,7 @@ from django.urls import include
 from quizzes.views import *
 
 urlpatterns = [
-    path('quiz_home/', include('quizzes.urls')),
+    path('quiz_home/', include('quizzes.urls'), name='index'),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
     path('admin/', admin.site.urls),
     
