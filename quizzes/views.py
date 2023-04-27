@@ -85,7 +85,6 @@ def ClassDetailView(request, class_id):
             for t in teacher_list:
                 if t.classes.filter(pk=class_id).count() == 1:
                     teachers_in_class.append(t)
-            
             context = {
                 'user': student,
                 'class': this_class,
@@ -116,7 +115,6 @@ def ClassDetailView(request, class_id):
             active_quizzes = []
             for q in this_class.quizzes.all():
                 active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
-            
             context = {
                 'user': teacher,
                 'class': this_class,
@@ -125,7 +123,6 @@ def ClassDetailView(request, class_id):
                 'teacher_list': teachers_in_class,
                 'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
             }
-            print(this_class)
             return render(request, 'class_detail_teacher.html', context=context)
         except:
             return render(request, 'not_in_class.html')
@@ -330,7 +327,7 @@ def import_xcl(request):
                 temp.append(h)
             
             if(not(Options.objects.all().filter(content = data[3]).exists())):
-                o = Options(data[3])
+                o = Options(content = data[3])
                 o.save()
             o = Options.objects.get(content = data[3])
             value = Question(
@@ -354,7 +351,7 @@ def import_xcl(request):
                 
         return HttpResponseRedirect(reverse('questionPage'))
     except:
-        messages.error(request, "File must be an excel file")
+        messages.error(request, "File must be an excel file", extra_tags='excel')
         return HttpResponseRedirect(reverse('importing'))
     
 # go back to the blog detail page after comment has been posted
@@ -513,7 +510,7 @@ def LoginView(request):
             login(request, user)
             return redirect(index, permanent=True)
         else:
-            messages.error(request, 'Invalid email or password.')
+            messages.error(request, 'Invalid email or password.', extra_tags='login')
     form = LoginForm()
     return render(request, 'login.html', {'form' : form}) 
 
@@ -521,7 +518,7 @@ def LoginView(request):
 @login_required(login_url='login')
 def LogoutView(request):
     logout(request)
-    messages.info(request, "Logged out successfully.")
+    messages.info(request, "Logged out successfully.", extra_tags='logout')
     return redirect(index, permanent=True)
 
 

@@ -13,7 +13,9 @@
  </form>
 {% if messages %}
     {% for message in messages %}
-    <div{% if message.tags %} class="{{ message.tags }}"{% endif %}><font color="Red">{{ message }}</font></div>
+      {% if 'excel' in message.tags %}
+        <div class="{{ message.error }}"><font color="Red">{{ message }}</font></div>
+      {% endif %}
     {% endfor %}
 {% endif %}
  <p></p>

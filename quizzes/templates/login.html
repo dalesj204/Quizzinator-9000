@@ -11,6 +11,18 @@
       {{ form.as_table }}
       </fieldset>
     </table>
+    {% if messages %}
+      {% for message in messages %}
+        {% if forloop.count is 1%}{% endif %}
+          {% if 'login' in message.tags %}
+            <div class="{{ message.error }}"><font color="Red">{{ message }}</font></div>
+          {% endif %}
+          {% if 'logout' in message.tags %}
+            <div class="{{ message.info }}"><font color="Red">{{ message }}</font></div>
+          {% endif %}
+        
+      {% endfor %}
+    {% endif %}
     <p></p>
       <button type="submit">login</button>
   </form>
