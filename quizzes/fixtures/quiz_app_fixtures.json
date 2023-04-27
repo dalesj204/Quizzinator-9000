@@ -11,7 +11,7 @@
     "model": "quizzes.Tag",
     "pk": "2",
     "fields": {
-      "tag": "CIS 202"
+      "tag": "CIS 203"
     }
   },
   {
@@ -154,7 +154,7 @@
     "model": "quizzes.Class",
     "pk": "1",
     "fields": {
-      "name": "Class 1234",
+      "name": "CIS 203",
       "gradebook": "1",
       "quizzes": "1"
     }
@@ -163,7 +163,7 @@
     "model": "quizzes.Class",
     "pk": "2",
     "fields": {
-      "name": "Class 1235",
+      "name": "CIS 201",
       "gradebook": "2",
       "quizzes": ""
     }
@@ -217,7 +217,7 @@
       "username": "hailey@gmail.com",
       "email": "hailey@gmail.com",
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "hailey",
+      "first_name": "Hailey",
       "last_name": "Nobin",
       "is_superuser": false,
       "is_staff": false,
@@ -232,7 +232,7 @@
       "username": "grabowski@gmail.com",
       "email": "grabowski@gmail.com",
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
-      "first_name": "L",
+      "first_name": "L.",
       "last_name": "Grabowski",
       "is_superuser": false,
       "is_staff": true,

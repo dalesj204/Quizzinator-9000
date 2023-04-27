@@ -349,154 +349,203 @@ class exportTest(TestCase):
 
 
 
-# class addPageTest(TestCase):
-#     @classmethod
-#     def setUpTestData(self):
-#         print(colored('View testing: ', 'blue')+colored('Add Page', 'red'))
-#         # Create 1 question
+class addPageTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Add Page is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n View: Add Page is Tested!', 'green'))
+    @classmethod
+    def setUpTestData(self):
+        # Create 3 questions
         
-#         self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.")
-#         self.tag1 = Tag.objects.create(tag='math')
-#         self.tag2 = Tag.objects.create(tag='addition')
+        opt1 = Options.objects.create(content = "five")
+        opt1.save()
+        opt2 = Options.objects.create(content = "seven")
+        opt2.save()
+        opt3 = Options.objects.create(content = "nine")
+        opt3.save()
+        opt4 = Options.objects.create(content = "eleven")
+        opt4.save()
+        self.ques =Question.objects.create(
+            stem='What is two plus three?',
+            type=1,
+            explain="it's not four",
+            correctOption = opt1
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is three plus four?',
+            type=1,
+            explain='eight minus one',
+            correctOption = opt2
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is what is three times three?',
+            type=1,
+            explain='same as three plus three plus three',
+            correctOption = opt3
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Multiplication')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        
             
-        
-#     def test_add_page_view_url_exists_at_desired_location(self):
-#         # print("Tested Add Page View exists at the correct URL.")
-#         response = self.client.get('/questions/add/')
-#         self.assertEqual(response.status_code, 200)
+    def test_add_page_view_url_exists_at_desired_location(self):
+        # print("Tested Add Page View exists at the correct URL.")
+        response = self.client.get('/questions/add/')
+        self.assertEqual(response.status_code, 200)
 
-#     def test_add_page_view_url_accessible_by_name(self):
-#         # print("Tested that Add Page URL is accessible by name.")
-#         response = self.client.get(reverse('add'))
-#         self.assertEqual(response.status_code, 200)
+    def test_add_page_view_url_accessible_by_name(self):
+        # print("Tested that Add Page URL is accessible by name.")
+        response = self.client.get(reverse('add'))
+        self.assertEqual(response.status_code, 200)
 
-#     def test_add_page_view_uses_correct_template(self):
-#         # print("Tested that Add Page URL uses the correct template.")
-#         response = self.client.get(reverse('add'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertTemplateUsed(response, 'add.html')  
+    def test_add_page_view_uses_correct_template(self):
+        # print("Tested that Add Page URL uses the correct template.")
+        response = self.client.get(reverse('add'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'add.html')  
     
-#     def test_add_and_submit_button(self):
-#         # print("Tested the 'Add and Submit' Button.")
-#         response = self.client.get(reverse('questionPage'))
-#         self.assertEqual(len(response.context['question_list']), 1)
-#         response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi'})
-#         self.assertEqual(response.status_code, 302)
-#         response = self.client.get(reverse('questionPage'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(len(response.context['question_list']), 2)
+    def test_add_and_submit_button(self):
+        # print("Tested the 'Add and Submit' Button.")
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(len(response.context['question_list']), 3)
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['question_list']), 4)
     
-#     def test_submit_and_add_another_button(self):
-#         # print("Tested the 'Submit and Add Another' Button.")
-#         response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye'})
-#         self.assertEqual(response.status_code, 302)
-#         response = self.client.get(reverse('add'))
+    def test_submit_and_add_another_button(self):
+        # print("Tested the 'Submit and Add Another' Button.")
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('add'))
         
-#         response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag num here'})
-#         self.assertEqual(response.status_code, 302)
-#         response = self.client.get(reverse('questionPage'))
-#         self.assertEqual(response.status_code, 200)
+        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt1|opt2', 'correctOption':'correct'})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(response.status_code, 200)
         
-#         self.assertEqual(len(response.context['question_list']), 3)
-              
-#     # # need help with the cancel button
-#     # def test_cancel_button(self):
-#     #     print("Tested the Cancel Button.")
-        
-#     #     response = self.client.get("/questions/add/")
-#     #     self.assertEqual(response.status_code, 200)
-#     #     response = self.client.get(reverse('questionPage'))
-#     #     self.assertEqual(response.status_code, 200)
-#     #     self.assertEqual(len(response.context['question_list']), 1)
+        self.assertEqual(len(response.context['question_list']), 5)
+
+
+    def test_cancel_button(self):
+        response = self.client.get("/questions/add/")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('questionPage'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['question_list']), 3)
     
-#     @classmethod
-#     def tearDownClass(cls):
-#         super().tearDownClass()
-#         print("/"+colored('\n View: Add Page and Buttons are Tested!', 'green'))
-# class importTest(TestCase):
-#     @classmethod
-#     def setUpTestData(self):
-#         print(colored('View testing: ', 'blue')+colored('Import', 'red'))
-#         # Create 2 questions
-#         self.question = Question.objects.create(stem="What is the capital of New York?", type=1, explain="The capital of New York is Albany.")
-#         self.tag1 = Tag.objects.create(tag='Geography')
-#         self.tag2 = Tag.objects.create(tag='New York')
-        
-#         self.question2 = Question.objects.create(stem="What color is the sky?", type=2, explain="The sky is blue.")
-#         self.tag3 = Tag.objects.create(tag='Colors')
-        
-        
-
-#     def test_import_view_url_exists_at_desired_location(self):
-#         response = self.client.get('/questions/importing/')
-#         self.assertEqual(response.status_code, 200)
-
-#     def test_import_view_url_accessible_by_name(self):
-#         response = self.client.get(reverse('importing'))
-#         self.assertEqual(response.status_code, 200)
-
-#     def test_add_view_url_exists_at_desired_location(self):
-#         response = self.client.get('/questions/add/')
-#         self.assertEqual(response.status_code, 200)
-
-#     def test_add_view_url_accessible_by_name(self):
-#         response = self.client.get(reverse('add'))
-#         self.assertEqual(response.status_code, 200)
-        
-#     def test_importing_file(self):
-#         response = self.client.get(reverse('questionPage'))
-#         self.assertEqual(response.status_code, 200)
-#         # response = self.client.get(reverse('importing'))
-#         # self.assertEqual(response.status_code, 200)
-#         # response = self.client.get(reverse('importxcl'))
-#         # self.assertEqual(response.status_code, 200)
-        
-#         # create file to import
-#         wb = Workbook()
-#         sheet = wb.add_sheet('Sheet 1')
-#         sheet.write(0, 0, 'ID')
-#         sheet.write(0, 1, 'Question')
-#         sheet.write(0, 2, 'Type')
-#         sheet.write(0, 3, 'Hint')
-#         sheet.write(0, 4, 'Tags')
-#         sheet.write(1, 0, '1')
-#         sheet.write(1, 1, 'What does // mean?')
-#         sheet.write(1, 2, 'PP')
-#         sheet.write(1, 3, 'it is a type of comment')
-#         sheet.write(1, 4, 'Java|CIS')
-#         sheet.write(2, 0, '2')
-#         sheet.write(2, 1, 'What is two times two?')
-#         sheet.write(2, 2, 'MC')
-#         sheet.write(2, 3, 'the same as addition')
-#         sheet.write(2, 4, 'Math|Multiplication')
-#         wb.save('import_test_file.xls')
-        
-#         # data = SimpleUploadedFile('import_test_file.xls', content_type="xls")
-#         # response = self.client.post(reverse('importxcl'),content='import_test_file.xls' )
-#         # self.assertEqual(response.status_code, 200)
-        
-#         # os.remove("import_test_file.xls") # delete file after test is done
-#         # for row in sheet.iter_rows():
-#         #     temp = []
-#         #     for tag in data[4].split('|'):
-#         #         h = Tag(tag = tag)
-#         #         h.save()
-#         #         temp.append(h)
-#         #     value = Question(
-#         #         row[0], # ID
-#         #         row[1], # stem
-#         #         row[2], # type
-#         #         row[3], # explain
-#         #     )
-#         #     value.save()
-#         #     value.tag.add(*temp)
-#         #     value.save()
-#         # return HttpResponseRedirect(reverse('questionPage'))
     
-#     @classmethod
-#     def tearDownClass(cls):
-#         super().tearDownClass()
-#         print("/"+colored('\n View: Import is Tested!', 'green'))
+class importTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Import is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n View: Import is Tested!', 'green'))
+    @classmethod
+    def setUpTestData(self):
+        print(colored('View testing: ', 'blue')+colored('Import', 'red'))
+        
+        # Create 3 questions
+        opt1 = Options.objects.create(content = "five")
+        opt1.save()
+        opt2 = Options.objects.create(content = "seven")
+        opt2.save()
+        opt3 = Options.objects.create(content = "nine")
+        opt3.save()
+        opt4 = Options.objects.create(content = "eleven")
+        opt4.save()
+        self.ques =Question.objects.create(
+            stem='What is two plus three?',
+            type=1,
+            explain="it's not four",
+            correctOption = opt1
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is three plus four?',
+            type=1,
+            explain='eight minus one',
+            correctOption = opt2
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Addition')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques =Question.objects.create(
+            stem='What is what is three times three?',
+            type=1,
+            explain='same as three plus three plus three',
+            correctOption = opt3
+        )
+        tag1 = Tag.objects.create(tag ='Math')
+        tag2 = Tag.objects.create(tag ='Multiplication')
+        self.ques.tag.add(tag1, tag2)
+        self.ques.options.add(opt1, opt2, opt3, opt4)
+        
+        
+    def test_import_view_url_exists_at_desired_location(self):
+        response = self.client.get('/questions/importing/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_import_view_url_accessible_by_name(self):
+        response = self.client.get(reverse('importing'))
+        self.assertEqual(response.status_code, 200)
+
+        
+    def test_importing_file(self):
+        response = self.client.get(reverse('questionPage'))
+        
+        # create file to import
+        wb = Workbook()
+        sheet = wb.add_sheet('Sheet 1')
+        sheet.write(0, 0, 'ID')
+        sheet.write(0, 1, 'Question')
+        sheet.write(0, 2, 'Type')
+        sheet.write(0, 3, 'Answer')
+        sheet.write(0, 4, 'Options')
+        sheet.write(0, 5, 'Hint')
+        sheet.write(0, 6, 'Tags')
+        sheet.write(1, 0, '4')
+        sheet.write(1, 1, 'What does // mean?')
+        sheet.write(1, 2, 'PP')
+        sheet.write(1, 3, 'a single line comment')
+        sheet.write(1, 4, 'multi-line|single line|no line|idk')
+        sheet.write(1, 5, 'it is a type of comment')
+        sheet.write(1, 6, 'Java|CIS')
+        wb.save('import_test_file.xls')
+        
+        # file = {'my_file':'import_test_form.xls'}
+        # response = self.client.post(reverse('importing'), file)
+        # self.assertEqual(response.status_code, 200)
+        # self.assertTemplateUsed(response, 'import_form.html')
+        
+        # response = self.client.post(reverse('importxcl'))
+        # self.assertEqual(response.status_code, 200)
+        # response = self.client.get(reverse('questionPage'))
+        # self.assertEqual(response.status_code, 200)
+        # self.assertEqual(len(response.context['question_list']), 4)
+        
 
 
 class LoginTest(TestCase):
