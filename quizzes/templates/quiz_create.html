@@ -7,6 +7,19 @@
     <h2>Create a Quiz</h2>
     <label for="quiz_name">Quiz Name:</label>
     <input type="text" name="quiz_name" id="quiz_name" required>
+    <br><br>
+    <label for="class_ids">Classes to add to:</label>
+    <ol id="class_ids" class="scroll-box">
+      {% for class in classes %}
+      <form method="post">
+        {%csrf_token%}
+        <td class="text-center"> <div class="form-check">
+        <input type="checkbox" value= "{{class.id}}" 
+                id=class name="selectedClass">{{ class }}</input>
+              </div>
+            </td>
+      {% endfor %}
+    </ol>
     <br>
     <label for="start_time">Start Time:</label>
     <input type="datetime-local" name="start_time" id="start_time" required>

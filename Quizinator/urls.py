@@ -54,7 +54,5 @@ urlpatterns = [
     path('addStudent/addStudentrecord/<int:id>', views.addStudentrecord, name='addStudentrecord'),
     path('addStudent/deleteStudentrecord/<int:id>', views.deleteStudentrecord, name='deleteStudentrecord'),
     
-    
-    path('class_detail/<int:class_id>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),# page does not exist yet
     path('class_detail/stats', views.ClassStatsView.as_view(), name='stats'), # page does not exist yet
 ]

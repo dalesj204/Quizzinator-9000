@@ -11,7 +11,7 @@ from django.contrib import messages
 from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
+from .models import Class, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
 from .decorators import user_is_teacher, user_is_student
 from django.utils.decorators import method_decorator
 import tablib
@@ -184,11 +184,6 @@ def deleteStudentrecord(request, id):
             stud.save()
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
-
-class ClassGradebookView(generic.ListView):
-    model = Grade
-    template_name = 'gradebook.html'
-
 
 class ClassStatsView(generic.ListView):
     model = Stats
@@ -528,14 +523,20 @@ def LogoutView(request):
 # Author - Jacob Fielder
 class QuizCreateView(View):
     def get(self, request):
+        classes = Class.objects.all()
+        context = {
+            'classes': classes
+        }
+
         # Render the quiz creation form
-        return render(request, 'quiz_create.html')
+        return render(request, 'quiz_create.html', context=context)
 
     def post(self, request):
         # Get the quiz details from the form
         quiz_name = request.POST['quiz_name']
         start_time_str = request.POST['start_time']
         end_time_str = request.POST['end_time']
+        class_ids = request.POST.getlist('selectedClass')
 
         # Parse the datetime strings into datetime objects
         start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
@@ -554,6 +555,12 @@ class QuizCreateView(View):
         # Retrieve the questions that were added to the quiz
         questions = quiz.questions.all()
 
+        for c in class_ids:
+            this_class = Class.objects.get(id=c)
+            quiz.populate(this_class.id)
+            this_class.quizzes.add(quiz)
+
+        quiz.save()
         # Render the quiz summary page with quiz details and selected questions
         return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
 
@@ -705,6 +712,12 @@ def SubmitQuiz(request, quiz_id):
             retake = True
         else:
             retake = False
+
+        user_id = this_quiz.ids.index(request.user.id)
+        this_quiz.grade[user_id] = score
+        this_quiz.numberOfTries[user_id]+=1
+        this_quiz.save()
+        print(this_quiz.ids, this_quiz.grade, this_quiz.numberOfTries)
         
         # The retake boolean is processed in the HTML page
         context = {

@@ -135,27 +135,10 @@
   }
   ,
   {
-    "model": "quizzes.Grade",
-    "pk": "1",
-    "fields": {
-      "name": "Grade 1",
-      "grade": "90"
-    }
-  },
-  {
-    "model": "quizzes.Grade",
-    "pk": "2",
-    "fields": {
-      "name": "Grade 2",
-      "grade": "90"
-    }
-  },
-  {
     "model": "quizzes.Class",
     "pk": "1",
     "fields": {
       "name": "CIS 203",
-      "gradebook": "1",
       "quizzes": "1"
     }
   },
@@ -164,7 +147,6 @@
     "pk": "2",
     "fields": {
       "name": "CIS 201",
-      "gradebook": "2",
       "quizzes": ""
     }
   },

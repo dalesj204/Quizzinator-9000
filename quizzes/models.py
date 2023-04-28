@@ -121,29 +121,26 @@ class Quiz(models.Model):
 
     # The grade the student must match or exceed for the quiz to be considered passed
     passingThreshold = models.PositiveSmallIntegerField(default=0)
-    
+
+    ids = []
+    numberOfTries = []
+    grade = []
+
+    def populate(self, class_id, ids = ids, numberOfTries = numberOfTries, grade = grade):
+        this_class = Class.objects.get(id=class_id)
+        students = Student.objects.filter(classes = this_class)
+        for s in students.all():
+            if(not ids.__contains__(s.user.id)):
+                ids.append(s.user.id)
+                numberOfTries.append(0)
+                grade.append(0)
+
     class Meta:
         db_table = 'quizzes'    # Define the database table name
         verbose_name = 'Quiz'   # Define the verbose name for the model
 
     def __str__(self):
         return self.name #So I can grab the Quiz Name
-    
-# temporary model for the sake of getting the gradebook page running.
-class Grade(models.Model):
-    name = models.CharField(max_length=100)
-    grade = models.IntegerField()
-    
-
-    class Meta:
-        verbose_name_plural = "grades"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('grade_list', kwargs={'pk': self.pk})
-    
 
 class Stats(models.Model):
     name = models.CharField(max_length=100)
@@ -162,8 +159,9 @@ class Stats(models.Model):
 # @return absolute_url class_detail - the detail view for that particular class
 class Class(models.Model):
     name = models.CharField(max_length=100)
-    gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
+    #gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
     quizzes = models.ManyToManyField(Quiz)
+
     class Meta:
         verbose_name_plural = "classes"
 
