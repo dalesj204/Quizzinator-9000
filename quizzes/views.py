@@ -86,7 +86,6 @@ def ClassDetailView(request, class_id):
                 if t.classes.filter(pk=class_id).count() == 1:
                     teachers_in_class.append(t)
             context = {
-                'user': student,
                 'class': this_class,
                 'current_time': time,
                 'teacher_list': teachers_in_class,
@@ -116,7 +115,6 @@ def ClassDetailView(request, class_id):
             for q in this_class.quizzes.all():
                 active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
             context = {
-                'user': teacher,
                 'class': this_class,
                 'current_time': time,
                 'student_list': students_in_class,
