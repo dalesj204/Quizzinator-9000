@@ -5,19 +5,16 @@
 <p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p>
 
 <h2>Active Quizzes: </h2>
-    {% for active, quiz in quiz_info %}
-        {% if active %}
-            <p>
-                <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font>
-            </p>
-            <ul>
-                <li>Ends: {{quiz.end_time}}</li>
-            </ul>
-        {% endif %}
+    {% for quiz in active_quizzes %}
+        <p>
+            <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font> Closes: {{quiz.end_time}}
+        </p>
     {% endfor %}
 
 <h2>Past Quizzes: </h2>
-    {% for quiz in classes.quizzes.all %}
-      <p>{{quiz.name}}: {{quiz.grade}}</p>
+    {% for quiz, grade in inactive_quizzes %}
+        <p>
+            {{quiz.name}} <font color="Red">Inactive</font> Grade: {{grade}}
+        </p>
     {% endfor %}
 {% endblock %}

@@ -2,26 +2,12 @@
 
 {% block content %}
 
-<h1>Gradebook: {{ class.name }}</h1>
+<h1>Gradebook: {{ quiz.name }}</h1>
+<h2>Average Grade: {{ average }} </h2>
 
-{% comment %} connects the gradebook page to the coresponding stats page {% endcomment %}
-{% comment %}<a href="{% url 'stats_page' class.id %}">Stats page</a>{% endcomment %}
-
-<table>
-    <tr>
-        <th>Student Name</th>
-        {% for grade in grades %}
-        <th>{{ grade.name }}</th>
-        {% endfor %}
-    </tr>
-    {% for Student in Students %}
-    <tr>
-        <td>{{ Student.name }}</td>
-        {% for quiz in quizzes %}
-        <td>{{ quiz.grade }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
+<br>
+{% for student_data, name in gradebook %}
+    <p>{{ name }} - {{ student_data.grade }}/100 - {{ student_data.attempts }} Attempts</p>
+{% endfor %}
 
 {% endblock %}

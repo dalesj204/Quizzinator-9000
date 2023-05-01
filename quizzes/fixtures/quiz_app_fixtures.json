@@ -122,6 +122,13 @@
   }
   ,
   {
+    "model": "quizzes.Gradebook",
+    "pk": "1",
+    "fields": {
+      "student_data": ""
+    }
+  },
+  {
     "model": "quizzes.Quiz",
     "pk": "1",
     "fields":{
@@ -130,7 +137,8 @@
       "start_time": "2023-01-01 12:00:00.000000",
       "end_time": "2024-01-01 12:00:00.000000",
       "time_limit": "00:30:00",
-      "passingThreshold": "60"
+      "passingThreshold": "60",
+      "gradebook": "1"
     }
   }
   ,
@@ -158,6 +166,8 @@
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
       "first_name": "Admin",
       "is_superuser": true,
+      "is_student": true,
+      "is_teacher": true,
       "is_staff": true,
       "is_active": true
     }

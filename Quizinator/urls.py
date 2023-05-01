@@ -35,6 +35,7 @@ urlpatterns = [
     
     path('quizzes/take/<int:quiz_id>', views.TakeQuizView, name='take_quiz'),
     path('quizzes/take/summary/<int:quiz_id>', views.SubmitQuiz, name='submitQuiz'),
+    path('quizzes/gradebook/<int:quiz_id>', views.TeacherGradebookView, name='gradebook'),
     
     path('quiz_create/', user_is_teacher(QuizCreateView.as_view()), name='quiz_create'),
     path('questions/search/', search_questions, name='search_questions'),

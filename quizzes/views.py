@@ -63,7 +63,9 @@ def index(request):
         return redirect(LoginView)
     
 
-def isActiveQuiz(now, start, end):
+def isActiveQuiz(now, start, end, threshold, grade):
+    return start < now and now < end and threshold > grade
+def teacherIsActiveQuiz(now, start, end):
     return start < now and now < end
 
 
@@ -77,8 +79,15 @@ def ClassDetailView(request, class_id):
             this_class = student.classes.get(pk=class_id) 
             time = timezone.now()
             active_quizzes = []
+            inactive_quizzes = []
+            grades = []
             for q in this_class.quizzes.all():
-                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+                user_info = q.gradebook.student_data.get(student_id = student.user.id)
+                if(isActiveQuiz(time, q.start_time, q.end_time, q.passingThreshold, user_info.grade)):
+                    active_quizzes.append(q)
+                else:
+                    inactive_quizzes.append(q)
+                    grades.append(user_info.grade)
                 
             teacher_list = Teacher.objects.all()
             teachers_in_class = []
@@ -90,7 +99,8 @@ def ClassDetailView(request, class_id):
                 'class': this_class,
                 'current_time': time,
                 'teacher_list': teachers_in_class,
-                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+                'active_quizzes': active_quizzes,
+                'inactive_quizzes': zip(inactive_quizzes, grades)
             }
             return render(request, 'class_detail_student.html', context=context)
         except:
@@ -113,19 +123,42 @@ def ClassDetailView(request, class_id):
             
             time = timezone.now()
             active_quizzes = []
+            inactive_quizzes = []
             for q in this_class.quizzes.all():
-                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+                if(teacherIsActiveQuiz(time, q.start_time, q.end_time)):
+                    active_quizzes.append(q)
+                else:
+                    inactive_quizzes.append(q)
             context = {
                 'user': teacher,
                 'class': this_class,
                 'current_time': time,
                 'student_list': students_in_class,
                 'teacher_list': teachers_in_class,
-                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+                'active_quizzes': active_quizzes,
+                'inactive_quizzes': inactive_quizzes
             }
             return render(request, 'class_detail_teacher.html', context=context)
         except:
             return render(request, 'not_in_class.html')
+
+@login_required(login_url='login')
+@user_is_teacher
+def TeacherGradebookView(request, quiz_id):
+    this_quiz = Quiz.objects.get(id = quiz_id)
+    gb = this_quiz.gradebook.student_data.all()
+    average = 0
+    students = []
+    for student in gb:
+        students.append(Student.objects.get(user__id = student.student_id))
+        average+= student.grade
+    average = round(average / gb.count(), 2)
+    context = {
+        'quiz': this_quiz,
+        'gradebook': zip(gb, students),
+        'average': average
+    }
+    return render(request, 'gradebook.html', context)
 
 #Lists out all the students currently in the class and all of the other students in the databes into two tables
 #precondition - n/a
@@ -164,6 +197,9 @@ def addStudentrecord(request, id):
             stud2 = Student.objects.get(user = stud)
             stud2.classes.add(Class.objects.get(pk = id))
             stud.save()
+            for c in stud2.classes.all():
+                for q in c.quizzes.all():
+                    q.populate(c.id)
 
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
@@ -182,6 +218,10 @@ def deleteStudentrecord(request, id):
             stud2 = Student.objects.get(user = stud)
             stud2.classes.remove(Class.objects.get(pk = id))
             stud.save()
+            for c in stud2.classes.all():
+                for q in c.quizzes.all():
+                    q.populate(c.id)
+
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
 
@@ -536,14 +576,19 @@ class QuizCreateView(View):
         quiz_name = request.POST['quiz_name']
         start_time_str = request.POST['start_time']
         end_time_str = request.POST['end_time']
+        passingThreshold = request.POST['passingThreshold']
         class_ids = request.POST.getlist('selectedClass')
 
         # Parse the datetime strings into datetime objects
         start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
         end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
 
+        # Create a new gradebook
+        gb = Gradebook()
+        gb.save()
+
         # Create a new quiz instance
-        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time)
+        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time, gradebook = gb, passingThreshold = passingThreshold)
 
         # Convert the naive datetime objects to aware datetime objects
         quiz.start_time = timezone.make_aware(quiz.start_time, timezone.get_current_timezone())
@@ -713,11 +758,12 @@ def SubmitQuiz(request, quiz_id):
         else:
             retake = False
 
-        user_id = this_quiz.ids.index(request.user.id)
-        this_quiz.grade[user_id] = score
-        this_quiz.numberOfTries[user_id]+=1
-        this_quiz.save()
-        print(this_quiz.ids, this_quiz.grade, this_quiz.numberOfTries)
+        user_info = this_quiz.gradebook.student_data.get(student_id = request.user.id)
+        if(user_info.grade < score):
+            user_info.grade = score
+        user_info.attempts+=1
+        user_info.save()
+        print(user_info)
         
         # The retake boolean is processed in the HTML page
         context = {
