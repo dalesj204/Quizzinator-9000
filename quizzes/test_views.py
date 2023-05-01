@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from .forms import questionForm
-from .models import Quiz, Question, Tag, Type, User, Student, Teacher, Options, Class, Grade
+from .models import Quiz, Question, Tag, Type, User, Student, Teacher, Options, Class, Gradebook
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -33,7 +33,7 @@ class studentInClassTest(TestCase):
         # User.objects.create(id = '111111111113',is_student = True, is_teacher = False,first_name = 'Snow', last_name = 'Smith', email = 'SS@me.com')
         # studentThreeUser = User.objects.get(id = '111111111113')
         # studentThreeUser.set_password("SlappedHam1235")
-        classer = Class(name = "CIS201", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
+        classer = Class(name = "CIS201")
         classer.save()
         studentOne = Student.objects.create(user = studentOneUser)
         studentOne.classes.add(classer)
@@ -721,6 +721,7 @@ class QuizCreateViewTest(TestCase):
             'end_time': (timezone.localtime() + timezone.timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
             'stem': 'test',
             'questions': ['test question'],
+            'passingThreshold': 65
         }
         
         # creates a teacher for authentication
@@ -771,7 +772,9 @@ class QuizSummaryViewTest(TestCase):
 
     # Create a Quiz
     def setUp(self):
-        self.quiz = Quiz.objects.create(name='Test Quiz')
+        gb = Gradebook()
+        gb.save()
+        self.quiz = Quiz.objects.create(name='Test Quiz', gradebook = gb)
         self.url = reverse('quiz_summary', args=[self.quiz.id])
         
         # creates a teacher for authentication
@@ -868,9 +871,15 @@ class QuizListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Create some quizzes to test with
-        Quiz.objects.create(name='Quiz 1')
-        Quiz.objects.create(name='Quiz 2')
-        Quiz.objects.create(name='Quiz 3')
+        gb1 = Gradebook()
+        gb1.save()
+        Quiz.objects.create(name='Quiz 1', gradebook = gb1)
+        gb2 = Gradebook()
+        gb2.save()
+        Quiz.objects.create(name='Quiz 2', gradebook = gb2)
+        gb3 = Gradebook()
+        gb3.save()
+        Quiz.objects.create(name='Quiz 3', gradebook = gb3)
 
 
     def setUp(self):
