@@ -122,10 +122,19 @@
   }
   ,
   {
+    "model": "quizzes.DataModel",
+    "pk": "1",
+    "fields": {
+      "student_id": "111111111111",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
     "model": "quizzes.Gradebook",
     "pk": "1",
     "fields": {
-      "student_data": ""
+      "student_data": "1"
     }
   },
   {
