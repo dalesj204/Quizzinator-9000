@@ -272,7 +272,17 @@ def export_xcl(request):
                     tempthree = []
                     tempf = 0
                     con2 = 1
-                    filesheet.write(row_number, col_num, row.correctOption.content)
+                    leng2 = row.options.all().count()
+                    con2 = 1
+                    for x in row.correctOption.all():
+                        if con2 != 1 and con2 < leng2 + 1:
+                            tempthree.append('|')
+                            tempthree.append(x.content)
+                            con2 = con2 + 1
+                        else:
+                            tempthree.append(x.content)
+                            con2 = con2 + 1
+                    filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 4:
                     tempthree = []
                     tempf = 0
@@ -326,15 +336,10 @@ def import_xcl(request):
                     h= Tag.objects.get(tag=tag)
                 temp.append(h)
             
-            if(not(Options.objects.all().filter(content = data[3]).exists())):
-                o = Options(content = data[3])
-                o.save()
-            o = Options.objects.get(content = data[3])
             value = Question(
                 id = data[0], # id
                 stem = data[1], # stem
                 type = data[2], # type
-                correctOption = o, # correctOption
                 explain = data[5], # explain
             )
             value.save()
@@ -348,6 +353,13 @@ def import_xcl(request):
                     h.save()
                 optionList.append(Options.objects.get(content=op).id)
             value.options.set(optionList)
+            ansList = []
+            for ans in data[3].split('|'):
+                if(not(Options.objects.all().filter(content = ans).exists())):
+                    o = Options(content = ans)
+                    o.save()
+                ansList.append(Options.objects.get(content=ans).id)
+            value.correctOption.set(ansList)
                 
         return HttpResponseRedirect(reverse('questionPage'))
     except:
@@ -384,13 +396,9 @@ def addrecord(request):
     o = request.POST['options']
     c = request.POST['correctOption']
     if(not Question.objects.all().filter(stem=x).exists()):
-        if not Options.objects.all().filter(content=c).exists():
-            w = Options(content = c)
-            w.save()
-        c = Options.objects.get(content = c)
-        ques = Question(stem=x, type=y, explain=z, correctOption = c)
+        ques = Question(stem=x, type=y, explain=z)
+        ques.save()
         if 'Submit' in request.POST:
-            ques.save()
             temp = []
             for k in q.split('|'):
                 h = Tag(tag = k)
@@ -404,12 +412,18 @@ def addrecord(request):
                     h.save()
                 optionList.append(Options.objects.get(content=x).id)
             ques.options.set(optionList)
+            ansList = []
+            for x in c.split('|'):
+                if not Options.objects.all().filter(content=x).exists():
+                    h = Options(content=x)
+                    h.save()
+                ansList.append(Options.objects.get(content=x).id)
+            ques.correctOption.set(ansList)
             ques.save()
             return HttpResponseRedirect(reverse('questionPage'))
         elif 'Cancel' in request.POST:
             return HttpResponseRedirect(reverse('questionPage'))
         else:
-            ques.save()
             temp = []
             for k in q.split('|'):
                 h = Tag(tag = k)
@@ -422,7 +436,13 @@ def addrecord(request):
                     h.save()
                 optionList.append(Options.objects.get(content=x).id)
             ques.options.set(optionList)
-
+            ansList = []
+            for x in c.split('|'):
+                if not Options.objects.all().filter(content=x).exists():
+                    h = Options(content=x)
+                    h.save()
+                ansList.append(Options.objects.get(content=x).id)
+            ques.correctOption.set(ansList)
             ques.tag.add(*temp)
             ques.save()
             return HttpResponseRedirect(reverse('add'))

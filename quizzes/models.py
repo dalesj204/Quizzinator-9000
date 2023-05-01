@@ -76,7 +76,7 @@ class Question(models.Model):
     options = models.ManyToManyField(Options, related_name="options")
 
     # The correct answer for the question
-    correctOption = models.ForeignKey(Options, on_delete=models.CASCADE, related_name="correctOption", default=None, blank=True)
+    correctOption = models.ManyToManyField(Options, related_name="correctOption")
 
     # An array used for calculating the random order of the options
     order = []
@@ -89,6 +89,7 @@ class Question(models.Model):
 
     def __str__(self):
         return self.stem
+    
 
 # This is the main model for the program
 # 
