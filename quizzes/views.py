@@ -447,10 +447,20 @@ def addrecord(request):
             ques.correctOption.set(ansList)
             optionList = []
             for x in o.split('|'):
-                if not Options.objects.all().filter(content=x, orderForPerm = 0).exists():
-                    h = Options(content=x)
-                    h.save()
-                optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+                if y == '1':
+                    listOrder = x.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                        if y == '1':
+                            ans = Options(content = cont, orderForPerm = order)
+                            ans.save()
+                        optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if not Options.objects.all().filter(content=x, orderForPerm = 0).exists():
+                        h = Options(content=x, orderForPerm=0)
+                        h.save()
+                    optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
             ques.options.set(optionList)
             ques.save()
             return HttpResponseRedirect(reverse('questionPage'))
