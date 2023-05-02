@@ -24,14 +24,18 @@ class permutationMultipleChoice(TestCase):
     def setUpTestData(self):
         
         # Create 1 questions
-        ans = Options.objects.create(content = "Data stores, processes, entities, relationships")
+        ans = Options.objects.create(content = "Data stores, processes, entities, relationships", orderForPerm = '1')
         ans.save()
-        ans2 = Options.objects.create(content = "Tables, column names and formats, datat sources, data importing procedures, drill-down procedures")
+        ans2 = Options.objects.create(content = "Tables, column names and formats, datat sources, data importing procedures, drill-down procedures", orderForPerm = '2')
         ans2.save()
-        op = Options.objects.create(content = "code look up tables")
+        op = Options.objects.create(content = "Code look-up tables, foreign keys", orderForPerm = '0')
         op.save()
-        op2 = Options.objects.create(content = "program and file names")
+        op2 = Options.objects.create(content = "Program and file names,access modes, security", orderForPerm = '0')
         op2.save()
+        op3 = Options.objects.create(content = "Table names, column names and formats, indexes, views", orderForPerm = '0')
+        op3.save()
+        op4 = Options.objects.create(content = "Dimensional descriptions, aggregation rules, drill-down procedures", orderForPerm = '0')
+        op4.save()
         ques =Question.objects.create(
             stem=f'Which of these best describes the contents of a data dictionary of: a CASE tool, a data warehouse',
             type=1,
@@ -40,7 +44,7 @@ class permutationMultipleChoice(TestCase):
         ques.save()
         tag1 = Tag.objects.create(tag =f'Software Engineering')
         ques.tag.add(tag1)
-        ques.options.add(op, op2)
+        ques.options.add(op, op2, op3, op4)
         ques.correctOption.add(ans, ans2)
         ques.save()
 
@@ -51,6 +55,8 @@ class permutationMultipleChoice(TestCase):
         temptag = ques.tag.all()
         op = tempop[0]
         optwo = tempop[1]
+        opthree = tempop[2]
+        opfour = tempop[3]
         ans = tempop2[0]
         ans2 = tempop2[1]
         tag = temptag[0]
@@ -58,10 +64,18 @@ class permutationMultipleChoice(TestCase):
         self.assertEqual(ques.type, 1)
         self.assertEqual(ques.explain, 'No hint')
         self.assertEqual(tag.tag, 'Software Engineering')
-        self.assertEqual(op.content, 'code look up tables')
-        self.assertEqual(optwo.content, 'program and file names')
+        self.assertEqual(op.content, 'Code look-up tables, foreign keys')
+        self.assertEqual(optwo.content, 'Program and file names,access modes, security')
+        self.assertEqual(opthree.content, 'Table names, column names and formats, indexes, views')
+        self.assertEqual(opfour.content, 'Dimensional descriptions, aggregation rules, drill-down procedures')
+        self.assertEqual(op.orderForPerm, 0)
+        self.assertEqual(optwo.orderForPerm, 0)
+        self.assertEqual(opthree.orderForPerm, 0)
+        self.assertEqual(opfour.orderForPerm, 0)
         self.assertEqual(ans.content, 'Data stores, processes, entities, relationships')
         self.assertEqual(ans2.content, 'Tables, column names and formats, datat sources, data importing procedures, drill-down procedures')
+        self.assertEqual(ans.orderForPerm, 1)
+        self.assertEqual(ans2.orderForPerm, 2)
 
 class studentInClassTest(TestCase):
     @classmethod
@@ -567,7 +581,8 @@ class addPageTest(TestCase):
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(len(response.context['question_list']), 3)
         #tested adding a permutation question(mult answers)
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':1, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct:@1|opt1:@2'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':1, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1:@0|opt2:@2|correct:@1', 'correctOption':'correct:@1|opt1:@2', 'Submit':'Submit'})
+        print(response)
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
@@ -576,15 +591,13 @@ class addPageTest(TestCase):
     def test_submit_and_add_another_button(self):
         # print("Tested the 'Submit and Add Another' Button.")
         self.client.login(username="test@test.com", password="SlappedHam123")
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':0, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':0, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1:@0|opt2:@0', 'correctOption':'correct:@0', 'Submit':'Submit'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('add'))
-        
-        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt1|opt2', 'correctOption':'correct'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt:@01|opt2:@0', 'correctOption':'correct:@0', 'Submit':'Submit'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
-        
         self.assertEqual(len(response.context['question_list']), 5)
 
 

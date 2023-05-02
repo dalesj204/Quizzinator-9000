@@ -187,7 +187,7 @@
     "pk": "1",
     "fields":{
       "name": "test quiz",
-      "questions": ["1", "2", "4"],
+      "questions": ["1", "2"],
       "start_time": "2023-01-01 12:00:00.000000",
       "end_time": "2024-01-01 12:00:00.000000",
       "time_limit": "00:30:00",

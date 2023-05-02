@@ -340,20 +340,14 @@ def import_xcl(request):
         new_questions = request.FILES['my_file']
         imported_data = dataset.load(new_questions.read(), format = 'xls')
         for data in imported_data:
-            print(data)
             temp = []
             for tag in data[6].split('|'): # tag
-                print("tag loop")
-                print(tag)
                 if not Tag.objects.all().filter(tag=tag).exists():
-                    print("tag loop 1")
                     h = Tag(tag = tag)
                     h.save()
                 else:
-                    print("tag loop 2")
                     h= Tag.objects.get(tag=tag)
                 temp.append(h)
-            print("tag worked")
             value = Question(
                 id = data[0], # id
                 stem = data[1], # stem
@@ -363,52 +357,39 @@ def import_xcl(request):
             value.save()
             value.tag.set(temp)
             value.save()
-            print("question worked")
             ansList = []
             for ans in data[3].split('|'):
-                print("1")
                 if data[2] == 1:
-                    print("2")
                     listOrder = ans.split(':@')
                     order = listOrder[1]
                     cont = listOrder[0]
                     if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
-                        print("3")
                         if data[2] == 1:
                             o = Options(content = cont, orderForPerm = order)
                             o.save()
                     ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
                 else:
-                    print("4")
                     if(not(Options.objects.all().filter(content = ans, orderForPerm = 0).exists())):
-                        print("5")
                         o = Options(content = ans)
                         o.save()
                     ansList.append(Options.objects.get(content=ans, orderForPerm = 0).id)
             value.correctOption.set(ansList)
             optionList = []
             for op in data[4].split('|'):
-                print(op)
                 if data[2] == 1:
-                    print("7")
                     listOrder = op.split(':@')
                     order = listOrder[1]
                     cont = listOrder[0]
                     if not Options.objects.all().filter(content=cont, orderForPerm = order).exists():
-                        print("8")
                         h = Options(content=cont, orderForPerm=order)
                         h.save()
                     optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
-                    print("10")
                 else:
-                    print("11")
                     if(not(Options.objects.all().filter(content = op, orderForPerm = 0).exists())):
-                        print("12")
                         ans = Options(content = op)
                         ans.save()
                     optionList.append(Options.objects.get(content=op, orderForPerm = 0).id)
             value.options.set(optionList)
-            print("9")
         return HttpResponseRedirect(reverse('questionPage'))
     except:
         messages.error(request, "File must be an excel file", extra_tags='excel')
