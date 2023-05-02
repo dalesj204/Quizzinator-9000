@@ -455,7 +455,7 @@ def addrecord(request):
                         if y == '1':
                             ans = Options(content = cont, orderForPerm = order)
                             ans.save()
-                        optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                    optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
                 else:
                     if not Options.objects.all().filter(content=x, orderForPerm = 0).exists():
                         h = Options(content=x, orderForPerm=0)
