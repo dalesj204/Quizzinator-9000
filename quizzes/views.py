@@ -26,6 +26,7 @@ import datetime
 from datetime import datetime
 import random
 from django.db.models import Q
+import re
 # Create your views here.
 
 # The home page displays a list of classes that the user is a part of
@@ -448,19 +449,18 @@ def addrecord(request):
             optionList = []
             for x in o.split('|'):
                 if y == '1':
-                    listOrder = x.split(':@')
-                    order = listOrder[1]
-                    cont = listOrder[0]
-                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                    cont = re.sub(r':@[0-9]', '', x)
+                    print(cont)
+                    if(not(Options.objects.all().filter(content = cont).exists())):
                         if y == '1':
-                            ans = Options(content = cont, orderForPerm = order)
+                            ans = Options(content = cont)
                             ans.save()
-                        optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                    optionList.append(Options.objects.get(content=cont).id)
                 else:
-                    if not Options.objects.all().filter(content=x, orderForPerm = 0).exists():
+                    if not Options.objects.all().filter(content=x).exists():
                         h = Options(content=x, orderForPerm=0)
                         h.save()
-                    optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+                    optionList.append(Options.objects.get(content=x).id)
             ques.options.set(optionList)
             ques.save()
             return HttpResponseRedirect(reverse('questionPage'))
@@ -774,14 +774,17 @@ def SubmitQuiz(request, quiz_id):
         offset = 0
         for i in range(len(questions)):
             options = list(str(o.id) for o in questions[i].correctOption.all())
-            for o in options:
+            flag = True
+            for i in range(len(options)):
                 # Compares correctOption *ID* with that question's answer's *ID*
-                if(options.__contains__(selectedOpt[offset])):
-                    count+=1
+                if(not options[i] == (selectedOpt[offset])):
+                    flag = False
                 offset+=1
+            if(flag):
+                count+=1
 
         # Quick score calculation and check against the passingThreshold
-        score = count / total_answers
+        score = count / len(questions)
         score = round(score * 100, 2)
         if(this_quiz.passingThreshold >= score):
             retake = True

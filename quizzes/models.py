@@ -42,6 +42,7 @@ class Options(models.Model):
     class Meta:
         db_table = 'options'    # Define the database table name
         verbose_name = 'Option' # Define the verbose name for the model
+        ordering = ('orderForPerm',)
 
     def __str__(self):
         return self.content
