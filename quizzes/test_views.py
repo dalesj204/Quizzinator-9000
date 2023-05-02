@@ -567,7 +567,7 @@ class addPageTest(TestCase):
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(len(response.context['question_list']), 3)
         #tested adding a permutation question(mult answers)
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':1, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct|opt1'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':1, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct:@1|opt1:@2'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
@@ -576,7 +576,7 @@ class addPageTest(TestCase):
     def test_submit_and_add_another_button(self):
         # print("Tested the 'Submit and Add Another' Button.")
         self.client.login(username="test@test.com", password="SlappedHam123")
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':0, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('add'))
         

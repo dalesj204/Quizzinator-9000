@@ -276,11 +276,23 @@ def export_xcl(request):
                     con2 = 1
                     for x in row.correctOption.all():
                         if con2 != 1 and con2 < leng2 + 1:
+                            print("inhere3")
                             tempthree.append('|')
                             tempthree.append(x.content)
+                            print(row.type)
+                            if row.type == 1:
+                                print("inhere")
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
                             con2 = con2 + 1
                         else:
+                            print("inhere4")
+                            print(row.type)
                             tempthree.append(x.content)
+                            if row.type == 1:
+                                print("inhere2")
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
                             con2 = con2 + 1
                     filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 4:
@@ -345,21 +357,32 @@ def import_xcl(request):
             value.save()
             value.tag.add(*temp)
             value.save()
-            
-            optionList = []
-            for op in data[4].split('|'):
-                if not Options.objects.all().filter(content=op).exists():
-                    h = Options(content=op)
-                    h.save()
-                optionList.append(Options.objects.get(content=op).id)
-            value.options.set(optionList)
             ansList = []
             for ans in data[3].split('|'):
-                if(not(Options.objects.all().filter(content = ans).exists())):
-                    o = Options(content = ans)
-                    o.save()
-                ansList.append(Options.objects.get(content=ans).id)
+                if data[2] == 1:
+                    listOrder = ans.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                        if data[2] == 1:
+                            print(cont)
+                            o = Options(content = cont, orderForPerm = order)
+                            o.save()
+                    ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if(not(Options.objects.all().filter(content = ans, orderForPerm = 0).exists())):
+                        o = Options(content = ans, orderForPerm = 0)
+                        o.save()
+                    ansList.append(Options.objects.get(content=ans, orderForPerm = 0).id)
             value.correctOption.set(ansList)
+            optionList = []
+            for op in data[4].split('|'):
+                if not Options.objects.all().filter(content=op, orderForPerm = 0).exists():
+                    h = Options(content=op, orderForPerm = 0)
+                    h.save()
+                optionList.append(Options.objects.get(content=op, orderForPerm = 0).id)
+            value.options.set(optionList)
+            
                 
         return HttpResponseRedirect(reverse('questionPage'))
     except:
@@ -405,20 +428,30 @@ def addrecord(request):
                 h.save()
                 temp.append(h)
             ques.tag.add(*temp)
-            optionList = []
-            for x in o.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
-                    h = Options(content=x)
-                    h.save()
-                optionList.append(Options.objects.get(content=x).id)
-            ques.options.set(optionList)
             ansList = []
             for x in c.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
+                if y == '1':
+                    listOrder = x.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                            if y == '1':
+                                ans = Options(content = cont, orderForPerm = order)
+                                ans.save()
+                    ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if(not(Options.objects.all().filter(content = x, orderForPerm = 0).exists())):
+                        ans = Options(content = x)
+                        ans.save()
+                    ansList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+            ques.correctOption.set(ansList)
+            optionList = []
+            for x in o.split('|'):
+                if not Options.objects.all().filter(content=x, orderForPerm = 0).exists():
                     h = Options(content=x)
                     h.save()
-                ansList.append(Options.objects.get(content=x).id)
-            ques.correctOption.set(ansList)
+                optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+            ques.options.set(optionList)
             ques.save()
             return HttpResponseRedirect(reverse('questionPage'))
         elif 'Cancel' in request.POST:
@@ -429,20 +462,30 @@ def addrecord(request):
                 h = Tag(tag = k)
                 h.save()
                 temp.append(h)
-            optionList = []
-            for x in o.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
-                    h = Options(content=x)
-                    h.save()
-                optionList.append(Options.objects.get(content=x).id)
-            ques.options.set(optionList)
             ansList = []
             for x in c.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
+                if y == '1':
+                    listOrder = x.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                            if y == '1':
+                                ans = Options(content = cont, orderForPerm = order)
+                                ans.save()
+                    ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if(not(Options.objects.all().filter(content = x, orderForPerm = 0).exists())):
+                        ans = Options(content = x)
+                        ans.save()
+                    ansList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+            ques.correctOption.set(ansList)
+            optionList = []
+            for x in o.split('|'):
+                if not Options.objects.all().filter(content=x , orderForPerm = 0).exists():
                     h = Options(content=x)
                     h.save()
-                ansList.append(Options.objects.get(content=x).id)
-            ques.correctOption.set(ansList)
+                optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+            ques.options.set(optionList)
             ques.tag.add(*temp)
             ques.save()
             return HttpResponseRedirect(reverse('add'))

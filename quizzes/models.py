@@ -37,7 +37,8 @@ class Tag(models.Model):
 class Options(models.Model):
     # The text to be displayed describing the choice in the question
     content = models.CharField(max_length=256, verbose_name='content')
-
+    #
+    orderForPerm = models.IntegerField(verbose_name='order', blank=True, null=True, default = 0)
     class Meta:
         db_table = 'options'    # Define the database table name
         verbose_name = 'Option' # Define the verbose name for the model

@@ -37,7 +37,7 @@
       {% endif %}</td>
       <td class="text-left">
         {% for o in question.correctOption.all %}
-          {{o.content}} <p></p>
+          {{o.content}}{% if question.type == 1 %}({{o.orderForPerm}}){% endif %} <p></p>
       {% endfor %} </td>
     <td class="text-left">
       {% for o in question.options.all %}
