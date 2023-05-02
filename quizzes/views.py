@@ -450,7 +450,6 @@ def addrecord(request):
             for x in o.split('|'):
                 if y == '1':
                     cont = re.sub(r':@[0-9]', '', x)
-                    print(cont)
                     if(not(Options.objects.all().filter(content = cont).exists())):
                         if y == '1':
                             ans = Options(content = cont)
