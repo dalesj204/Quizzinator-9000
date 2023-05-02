@@ -741,8 +741,12 @@ def SubmitQuiz(request, quiz_id):
         this_quiz = Quiz.objects.get(id=quiz_id)
         questions = this_quiz.questions.all()
 
+        total_answers = 0
+        for q in questions:
+            total_answers+=q.correctOption.count()
+        
         # Checks if the appropriate amount of answers were submitted
-        if(not (len(selectedOpt) == len(questions))):
+        if(not (len(selectedOpt) == total_answers)):
             # KNOW BUG: The url of the reroute will be the
             # summary page, but display the quiz still
             return TakeQuizView(request, quiz_id, error="MMChoices")
@@ -757,12 +761,17 @@ def SubmitQuiz(request, quiz_id):
         # This means a for loop counter will always match
         # the choice to the appropriate question
         count = 0
+        offset = 0
         for i in range(len(questions)):
-            # Compares correctOption *ID* with that question's answer's *ID*
-            if(selectedOpt[i] == str(questions[i].correctOption.id)):
-                count+=1
+            options = list(str(o.id) for o in questions[i].correctOption.all())
+            for o in options:
+                # Compares correctOption *ID* with that question's answer's *ID*
+                if(options.__contains__(selectedOpt[offset])):
+                    count+=1
+                offset+=1
+
         # Quick score calculation and check against the passingThreshold
-        score = count / len(questions)
+        score = count / total_answers
         score = round(score * 100, 2)
         if(this_quiz.passingThreshold >= score):
             retake = True
