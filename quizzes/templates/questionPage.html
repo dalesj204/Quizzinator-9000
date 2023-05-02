@@ -37,11 +37,11 @@
       {% endif %}</td>
       <td class="text-left">
         {% for o in question.correctOption.all %}
-          {{o.content}}({{o.orderForPerm}}){{o.id}} <p></p>
+          {{o.content}}{% if question.type == 1 %}({{o.orderForPerm}}){% endif %} <p></p>
       {% endfor %} </td>
     <td class="text-left">
       {% for o in question.options.all %}
-        {{o.content}}{{o.id}} <p></p>
+        {{o.content}} <p></p>
       {% endfor %}
     </td>
     <td class="text-left"> {{question.explain}} </td>

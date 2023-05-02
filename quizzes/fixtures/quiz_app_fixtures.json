@@ -84,6 +84,54 @@
     }
   },
   {
+    "model": "quizzes.Options",
+    "pk": "8",
+    "fields": {
+      "content": "Data stores, processes, entities, relationships",
+      "orderForPerm": "1"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "9",
+    "fields": {
+      "content": "Tables, column names and formats, datat sources, data importing procedures, drill-down procedures",
+      "orderForPerm": "2"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "10",
+    "fields": {
+      "content": "Code look-up tables, foreign keys",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "11",
+    "fields": {
+      "content": "Program and file names,access modes, security",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "12",
+    "fields": {
+      "content": "Table names, column names and formats, indexes, views",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "13",
+    "fields": {
+      "content": "Dimensional descriptions, aggregation rules, drill-down procedures",
+      "orderForPerm": "0"
+    }
+  },
+  {
     "model": "quizzes.Question",
     "pk": "1",
     "fields": {
@@ -122,11 +170,24 @@
   }
   ,
   {
+    "model": "quizzes.Question",
+    "pk": "4",
+    "fields": {
+      "stem": "Which of these best describes the contents of a data dictionary of: 1. a CASE tool 2. a data warehouse",
+      "type": "1",
+      "explain": "No hint",
+      "tag": "3",
+      "options": ["8", "9", "10", "11", "12", "13"],
+      "correctOption": ["8", "9"]
+    }
+  }
+  ,
+  {
     "model": "quizzes.Quiz",
     "pk": "1",
     "fields":{
       "name": "test quiz",
-      "questions": ["1", "2"],
+      "questions": ["1", "2", "4"],
       "start_time": "2023-01-01 12:00:00.000000",
       "end_time": "2024-01-01 12:00:00.000000",
       "time_limit": "00:30:00",
