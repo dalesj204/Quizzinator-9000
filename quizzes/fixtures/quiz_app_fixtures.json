@@ -143,7 +143,7 @@
     "model": "quizzes.Gradebook",
     "pk": "1",
     "fields": {
-      "student_data": "1"
+      "student_data": ["1", "2"]
     }
   },
   {
