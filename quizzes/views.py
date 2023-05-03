@@ -763,7 +763,6 @@ def SubmitQuiz(request, quiz_id):
             user_info.grade = score
         user_info.attempts+=1
         user_info.save()
-        print(user_info)
         
         # The retake boolean is processed in the HTML page
         context = {
