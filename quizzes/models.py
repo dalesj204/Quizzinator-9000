@@ -90,6 +90,19 @@ class Question(models.Model):
     def __str__(self):
         return self.stem
 
+class DataModel(models.Model):
+    student_id = models.IntegerField()
+    grade = models.IntegerField()
+    attempts = models.IntegerField()
+    def __str__(self):
+        return str(self.student_id) + " " + str(self.grade) + " " + str(self.attempts)
+
+class Gradebook(models.Model):
+    student_data = models.ManyToManyField(DataModel, related_name="student_data")
+    def __str__(self):
+        quiz = Quiz.objects.get(gradebook = self.id)
+        return str(quiz) + "'s Gradebook"
+
 # This is the main model for the program
 # 
 # This model also stores a lot of information, which is described in comments within
@@ -121,29 +134,29 @@ class Quiz(models.Model):
 
     # The grade the student must match or exceed for the quiz to be considered passed
     passingThreshold = models.PositiveSmallIntegerField(default=0)
-    
+
+    gradebook = models.OneToOneField(Gradebook, on_delete=models.CASCADE, related_name="gradebook", default=None, blank=True)
+
+    def populate(self, class_id):
+        this_class = Class.objects.get(id=class_id)
+        students = Student.objects.filter(classes = this_class)
+        for s in students.all():
+            flag = True
+            for data in self.gradebook.student_data.all():
+                if(str(data.student_id) == str(s.user.id)):
+                    flag = False
+            if(flag):
+                data = DataModel(student_id=s.user.id, grade = 0, attempts = 0)
+                data.save()
+                self.gradebook.student_data.add(data)
+        self.save()
+
     class Meta:
         db_table = 'quizzes'    # Define the database table name
         verbose_name = 'Quiz'   # Define the verbose name for the model
 
     def __str__(self):
         return self.name #So I can grab the Quiz Name
-    
-# temporary model for the sake of getting the gradebook page running.
-class Grade(models.Model):
-    name = models.CharField(max_length=100)
-    grade = models.IntegerField()
-    
-
-    class Meta:
-        verbose_name_plural = "grades"
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse('grade_list', kwargs={'pk': self.pk})
-    
 
 class Stats(models.Model):
     name = models.CharField(max_length=100)
@@ -162,8 +175,9 @@ class Stats(models.Model):
 # @return absolute_url class_detail - the detail view for that particular class
 class Class(models.Model):
     name = models.CharField(max_length=100)
-    gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
+    #gradebook = models.ForeignKey(Grade, on_delete=models.CASCADE, default=1)
     quizzes = models.ManyToManyField(Quiz)
+
     class Meta:
         verbose_name_plural = "classes"
 

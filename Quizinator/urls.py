@@ -37,6 +37,7 @@ urlpatterns = [
     
     path('quizzes/take/<int:quiz_id>', views.TakeQuizView, name='take_quiz'),
     path('quizzes/take/summary/<int:quiz_id>', views.SubmitQuiz, name='submitQuiz'),
+    path('quizzes/gradebook/<int:quiz_id>', views.TeacherGradebookView, name='gradebook'),
     
     path('quiz_create/', user_is_teacher(QuizCreateView.as_view()), name='quiz_create'),
     path('questions/search/', search_questions, name='search_questions'),
@@ -56,7 +57,5 @@ urlpatterns = [
     path('addStudent/addStudentrecord/<int:id>', views.addStudentrecord, name='addStudentrecord'),
     path('addStudent/deleteStudentrecord/<int:id>', views.deleteStudentrecord, name='deleteStudentrecord'),
     
-    
-    path('class_detail/<int:class_id>/gradebook', views.ClassGradebookView.as_view(), name='grade_list'),# page does not exist yet
     path('class_detail/stats', views.ClassStatsView.as_view(), name='stats'), # page does not exist yet
 ]

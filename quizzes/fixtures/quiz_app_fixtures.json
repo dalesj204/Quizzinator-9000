@@ -122,6 +122,31 @@
   }
   ,
   {
+    "model": "quizzes.DataModel",
+    "pk": "1",
+    "fields": {
+      "student_id": "111111111111",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
+    "model": "quizzes.DataModel",
+    "pk": "2",
+    "fields": {
+      "student_id": "111111111112",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
+    "model": "quizzes.Gradebook",
+    "pk": "1",
+    "fields": {
+      "student_data": ["1", "2"]
+    }
+  },
+  {
     "model": "quizzes.Quiz",
     "pk": "1",
     "fields":{
@@ -130,32 +155,16 @@
       "start_time": "2023-01-01 12:00:00.000000",
       "end_time": "2024-01-01 12:00:00.000000",
       "time_limit": "00:30:00",
-      "passingThreshold": "60"
+      "passingThreshold": "60",
+      "gradebook": "1"
     }
   }
   ,
-  {
-    "model": "quizzes.Grade",
-    "pk": "1",
-    "fields": {
-      "name": "Grade 1",
-      "grade": "90"
-    }
-  },
-  {
-    "model": "quizzes.Grade",
-    "pk": "2",
-    "fields": {
-      "name": "Grade 2",
-      "grade": "90"
-    }
-  },
   {
     "model": "quizzes.Class",
     "pk": "1",
     "fields": {
       "name": "CIS 203",
-      "gradebook": "1",
       "quizzes": "1"
     }
   },
@@ -164,7 +173,6 @@
     "pk": "2",
     "fields": {
       "name": "CIS 201",
-      "gradebook": "2",
       "quizzes": ""
     }
   },
@@ -178,6 +186,8 @@
       "first_name": "Admin",
       "last_name": "Tester",
       "is_superuser": true,
+      "is_student": true,
+      "is_teacher": true,
       "is_staff": true,
       "is_active": true,
       "is_teacher": true

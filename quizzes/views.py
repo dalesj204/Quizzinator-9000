@@ -11,7 +11,7 @@ from django.contrib import messages
 from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
-from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
+from .models import Class, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
 from .decorators import user_is_teacher, user_is_student
 from django.utils.decorators import method_decorator
 import tablib
@@ -83,7 +83,9 @@ def index(request):
         return redirect(LoginView)
     
 
-def isActiveQuiz(now, start, end):
+def isActiveQuiz(now, start, end, threshold, grade):
+    return start < now and now < end and threshold > grade
+def teacherIsActiveQuiz(now, start, end):
     return start < now and now < end
 
 
@@ -97,8 +99,15 @@ def ClassDetailView(request, class_id):
             this_class = student.classes.get(pk=class_id) 
             time = timezone.now()
             active_quizzes = []
+            inactive_quizzes = []
+            grades = []
             for q in this_class.quizzes.all():
-                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+                user_info = q.gradebook.student_data.get(student_id = student.user.id)
+                if(isActiveQuiz(time, q.start_time, q.end_time, q.passingThreshold, user_info.grade)):
+                    active_quizzes.append(q)
+                else:
+                    inactive_quizzes.append(q)
+                    grades.append(user_info.grade)
                 
             teacher_list = Teacher.objects.all()
             teachers_in_class = []
@@ -109,7 +118,8 @@ def ClassDetailView(request, class_id):
                 'class': this_class,
                 'current_time': time,
                 'teacher_list': teachers_in_class,
-                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+                'active_quizzes': active_quizzes,
+                'inactive_quizzes': zip(inactive_quizzes, grades)
             }
             return render(request, 'class_detail_student.html', context=context)
         except:
@@ -132,18 +142,41 @@ def ClassDetailView(request, class_id):
             
             time = timezone.now()
             active_quizzes = []
+            inactive_quizzes = []
             for q in this_class.quizzes.all():
-                active_quizzes.append(isActiveQuiz(time, q.start_time, q.end_time))
+                if(teacherIsActiveQuiz(time, q.start_time, q.end_time)):
+                    active_quizzes.append(q)
+                else:
+                    inactive_quizzes.append(q)
             context = {
                 'class': this_class,
                 'current_time': time,
                 'student_list': students_in_class,
                 'teacher_list': teachers_in_class,
-                'quiz_info': zip(active_quizzes, this_class.quizzes.all()),
+                'active_quizzes': active_quizzes,
+                'inactive_quizzes': inactive_quizzes
             }
             return render(request, 'class_detail_teacher.html', context=context)
         except:
             return render(request, 'not_in_class.html')
+
+@login_required(login_url='login')
+@user_is_teacher
+def TeacherGradebookView(request, quiz_id):
+    this_quiz = Quiz.objects.get(id = quiz_id)
+    gb = this_quiz.gradebook.student_data.all()
+    average = 0
+    students = []
+    for student in gb:
+        students.append(Student.objects.get(user__id = student.student_id))
+        average+= student.grade
+    average = round(average / gb.count(), 2)
+    context = {
+        'quiz': this_quiz,
+        'gradebook': zip(gb, students),
+        'average': average
+    }
+    return render(request, 'gradebook.html', context)
 
 #Lists out all the students currently in the class and all of the other students in the databes into two tables
 #precondition - n/a
@@ -182,6 +215,9 @@ def addStudentrecord(request, id):
             stud2 = Student.objects.get(user = stud)
             stud2.classes.add(Class.objects.get(pk = id))
             stud.save()
+            for c in stud2.classes.all():
+                for q in c.quizzes.all():
+                    q.populate(c.id)
 
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
@@ -200,13 +236,12 @@ def deleteStudentrecord(request, id):
             stud2 = Student.objects.get(user = stud)
             stud2.classes.remove(Class.objects.get(pk = id))
             stud.save()
+            for c in stud2.classes.all():
+                for q in c.quizzes.all():
+                    q.populate(c.id)
+
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
-
-class ClassGradebookView(generic.ListView):
-    model = Grade
-    template_name = 'gradebook.html'
-
 
 class ClassStatsView(generic.ListView):
     model = Stats
@@ -566,21 +601,32 @@ def LogoutView(request):
 # Author - Jacob Fielder
 class QuizCreateView(View):
     def get(self, request):
+        classes = Class.objects.all()
+        context = {
+            'classes': classes
+        }
+
         # Render the quiz creation form
-        return render(request, 'quiz_create.html')
+        return render(request, 'quiz_create.html', context=context)
 
     def post(self, request):
         # Get the quiz details from the form
         quiz_name = request.POST['quiz_name']
         start_time_str = request.POST['start_time']
         end_time_str = request.POST['end_time']
+        passingThreshold = request.POST['passingThreshold']
+        class_ids = request.POST.getlist('selectedClass')
 
         # Parse the datetime strings into datetime objects
         start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
         end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
 
+        # Create a new gradebook
+        gb = Gradebook()
+        gb.save()
+
         # Create a new quiz instance
-        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time)
+        quiz = Quiz(name=quiz_name, start_time=start_time, end_time=end_time, gradebook = gb, passingThreshold = passingThreshold)
 
         # Convert the naive datetime objects to aware datetime objects
         quiz.start_time = timezone.make_aware(quiz.start_time, timezone.get_current_timezone())
@@ -592,6 +638,12 @@ class QuizCreateView(View):
         # Retrieve the questions that were added to the quiz
         questions = quiz.questions.all()
 
+        for c in class_ids:
+            this_class = Class.objects.get(id=c)
+            quiz.populate(this_class.id)
+            this_class.quizzes.add(quiz)
+
+        quiz.save()
         # Render the quiz summary page with quiz details and selected questions
         return render(request, 'quiz_summary.html', {'quiz': quiz, 'questions': questions})
 
@@ -743,6 +795,12 @@ def SubmitQuiz(request, quiz_id):
             retake = True
         else:
             retake = False
+
+        user_info = this_quiz.gradebook.student_data.get(student_id = request.user.id)
+        if(user_info.grade < score):
+            user_info.grade = score
+        user_info.attempts+=1
+        user_info.save()
         
         # The retake boolean is processed in the HTML page
         context = {
