@@ -912,3 +912,50 @@ class QuizListViewTest(TestCase):
         self.assertTemplateUsed(response, 'quiz_list.html')
         self.assertQuerysetEqual(response.context['quizzes'], Quiz.objects.filter(name__icontains='1'))
 
+class PasswordResetTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Password reset is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n view: Password reset is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        
+        User.objects.create(
+            id="111222333444",
+            is_student=True,
+            is_teacher=False,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Student.objects.create(
+            user=this_user
+        )
+        student = Student.objects.all().first()
+
+    def test_create_user(self):
+        this_user = User.objects.all().first()
+        student = Student.objects.all().first()
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_password_reset(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")
+        response = self.client.get(reverse('resetPassword'))
+        self.assertEqual(response.status_code, 200)
+        self.client.post('password_reset/', {"password_old": "SlappedHam123", "password1": "12345SlappedHam", "password1": "12345SlappedHam"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 302)
+        self.client.login(username="test@test.com", password="12345SlappedHam")
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)

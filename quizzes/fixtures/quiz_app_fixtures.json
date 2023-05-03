@@ -173,11 +173,28 @@
     "fields": {
       "id": "999999999999",
       "username": "admin",
+      "email": "admin@gmail.com",
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
       "first_name": "Admin",
+      "last_name": "Tester",
       "is_superuser": true,
       "is_staff": true,
-      "is_active": true
+      "is_active": true,
+      "is_teacher": true
+    }
+  },
+  {
+    "model": "quizzes.Student",
+    "fields": {
+      "user": "999999999999",
+      "classes": "1"
+    }
+  },
+  {
+    "model": "quizzes.Teacher",
+    "fields": {
+      "user": "999999999999",
+      "classes": "1"
     }
   },
   {

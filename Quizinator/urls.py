@@ -24,12 +24,14 @@ urlpatterns = [
     path('quiz_home/', include('quizzes.urls'), name='index'),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
     path('admin/', admin.site.urls),
+    path('admin_toggle/', views.AdminViewToggle, name='adminViewChange'),
     
     path('login/', views.LoginView, name='login'),
     path('logout/', views.LogoutView, name='logout'),
-    path('register/', views.RegistrationView, name='registration'),
-    path('register/student', views.StudentSignUpView, name='studentRegistration'),
-    path('register/teacher', views.TeacherSignUpView, name='teacherRegistration'),
+    # path('register/', views.RegistrationView, name='registration'),
+    path('password_reset/', views.ChangePasswordView, name='resetPassword'),
+    path('register/student/', views.StudentSignUpView, name='studentRegistration'),
+    path('register/teacher/', views.TeacherSignUpView, name='teacherRegistration'),
     
     path('class_detail/<int:class_id>', views.ClassDetailView, name='class_detail'), 
     

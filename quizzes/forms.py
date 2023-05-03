@@ -5,6 +5,7 @@ from . import models
 import random
 from django.http import HttpResponse
 from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 
 from .models import Question, User, Student, Teacher
 
@@ -104,3 +105,30 @@ class LoginForm(forms.Form):
     class Meta:
         model = User
         fields = ("Email", "Password")
+        
+
+class PasswordResetForm(UserCreationForm):
+    password_old = forms.CharField(label='Old Password', widget=forms.PasswordInput, max_length=100, required = True)
+    password1 = forms.CharField(label='New Password', widget=forms.PasswordInput, max_length=100, required = True)
+    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100, required = True)
+    
+    
+    class Meta:
+        model = User
+        fields = ("password_old", "password1", "password2")
+        
+    def check_old_password(self, *args, **kwargs):
+        this_user = kwargs.get('this_user')
+        password_old = self.cleaned_data['password_old']
+        if not this_user.check_password(password_old):
+            raise forms.ValidationError("Incorrect Password")
+        return password_old
+    
+    def clean_password(self):
+        password1 = self.cleaned_data['password1']
+        password2 = self.cleaned_data['password2']
+        if not (password1 and password2):
+            raise forms.ValidationError("You must confirm your password")
+        elif (password1 != password2):
+            raise forms.ValidationError("Your passwords do not match")
+        return password2

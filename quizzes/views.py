@@ -8,7 +8,7 @@ import xlwt
 from django.shortcuts import redirect
 from django.views.generic import CreateView,View, ListView, TemplateView, DetailView
 from django.contrib import messages
-from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm
+from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class,  Grade, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
@@ -19,7 +19,7 @@ from django.urls import reverse
 from tablib import Dataset
 from .authentication import EmailAuthenticateBackend
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import *
 from django.utils import timezone
 import datetime
@@ -27,6 +27,26 @@ from datetime import datetime
 import random
 from django.db.models import Q
 # Create your views here.
+
+@login_required(login_url='login')
+@user_passes_test(lambda u: u.is_superuser, login_url="/login/")
+def AdminViewToggle(request):
+    if request.method == 'POST':
+        selectedOpt = request.POST.getlist('selectedOpt')
+        for i in range(len(selectedOpt)):
+            if str(selectedOpt[i]) == "student":
+                print(selectedOpt)
+                User.objects.filter(id=request.user.id).update(is_student=True)
+                User.objects.filter(id=request.user.id).update(is_teacher=False)
+                return redirect(index, permanent=True)
+            if str(selectedOpt[i]) == "teacher":
+                print(selectedOpt)
+                User.objects.filter(id=request.user.id).update(is_student=False)
+                User.objects.filter(id=request.user.id).update(is_teacher=True)
+                return redirect(index, permanent=True)
+    
+    return redirect(index, permanent=True)
+
 
 # The home page displays a list of classes that the user is a part of
 @login_required(login_url='login')
@@ -477,6 +497,8 @@ def StudentSignUpView(request):
 
 
 # allows a user to register as a teacher
+@login_required(login_url='login')
+@user_is_teacher
 def TeacherSignUpView(request):
     if request.method == 'POST':
         form = TeacherSignUpForm(request.POST)
@@ -487,16 +509,34 @@ def TeacherSignUpView(request):
             user = form.save(commit=False)
             user.set_password(request.POST["password1"])
             user.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(index, permanent=True)
     else:
         form = TeacherSignUpForm()
     return render(request, 'teacher_registration.html', {'form' : form})
+
+
+def ChangePasswordView(request):
+    this_user = User.objects.get(id=request.user.id)
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            print(this_user)
+            form.cleaned_data
+            form.check_old_password(this_user=this_user)
+            form.clean_password()
+            this_user.set_password(request.POST["password1"])
+            this_user.save()
+            return redirect(index, permanent=True)
+    else:
+        form = PasswordResetForm()
+    return render(request, 'password_reset.html', {'form' : form})
+                
+            
     
     
-# shows the options to register as either a student or a teacher
-def RegistrationView(request):
-    return render(request, 'registration.html')
+# # shows the options to register as either a student or a teacher
+# def RegistrationView(request):
+#     return render(request, 'registration.html')
 
 # allows a user to log in
 def LoginView(request):
