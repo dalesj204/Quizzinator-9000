@@ -131,6 +131,15 @@
     }
   },
   {
+    "model": "quizzes.DataModel",
+    "pk": "2",
+    "fields": {
+      "student_id": "111111111112",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
     "model": "quizzes.Gradebook",
     "pk": "1",
     "fields": {
