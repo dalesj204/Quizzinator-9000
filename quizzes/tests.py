@@ -1,7 +1,7 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from .models import Class, Grade, Quiz, Tag, Question, Options
+from .models import Class, Quiz, Tag, Question, Options
 from datetime import datetime as dt, timedelta
 from django.utils import timezone
 from termcolor import colored
@@ -59,7 +59,7 @@ class TestClassModel(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods
-        classer = Class(name = "Assembly", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
+        classer = Class(name = "Assembly")
         classer.save()
         # quizzer = classer.quizzes.create(name = "Quiz One", course = "Assembly", startDate = "2023-03-23", endDate = "2023-04-24")
         # quizzer.save()
@@ -74,11 +74,6 @@ class TestClassModel(TestCase):
         className = Class.objects.get(id=1)
         field_label = className._meta.get_field('quizzes').verbose_name
         self.assertEqual(field_label, 'quizzes')
-
-    def test_gradebook_label(self):
-        className = Class.objects.get(id=1)
-        field_label = className._meta.get_field('gradebook').verbose_name
-        self.assertEqual(field_label, 'gradebook')
 
     def test_name_max_length(self):
         className = Class.objects.get(id=1)
@@ -113,11 +108,6 @@ class TestClassModel(TestCase):
     #     self.assertEqual(pracQuizOne.endDate, "2023-04-24")
     #     self.assertEqual(pracQuizTwo.endDate, "2023-04-17")
     #     self.assertEqual(pracClass.quizzes.count(), 2)
-
-    def test_class_gradebook(self):
-        pracClass = Class.objects.create(name = "Assembly", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
-        self.assertEqual(pracClass.gradebook.name, "quiz one")
-        self.assertEqual(pracClass.gradebook.grade, 55)
 
 
 class QuizModelTest(TestCase):

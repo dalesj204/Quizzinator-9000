@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from .forms import questionForm
-from .models import Quiz, Question, Tag, Type, User, Student, Teacher, Options, Class, Grade
+from .models import Quiz, Question, Tag, Type, User, Student, Teacher, Options, Class, Gradebook
 import xlrd
 from termcolor import colored   
 import os, xlwt, tablib
@@ -33,7 +33,7 @@ class studentInClassTest(TestCase):
         # User.objects.create(id = '111111111113',is_student = True, is_teacher = False,first_name = 'Snow', last_name = 'Smith', email = 'SS@me.com')
         # studentThreeUser = User.objects.get(id = '111111111113')
         # studentThreeUser.set_password("SlappedHam1235")
-        classer = Class(name = "CIS201", gradebook = Grade.objects.create(name = "quiz one", grade = 55))
+        classer = Class(name = "CIS201")
         classer.save()
         studentOne = Student.objects.create(user = studentOneUser)
         studentOne.classes.add(classer)
@@ -721,6 +721,7 @@ class QuizCreateViewTest(TestCase):
             'end_time': (timezone.localtime() + timezone.timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
             'stem': 'test',
             'questions': ['test question'],
+            'passingThreshold': 65
         }
         
         # creates a teacher for authentication
@@ -771,7 +772,9 @@ class QuizSummaryViewTest(TestCase):
 
     # Create a Quiz
     def setUp(self):
-        self.quiz = Quiz.objects.create(name='Test Quiz')
+        gb = Gradebook()
+        gb.save()
+        self.quiz = Quiz.objects.create(name='Test Quiz', gradebook = gb)
         self.url = reverse('quiz_summary', args=[self.quiz.id])
         
         # creates a teacher for authentication
@@ -868,9 +871,15 @@ class QuizListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Create some quizzes to test with
-        Quiz.objects.create(name='Quiz 1')
-        Quiz.objects.create(name='Quiz 2')
-        Quiz.objects.create(name='Quiz 3')
+        gb1 = Gradebook()
+        gb1.save()
+        Quiz.objects.create(name='Quiz 1', gradebook = gb1)
+        gb2 = Gradebook()
+        gb2.save()
+        Quiz.objects.create(name='Quiz 2', gradebook = gb2)
+        gb3 = Gradebook()
+        gb3.save()
+        Quiz.objects.create(name='Quiz 3', gradebook = gb3)
 
 
     def setUp(self):
@@ -912,3 +921,219 @@ class QuizListViewTest(TestCase):
         self.assertTemplateUsed(response, 'quiz_list.html')
         self.assertQuerysetEqual(response.context['quizzes'], Quiz.objects.filter(name__icontains='1'))
 
+# Test for ensuring the created quiz is assigned to a class
+# 
+# There were a lot of issues constructing this
+# test stemming from the ManyToMany field in the
+# Class model that contains the quizzes
+# 
+# Because of this, I have no idea how I fixed it
+# It works so I'm not complaining
+class QuizToClassRelationTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored(' QuizToClassRelation', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('View: QuizToClassRelation is Tested!', 'green'))
+
+    def setUp(self):
+        self.client = Client()
+
+        # Creation of filler information to get the m2m field working
+        gb = Gradebook.objects.create()
+        gb.save()
+
+        filler = Quiz.objects.create(name="filler", gradebook = gb)
+        filler.save()
+
+        self.cl = Class.objects.create(name = "Test Class")
+        self.cl.quizzes.add(filler)
+        self.cl.save()
+
+        # I decided to use Jacob's test to ensure that it works through the creation form
+        self.url = reverse('quiz_create')
+        self.data = {
+            'quiz_name': 'Test Quiz',
+            'start_time': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
+            'end_time': (timezone.localtime() + timezone.timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
+            'stem': 'test',
+            'questions': ['test question'],
+            'passingThreshold': 65,
+            'selectedClass': [self.cl.pk]
+        }
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        self.teacher = Teacher.objects.all().first()
+        self.teacher.classes.add(self.cl)
+        self.teacher.save()
+
+    # A simple test just to ensure that the passingThreshold is added appropraitely
+    def test_quiz_passing_threshold_exists(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the quiz
+        self.assertEqual(response.status_code, 200)                                 # Confirm the redirect page
+        self.assertTemplateUsed(response, 'quiz_summary.html')                      # Ensure it redirected correctly
+        self.assertEqual(Quiz.objects.get(name='Test Quiz').passingThreshold, 65)   # Checks the passing threshold
+
+    # The big test that caused 3 ******* hours of bug testing
+    # FOR 3 LINES OF CODE????? The solution was stupid too
+    # So stupid that I have no idea what it actually was
+    # I have like 2 or 3 theories, but I'm not sure which is right
+    def test_quiz_added_to_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the quiz
+        self.assertTrue(self.cl.quizzes.get(name='Test Quiz'))                      # Test if the quiz is in the class
+
+
+# Test for checking grade saving interactions
+# 
+# This one went a lot better
+# 
+# It's long, but pretty straight forward
+# See comments below for details
+class TakeQuizTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        print(colored('\nUnitTest is Testing:', 'blue') + colored(' TakeQuiz', 'red'))
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print(colored('View: TakeQuiz is Tested!', 'green'))
+
+    def setUp(self):
+        self.client = Client()
+
+        # Creation of filler information to get the m2m field working
+        gb = Gradebook.objects.create()
+        gb.save()
+        filler = Quiz.objects.create(name="filler", gradebook = gb)
+        filler.save()
+        self.cl = Class.objects.create(name = "Test Class")
+        self.cl.quizzes.add(filler)
+        self.cl.save()
+
+        # Options for the only question in the quiz
+        o1 = Options.objects.create(content="answer1")
+        o1.save()
+        o2 = Options.objects.create(content="answer2")
+        o2.save()
+        o3 = Options.objects.create(content="answer3")
+        o3.save()
+        question = Question.objects.create(stem = "example", type = 0, correctOption = o1)
+        question.options.add(o1)
+        question.options.add(o2)
+        question.options.add(o3)
+        question.save()
+
+        # Once again I figured I should include Jacob's test just to make sure everything works together 
+        self.url = reverse('quiz_create')
+        self.data = {
+            'quiz_name': 'Test Quiz',
+            'start_time': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
+            'end_time': (timezone.localtime() + timezone.timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
+            'stem': 'test',
+            'questions': ['example'],
+            'question_ids[]': [question.pk],
+            'passingThreshold': 65,
+            'selectedClass': [1]
+        }
+
+        # creates a student to take the quiz
+        User.objects.create(
+            id="999999999999",
+            is_student=True,
+            is_teacher=False,
+            first_name="Richie",
+            last_name="Guy",
+            email="richieman@test.com",
+            username="richieman@test.com"
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Student.objects.create(
+            user=this_user
+        )
+        self.student = Student.objects.all().first()
+        self.student.classes.add(self.cl)
+        self.student.save()
+
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+            username="test@test.com"
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        self.teacher = Teacher.objects.all().first()
+        self.teacher.classes.add(self.cl)
+        self.teacher.save()
+
+    # A simple test to make sure that a student has access to a newly created quiz
+    def test_student_access_quiz(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the quiz
+        self.assertEqual(response.status_code, 200)                                 # Confirm the redirect page
+#                                                                                   #
+        self.client.login(username="richieman@test.com", password="SlappedHam123")  # Login as student
+        self.quiz_url = reverse('take_quiz', kwargs={                               # Retrieves the url
+            'quiz_id':Quiz.objects.get(name='Test Quiz').pk                         # for taking the quiz
+            })                                                                      # at the specified pk
+#                                                                                   #
+        self.quiz_data = {                                                          # Passes one answer
+            'selectedOpt': 1                                                        # for the question
+        }                                                                           # 
+#                                                                                   #
+        response2 = self.client.get(self.quiz_url)                                  # Accesses the quiz page
+        self.assertEqual(response2.status_code, 200)                                # Ensures no redirect
+
+    # Tests if the grade is stored in the gradebook
+    def test_student_answers_saved_in_gradebook(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the quiz
+        self.assertEqual(response.status_code, 200)                                 # Confirm the redirect page
+#                                                                                   #
+        self.client.login(username="richieman@test.com", password="SlappedHam123")  # Login as student
+        self.quiz_url = reverse('submitQuiz', kwargs={                              # Retrieves the url
+            'quiz_id':Quiz.objects.get(name='Test Quiz').pk                         # for taking the quiz
+            })                                                                      # at the specified pk
+#                                                                                   #
+        self.quiz_data = {                                                          # Passes one answer
+            'selectedOpt': 1                                                        # for the question
+        }                                                                           # 
+#                                                                                   #
+        response2 = self.client.post(self.quiz_url, data=self.quiz_data)            # Accesses the quiz page
+        self.assertEqual(response2.status_code, 200)                                # Ensures no redirect
+        quiz = Quiz.objects.get(name='Test Quiz')                                   # Retrieve quiz
+        self.assertEqual(                                                           # Ensures the following are equal
+            quiz.gradebook.student_data.get(student_id=999999999999).grade,         # Saved grade in gradebook
+            100)                                                                    # Expected grade
