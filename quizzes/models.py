@@ -37,10 +37,12 @@ class Tag(models.Model):
 class Options(models.Model):
     # The text to be displayed describing the choice in the question
     content = models.CharField(max_length=256, verbose_name='content')
-
+    #
+    orderForPerm = models.IntegerField(verbose_name='order', blank=True, null=True, default = 0)
     class Meta:
         db_table = 'options'    # Define the database table name
         verbose_name = 'Option' # Define the verbose name for the model
+        ordering = ('orderForPerm',)
 
     def __str__(self):
         return self.content
@@ -76,7 +78,7 @@ class Question(models.Model):
     options = models.ManyToManyField(Options, related_name="options")
 
     # The correct answer for the question
-    correctOption = models.ForeignKey(Options, on_delete=models.CASCADE, related_name="correctOption", default=None, blank=True)
+    correctOption = models.ManyToManyField(Options, related_name="correctOption")
 
     # An array used for calculating the random order of the options
     order = []
@@ -89,6 +91,7 @@ class Question(models.Model):
 
     def __str__(self):
         return self.stem
+    
 
 class DataModel(models.Model):
     student_id = models.IntegerField()
