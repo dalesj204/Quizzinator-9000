@@ -1139,6 +1139,8 @@ class TakeQuizTest(TestCase):
             quiz.gradebook.student_data.get(student_id=999999999999).grade,         # Saved grade in gradebook
             100)                                                                    # Expected grade
         
+        
+# Tests to see if a user can reset their password
 class PasswordResetTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1169,20 +1171,139 @@ class PasswordResetTest(TestCase):
         )
         student = Student.objects.all().first()
 
-    def test_create_user(self):
-        this_user = User.objects.all().first()
-        student = Student.objects.all().first()
-        response = self.client.get(reverse('index'))
-        self.assertEqual(response.status_code, 302)
-
     def test_password_reset(self):
+        # login as created student
         self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('resetPassword'))
         self.assertEqual(response.status_code, 200)
-        self.client.post('password_reset/', {"password_old": "SlappedHam123", "password1": "12345SlappedHam", "password1": "12345SlappedHam"})
+        # enters the user's old password, new password, and new password again for confirmation
+        self.client.post('password_reset/', {"password_old": "SlappedHam123", "password1": "12345SlappedHam", "password2": "12345SlappedHam"})
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse('index'))
-        self.assertEqual(response.status_code, 302)
+        # login as the student using the new password
         self.client.login(username="test@test.com", password="12345SlappedHam")
         response = self.client.get(reverse('index'))
         self.assertEqual(response.status_code, 200)
+        
+        
+# Tests to see if an admin can reset a user's password
+class AdminPasswordResetTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Admin password reset is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n view: Admin password reset is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        # create a student
+        User.objects.create(
+            id="111222333444",
+            is_student=True,
+            is_teacher=False,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+            username="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Student.objects.create(
+            user=this_user
+        )
+        student = Student.objects.all().first()
+        
+        # create a teacher with admin privilages
+        User.objects.create(
+            id="444333222111",
+            is_student=False,
+            is_teacher=True,
+            first_name="L.",
+            last_name="Grabowski",
+            email="grabowski@test.com",
+            username="grabowski@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        this_user.is_staff = True
+        this_user.is_superuser = True
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
+
+    def test_admin_password_reset(self):
+        # login as the created teacher
+        self.client.login(username="grabowski@test.com", password="SlappedHam123")
+        response = self.client.get(reverse('adminPasswordReset'))
+        self.assertEqual(response.status_code, 302)
+        # enter the created student's email, new password, and new password confirmation
+        self.client.post('quiz_home/admin_password_reset/', {"email": "test@test.com", "password1": "12345SlappedHam", "password2": "12345SlappedHam"})
+        response = self.client.get(reverse('logout'))
+        self.assertEqual(response.status_code, 302)
+        # login as student to check if the password change was successful
+        self.client.login(username="test@test.com", password="12345SlappedHam")
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 302)
+        
+        
+# Tests to see if an admin can toggle between student and teacher views
+class AdminViewToggleTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Admin view toggle is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n view: Admin view toggle is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        # create a teacher with admin privilages
+        User.objects.create(
+            id="444333222111",
+            is_student=False,
+            is_teacher=True,
+            first_name="L.",
+            last_name="Grabowski",
+            email="grabowski@test.com",
+            username="grabowski@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        this_user.is_staff = True
+        this_user.is_superuser = True
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+        teacher = Teacher.objects.all().first()
+
+    def test_admin_password_reset(self):
+        # login as the created teacher
+        self.client.login(username="grabowski@test.com", password="SlappedHam123")
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        # test if adminViewChange will switch the user to the student view
+        response = self.client.get(reverse('adminViewChange', kwargs={"view_id": "student"}))
+        self.assertEqual(response.status_code, 302)
+        this_user = User.objects.get(id='444333222111')
+        self.assertEqual(this_user.is_student, True)
+        self.assertEqual(this_user.is_teacher, False)
+        # test if adminViewChange will switch the user back to the teacher view
+        response = self.client.get(reverse('adminViewChange', kwargs={"view_id": "teacher"}))
+        self.assertEqual(response.status_code, 302)
+        this_user = User.objects.get(id='444333222111')
+        self.assertEqual(this_user.is_teacher, True)
+        self.assertEqual(this_user.is_student, False)
+        
+        

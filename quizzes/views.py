@@ -8,7 +8,7 @@ import xlwt
 from django.shortcuts import redirect
 from django.views.generic import CreateView,View, ListView, TemplateView, DetailView
 from django.contrib import messages
-from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm
+from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm, AdminPasswordResetForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
@@ -28,57 +28,71 @@ import random
 from django.db.models import Q
 # Create your views here.
 
+# allows the teacher to toggle between student and teacher views
 @login_required(login_url='login')
-@user_passes_test(lambda u: u.is_superuser, login_url="/login/")
-def AdminViewToggle(request):
-    if request.method == 'POST':
-        selectedOpt = request.POST.getlist('selectedOpt')
-        for i in range(len(selectedOpt)):
-            if str(selectedOpt[i]) == "student":
-                print(selectedOpt)
-                User.objects.filter(id=request.user.id).update(is_student=True)
-                User.objects.filter(id=request.user.id).update(is_teacher=False)
-                return redirect(index, permanent=True)
-            if str(selectedOpt[i]) == "teacher":
-                print(selectedOpt)
-                User.objects.filter(id=request.user.id).update(is_student=False)
-                User.objects.filter(id=request.user.id).update(is_teacher=True)
-                return redirect(index, permanent=True)
-    
-    return redirect(index, permanent=True)
+@user_passes_test(lambda user: user.is_superuser, login_url="/login/")
+def AdminViewToggle(request, view_id):
+    if view_id == "student":
+        User.objects.filter(id=request.user.id).update(is_student=True)
+        User.objects.filter(id=request.user.id).update(is_teacher=False)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    if view_id == "teacher":
+        User.objects.filter(id=request.user.id).update(is_student=False)
+        User.objects.filter(id=request.user.id).update(is_teacher=True)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    else:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 # The home page displays a list of classes that the user is a part of
 @login_required(login_url='login')
 def index(request):
     this_user = User.objects.get(id=request.user.id)
-    if this_user.is_student:
-        student = Student.objects.get(user=this_user)
-        classes = student.classes.all()
-        name = this_user.__str__()
+    if not this_user.is_superuser:
+        if this_user.is_student:
+            student = Student.objects.get(user=this_user)
+            classes = student.classes.all()
+            name = this_user.__str__()
 
-        context = {
-            'student': student,
-            'classes': classes,
-            'name': name,
-            'student_id': request.user.id,
-        }
+            context = {
+                'student': student,
+                'classes': classes,
+                'name': name,
+                'student_id': request.user.id,
+            }
 
-        return render(request, 'student_home.html', context)
+            return render(request, 'student_home.html', context)
+        else:
+            return redirect(LoginView)
     
-    if this_user.is_teacher:
-        teacher = Teacher.objects.get(user=this_user)
-        classes = teacher.classes.all()
-        name = this_user.__str__()
+    if this_user.is_superuser:
+        if this_user.is_teacher:
+            teacher = Teacher.objects.get(user=this_user)
+            classes = teacher.classes.all()
+            name = this_user.__str__()
 
-        context = {
-            'teacher': teacher,
-            'classes': classes,
-            'name': name,
-            'teacher_id': request.user.id,
-        }
+            context = {
+                'teacher': teacher,
+                'classes': classes,
+                'name': name,
+                'teacher_id': request.user.id,
+            }
 
-        return render(request, 'teacher_home.html', context)
+            return render(request, 'teacher_home.html', context)
+        
+        if this_user.is_student:
+            teacher = Teacher.objects.get(user=this_user)
+            classes = teacher.classes.all()
+            name = this_user.__str__()
+
+            context = {
+                'student': teacher,
+                'classes': classes,
+                'name': name,
+                'student_id': request.user.id,
+            }
+
+            return render(request, 'student_home.html', context)
     else:
         return redirect(LoginView)
     
@@ -93,72 +107,106 @@ def teacherIsActiveQuiz(now, start, end):
 @login_required(login_url='login')
 def ClassDetailView(request, class_id):
     this_user = User.objects.get(id=request.user.id)
-    if this_user.is_student:
-        student = Student.objects.get(user=this_user)
-        try:
-            this_class = student.classes.get(pk=class_id) 
-            time = timezone.now()
-            active_quizzes = []
-            inactive_quizzes = []
-            grades = []
-            for q in this_class.quizzes.all():
-                user_info = q.gradebook.student_data.get(student_id = student.user.id)
-                if(isActiveQuiz(time, q.start_time, q.end_time, q.passingThreshold, user_info.grade)):
-                    active_quizzes.append(q)
-                else:
-                    inactive_quizzes.append(q)
-                    grades.append(user_info.grade)
-                
-            teacher_list = Teacher.objects.all()
-            teachers_in_class = []
-            for t in teacher_list:
-                if t.classes.filter(pk=class_id).count() == 1:
-                    teachers_in_class.append(t)
-            context = {
-                'class': this_class,
-                'current_time': time,
-                'teacher_list': teachers_in_class,
-                'active_quizzes': active_quizzes,
-                'inactive_quizzes': zip(inactive_quizzes, grades)
-            }
-            return render(request, 'class_detail_student.html', context=context)
-        except:
-            return render(request, 'not_in_class.html')
-    elif this_user.is_teacher:
-        teacher = Teacher.objects.get(user=this_user)
-        try:
-            this_class = teacher.classes.get(pk=class_id)
-            student_list = Student.objects.all()
-            students_in_class = []
-            for s in student_list:
-                if s.classes.filter(pk=class_id).count() == 1:
-                    students_in_class.append(s)
+    if not this_user.is_superuser:
+        if this_user.is_student:
+            student = Student.objects.get(user=this_user)
+            try:
+                this_class = student.classes.get(pk=class_id) 
+                time = timezone.now()
+                active_quizzes = []
+                inactive_quizzes = []
+                grades = []
+                for q in this_class.quizzes.all():
+                    user_info = q.gradebook.student_data.get(student_id = student.user.id)
+                    if(isActiveQuiz(time, q.start_time, q.end_time, q.passingThreshold, user_info.grade)):
+                        active_quizzes.append(q)
+                    else:
+                        inactive_quizzes.append(q)
+                        grades.append(user_info.grade)
                     
-            teacher_list = Teacher.objects.all()
-            teachers_in_class = []
-            for t in teacher_list:
-                if t.classes.filter(pk=class_id).count() == 1:
-                    teachers_in_class.append(t)
+                teacher_list = Teacher.objects.all()
+                teachers_in_class = []
+                for t in teacher_list:
+                    if t.classes.filter(pk=class_id).count() == 1:
+                        teachers_in_class.append(t)
+                context = {
+                    'class': this_class,
+                    'current_time': time,
+                    'teacher_list': teachers_in_class,
+                    'active_quizzes': active_quizzes,
+                    'inactive_quizzes': zip(inactive_quizzes, grades)
+                }
+                return render(request, 'class_detail_student.html', context=context)
+            except:
+                return render(request, 'not_in_class.html')
+    
+    if this_user.is_superuser:
+        if this_user.is_teacher:
+            teacher = Teacher.objects.get(user=this_user)
+            try:
+                this_class = teacher.classes.get(pk=class_id)
+                student_list = Student.objects.all()
+                students_in_class = []
+                for s in student_list:
+                    if s.classes.filter(pk=class_id).count() == 1:
+                        students_in_class.append(s)
+                        
+                teacher_list = Teacher.objects.all()
+                teachers_in_class = []
+                for t in teacher_list:
+                    if t.classes.filter(pk=class_id).count() == 1:
+                        teachers_in_class.append(t)
+                
+                time = timezone.now()
+                active_quizzes = []
+                inactive_quizzes = []
+                for q in this_class.quizzes.all():
+                    if(teacherIsActiveQuiz(time, q.start_time, q.end_time)):
+                        active_quizzes.append(q)
+                    else:
+                        inactive_quizzes.append(q)
+                context = {
+                    'class': this_class,
+                    'current_time': time,
+                    'student_list': students_in_class,
+                    'teacher_list': teachers_in_class,
+                    'active_quizzes': active_quizzes,
+                    'inactive_quizzes': inactive_quizzes
+                }
+                return render(request, 'class_detail_teacher.html', context=context)
+            except:
+                return render(request, 'not_in_class.html')
             
-            time = timezone.now()
-            active_quizzes = []
-            inactive_quizzes = []
-            for q in this_class.quizzes.all():
-                if(teacherIsActiveQuiz(time, q.start_time, q.end_time)):
-                    active_quizzes.append(q)
-                else:
-                    inactive_quizzes.append(q)
-            context = {
-                'class': this_class,
-                'current_time': time,
-                'student_list': students_in_class,
-                'teacher_list': teachers_in_class,
-                'active_quizzes': active_quizzes,
-                'inactive_quizzes': inactive_quizzes
-            }
-            return render(request, 'class_detail_teacher.html', context=context)
-        except:
-            return render(request, 'not_in_class.html')
+        if this_user.is_student:
+            student = Teacher.objects.get(user=this_user)
+            try:
+                this_class = student.classes.get(pk=class_id) 
+                time = timezone.now()
+                active_quizzes = []
+                inactive_quizzes = []
+                grades = []
+                for q in this_class.quizzes.all():
+                    if(teacherIsActiveQuiz(time, q.start_time, q.end_time)):
+                        active_quizzes.append(q)
+                    else:
+                        inactive_quizzes.append(q)
+                        grades.append(0)
+                    
+                teacher_list = Teacher.objects.all()
+                teachers_in_class = []
+                for t in teacher_list:
+                    if t.classes.filter(pk=class_id).count() == 1:
+                        teachers_in_class.append(t)
+                context = {
+                    'class': this_class,
+                    'current_time': time,
+                    'teacher_list': teachers_in_class,
+                    'active_quizzes': active_quizzes,
+                    'inactive_quizzes': zip(inactive_quizzes, grades)
+                }
+                return render(request, 'class_detail_student.html', context=context)
+            except:
+                return render(request, 'not_in_class.html')
 
 @login_required(login_url='login')
 @user_is_teacher
@@ -544,18 +592,21 @@ def TeacherSignUpView(request):
             user = form.save(commit=False)
             user.set_password(request.POST["password1"])
             user.save()
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
             return redirect(index, permanent=True)
     else:
         form = TeacherSignUpForm()
     return render(request, 'teacher_registration.html', {'form' : form})
 
-
+# allows the user to change their password
+@login_required(login_url='login')
 def ChangePasswordView(request):
     this_user = User.objects.get(id=request.user.id)
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
-            print(this_user)
             form.cleaned_data
             form.check_old_password(this_user=this_user)
             form.clean_password()
@@ -567,7 +618,26 @@ def ChangePasswordView(request):
     return render(request, 'password_reset.html', {'form' : form})
                 
             
-    
+@login_required(login_url='login')
+@user_passes_test(lambda user: user.is_superuser, login_url="/login/")
+def AdminPasswordReset(request):
+    if request.method == 'POST':
+        email = request.POST['email'].lower()
+        password1 = request.POST['password1']
+        password2 = request.POST['password2']
+        user_email = User.objects.filter(email=email)
+        if user_email.count() == 1:  
+            this_user = User.objects.get(email=email)
+            if (password1 == password2):
+                this_user.set_password(request.POST["password1"])
+                this_user.save()
+                return redirect(index, permanent=True)
+            else:
+                messages.error(request, 'Your passwords do not match', extra_tags='matchPassword')
+        else:
+            messages.error(request, 'This email does not exist', extra_tags='email')
+    form = AdminPasswordResetForm()
+    return render(request, 'admin_password_reset.html', {'form' : form})
     
 # # shows the options to register as either a student or a teacher
 # def RegistrationView(request):

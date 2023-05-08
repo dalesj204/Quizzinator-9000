@@ -3,6 +3,9 @@
 {% block content %}
 <h1>Welcome {{name}}!</h1>
 
+{% if user.is_superuser %}
+<p>Reset a user's password  <a href="{% url 'adminPasswordReset' %}">here</a></P>
+{% endif %}
 
 <p>Register a new teacher <a href="{% url 'teacherRegistration' %}">here</a></P>
 <p>Reset password <a href="{% url 'resetPassword' %}">here</a></P>
@@ -21,24 +24,5 @@
       <a href="{{ class.get_absolute_url }}" > {{class}} </a>
     </p>
 {% endfor %}
-
-{% if user.is_superuser %}
-<p></p>
-<p></p>
-<p></p>
-<h3>Change View</h3>
-<form action="{% url 'adminViewChange' %}" method="post">
-  {%csrf_token%}
-  <td class="text-center"> 
-    <div class="form-check">
-      <input {% if user.is_student %}checked{% endif %} type="checkbox" value="student" id="student" name="selectedOpt">
-      <label> Student View</label><br>
-      <input {% if user.is_teacher %}checked{% endif %} type="checkbox" value="teacher" id="teacher" name="selectedOpt">
-      <label> Teacher View</label><br><br>
-      <input type="submit" value="Submit">
-    </div>
-  </td>
-</form>
-{% endif %}
 
 {% endblock %}

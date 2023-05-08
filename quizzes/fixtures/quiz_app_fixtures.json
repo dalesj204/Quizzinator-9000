@@ -186,11 +186,10 @@
       "first_name": "Admin",
       "last_name": "Tester",
       "is_superuser": true,
-      "is_student": true,
+      "is_student": false,
       "is_teacher": true,
       "is_staff": true,
-      "is_active": true,
-      "is_teacher": true
+      "is_active": true
     }
   },
   {
@@ -261,7 +260,7 @@
       "password": "pbkdf2_sha256$10000$vkRy7QauoLLj$ry+3xm3YX+YrSXbri8s3EcXDIrx5ceM+xQjtpLdw2oE=",
       "first_name": "L.",
       "last_name": "Grabowski",
-      "is_superuser": false,
+      "is_superuser": true,
       "is_staff": true,
       "is_active": false,
       "is_teacher": true,

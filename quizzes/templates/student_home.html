@@ -16,23 +16,4 @@
   {% endfor %}
 </ul>
 
-{% if user.is_superuser %}
-<p></p>
-<p></p>
-<p></p>
-<h3>Change View</h3>
-<form action="{% url 'adminViewChange' %}" method="post">
-  {%csrf_token%}
-  <td class="text-center"> 
-    <div class="form-check">
-      <input {% if user.is_student %}checked{% endif %} type="checkbox" value="student" id="student" name="selectedOpt">
-      <label> Student View</label><br>
-      <input {% if user.is_teacher %}checked{% endif %} type="checkbox" value="teacher" id="teacher" name="selectedOpt">
-      <label> Teacher View</label><br><br>
-      <input type="submit" value="Submit">
-    </div>
-  </td>
-</form>
-{% endif %}
-
 {% endblock %}

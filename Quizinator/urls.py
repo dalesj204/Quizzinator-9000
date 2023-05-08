@@ -24,7 +24,8 @@ urlpatterns = [
     path('quiz_home/', include('quizzes.urls'), name='index'),
     path('', RedirectView.as_view(url='/quiz_home/', permanent=True)),
     path('admin/', admin.site.urls),
-    path('admin_toggle/', views.AdminViewToggle, name='adminViewChange'),
+    path('admin_toggle/<str:view_id>', views.AdminViewToggle, name='adminViewChange'),
+    path('quiz_home/admin_password_reset/', views.AdminPasswordReset, name='adminPasswordReset'),
     
     path('login/', views.LoginView, name='login'),
     path('logout/', views.LogoutView, name='logout'),
