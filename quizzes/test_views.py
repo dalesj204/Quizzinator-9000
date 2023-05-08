@@ -1185,7 +1185,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': 1                                                        # for the question
+            'selectedOpt': "1:1"                                                       # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.get(self.quiz_url)                                  # Accesses the quiz page
@@ -1203,7 +1203,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': 1                                                        # for the question
+            'selectedOpt': "1:1"                                                        # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.post(self.quiz_url, data=self.quiz_data)            # Accesses the quiz page
