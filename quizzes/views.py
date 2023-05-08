@@ -804,12 +804,14 @@ def SubmitQuiz(request, quiz_id):
         offset = 0
         for q in range(len(questions)):
             flag = True
+            tempOffset = 0
             for o in range(len(questions[q].correctOption.all())):
                 sel, cor = selectedOpt[q + o + offset].split(":")
                 if(not sel == cor):
                     flag = False
-                if(o >= 1): offset+=1
+                if(o >= 1): tempOffset+=1
             if(flag): count+=1
+            offset+=tempOffset
 
         # Quick score calculation and check against the passingThreshold
         score = count / len(questions)
