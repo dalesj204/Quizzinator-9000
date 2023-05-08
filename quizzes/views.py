@@ -148,6 +148,7 @@ def ClassDetailView(request, class_id):
 def TeacherGradebookView(request, quiz_id):
     this_quiz = Quiz.objects.get(id = quiz_id)
     gb = this_quiz.gradebook.student_data.all()
+    classes = Class.objects.filter(quizzes = this_quiz)
     average = 0
     students = []
     for student in gb:
