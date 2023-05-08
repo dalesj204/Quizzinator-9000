@@ -816,7 +816,7 @@ def SubmitQuiz(request, quiz_id):
         # Quick score calculation and check against the passingThreshold
         score = count / len(questions)
         score = round(score * 100, 2)
-        if(this_quiz.passingThreshold >= score):
+        if(this_quiz.passingThreshold > score):
             retake = True
         else:
             retake = False
