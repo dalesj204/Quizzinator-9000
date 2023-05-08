@@ -11,17 +11,31 @@
   <ol>
     {% for ques in questions %}
       <h3>{{ forloop.counter }}) {{ ques.stem }}</h3>
-      <ol>
-        {% for opt in ques.order %}
-        <form action="{% url 'submitQuiz' quiz_id %}" method="post">
-          {%csrf_token%}
-          <td class="text-center"> <div class="form-check">
-          <input type="checkbox" value= "{{opt.id}}" 
-                  id=opt name="selectedOpt">{{ opt }}</input>
-                </div>
-              </td>
-        {% endfor %}
-      </ol>
+
+      <div class="row">
+        <div class="col-md">
+          <div class="card card body">
+            <table class="table">
+              <tr>
+              {% for o in ques.correctOption.all %}
+                {% if ques.correctOption.count > 1 %}<th>Answer {{ forloop.counter }}</th>{% endif %}
+              {% endfor %}
+            </tr>
+
+          {% for o in ques.order %}
+          <form action="{% url 'submitQuiz' quiz_id %}" method="post">
+            {%csrf_token%}
+          <tr>
+            {% for opt in ques.correctOption.all %}
+            <td><label><input type="checkbox" value= "{{o.id}}:{{opt.id}}"id=o name="selectedOpt">{{ o }}</label></td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+              
+            </table>
+          </div>
+          </div>
+          </div>
     {% endfor %}
   </ol>
   <button type ="submit">Submit</button>
