@@ -57,6 +57,17 @@
                 <a class="nav-link" href="{% url 'login' %}">Login</a>
             </li>
             {% endif %}
+            {% if user.is_superuser %}
+                {% if user.is_teacher %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'adminViewChange' view_id="student" %}">View as Student</a>
+                    </li>
+                {% elif user.is_student %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'adminViewChange' view_id="teacher" %}">View as Teacher</a>
+                    </li>
+                {% endif %}
+            {% endif %}
         </div>
     </nav>
     {% comment %}
