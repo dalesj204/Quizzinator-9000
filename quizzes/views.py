@@ -148,6 +148,7 @@ def ClassDetailView(request, class_id):
 def TeacherGradebookView(request, quiz_id):
     this_quiz = Quiz.objects.get(id = quiz_id)
     gb = this_quiz.gradebook.student_data.all()
+    classes = Class.objects.filter(quizzes = this_quiz)
     average = 0
     students = []
     for student in gb:
@@ -802,21 +803,21 @@ def SubmitQuiz(request, quiz_id):
         # the choice to the appropriate question
         count = 0
         offset = 0
-        for i in range(len(questions)):
-            options = list(str(o.id) for o in questions[i].correctOption.all())
+        for q in range(len(questions)):
             flag = True
-            for i in range(len(options)):
-                # Compares correctOption *ID* with that question's answer's *ID*
-                if(not options[i] == (selectedOpt[offset])):
+            tempOffset = 0
+            for o in range(len(questions[q].correctOption.all())):
+                sel, cor = selectedOpt[q + o + offset].split(":")
+                if(not sel == cor):
                     flag = False
-                offset+=1
-            if(flag):
-                count+=1
+                if(o >= 1): tempOffset+=1
+            if(flag): count+=1
+            offset+=tempOffset
 
         # Quick score calculation and check against the passingThreshold
         score = count / len(questions)
         score = round(score * 100, 2)
-        if(this_quiz.passingThreshold >= score):
+        if(this_quiz.passingThreshold > score):
             retake = True
         else:
             retake = False
