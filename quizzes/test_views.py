@@ -11,6 +11,72 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import json
 from django.utils import timezone
 
+class permutationMultipleChoice(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Permutation Multiple Choice is Testing: ', 'blue'))
+        super().setUpClass()
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Permutation Multiple Choice is Tested!', 'green'))
+    @classmethod
+    def setUpTestData(self):
+        
+        # Create 1 questions
+        ans = Options.objects.create(content = "Data stores, processes, entities, relationships", orderForPerm = '1')
+        ans.save()
+        ans2 = Options.objects.create(content = "Tables, column names and formats, datat sources, data importing procedures, drill-down procedures", orderForPerm = '2')
+        ans2.save()
+        op = Options.objects.create(content = "Code look-up tables, foreign keys", orderForPerm = '0')
+        op.save()
+        op2 = Options.objects.create(content = "Program and file names,access modes, security", orderForPerm = '0')
+        op2.save()
+        op3 = Options.objects.create(content = "Table names, column names and formats, indexes, views", orderForPerm = '0')
+        op3.save()
+        op4 = Options.objects.create(content = "Dimensional descriptions, aggregation rules, drill-down procedures", orderForPerm = '0')
+        op4.save()
+        ques =Question.objects.create(
+            stem=f'Which of these best describes the contents of a data dictionary of: a CASE tool, a data warehouse',
+            type=1,
+            explain=f'No hint',
+        )
+        ques.save()
+        tag1 = Tag.objects.create(tag =f'Software Engineering')
+        ques.tag.add(tag1)
+        ques.options.add(op, op2, op3, op4)
+        ques.correctOption.add(ans, ans2)
+        ques.save()
+
+    def test_permutation_question_content(self):
+        ques = Question.objects.get(id = 1)
+        tempop = ques.options.all()
+        tempop2 = ques.correctOption.all()
+        temptag = ques.tag.all()
+        op = tempop[0]
+        optwo = tempop[1]
+        opthree = tempop[2]
+        opfour = tempop[3]
+        ans = tempop2[0]
+        ans2 = tempop2[1]
+        tag = temptag[0]
+        self.assertEqual(ques.stem, 'Which of these best describes the contents of a data dictionary of: a CASE tool, a data warehouse')
+        self.assertEqual(ques.type, 1)
+        self.assertEqual(ques.explain, 'No hint')
+        self.assertEqual(tag.tag, 'Software Engineering')
+        self.assertEqual(op.content, 'Code look-up tables, foreign keys')
+        self.assertEqual(optwo.content, 'Program and file names,access modes, security')
+        self.assertEqual(opthree.content, 'Table names, column names and formats, indexes, views')
+        self.assertEqual(opfour.content, 'Dimensional descriptions, aggregation rules, drill-down procedures')
+        self.assertEqual(op.orderForPerm, 0)
+        self.assertEqual(optwo.orderForPerm, 0)
+        self.assertEqual(opthree.orderForPerm, 0)
+        self.assertEqual(opfour.orderForPerm, 0)
+        self.assertEqual(ans.content, 'Data stores, processes, entities, relationships')
+        self.assertEqual(ans2.content, 'Tables, column names and formats, datat sources, data importing procedures, drill-down procedures')
+        self.assertEqual(ans.orderForPerm, 1)
+        self.assertEqual(ans2.orderForPerm, 2)
+
 class studentInClassTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -98,13 +164,13 @@ class questionListViewTest(TestCase):
                 stem=f'What is one plus one?',
                 type=0,
                 explain=f'It is odd',
-                correctOption_id=ans.id,
             )
             ques.save()
             tag1 = Tag.objects.create(tag =f'CIS201')
             tag2 = Tag.objects.create(tag =f'CIS202')
             ques.tag.add(tag1, tag2)
             ques.options.add(op, op2)
+            ques.correctOption.add(ans)
             ques.save()
             count = count + 1
             
@@ -152,27 +218,31 @@ class questionListViewTest(TestCase):
         self.client.login(username="test@test.com", password="SlappedHam123")
         ques = Question.objects.get(id = 1)
         tempop = ques.options.all()
+        tempop2 = ques.correctOption.all()
         op = tempop[0]
         optwo = tempop[1]
+        ans = tempop2[0]
         self.assertEqual(ques.stem, 'What is one plus one?')
         self.assertEqual(ques.type, 0)
         self.assertEqual(ques.explain, 'It is odd')
         self.assertEqual(op.content, 'fake answer')
         self.assertEqual(optwo.content, 'fake answer two')
-        self.assertEqual(ques.correctOption.content, 'Correct answer')
+        self.assertEqual(ans.content, 'Correct answer')
 
     def test_second_question_content(self):
         self.client.login(username="test@test.com", password="SlappedHam123")
         ques = Question.objects.get(id = 2)
         tempop = ques.options.all()
+        tempop2 = ques.correctOption.all()
         op = tempop[0]
         optwo = tempop[1]
+        ans = tempop2[0]
         self.assertEqual(ques.stem, 'What is one plus one?')
         self.assertEqual(ques.type, 0)
         self.assertEqual(ques.explain, 'It is odd')
         self.assertEqual(op.content, 'fake answer')
         self.assertEqual(optwo.content, 'fake answer two')
-        self.assertEqual(ques.correctOption.content, 'Correct answer')
+        self.assertEqual(ans.content, 'Correct answer')
     
    
     def test_options_length(self):
@@ -218,9 +288,10 @@ class editViewTest(TestCase):
         opt.save()
         opttwo = Options(content="tempTwo")
         opttwo.save()
-        self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.", correctOption_id = opt.id)
+        self.question = Question.objects.create(stem="what is two plus two", type=1, explain="two plus two is four.")
         self.question.tag.create(tag='math')
         self.question.options.add(opttwo)
+        self.question.correctOption.add(opt)
         self.question.save()
         
         # creates a teacher for authentication
@@ -241,24 +312,25 @@ class editViewTest(TestCase):
         teacher = Teacher.objects.all().first()
         
     def test_empty_form(self):
-        form = questionForm()
-        self.assertInHTML(
-            '<tr> <th><label for="id_stem">Stem:</label></th> <td> <input type="text" name="stem" maxlength="1024" required id="id_stem"></td></tr><tr><th><label for="id_type">Type:</label></th><td><select name="type" required id="id_type"><option value="" selected>---------</option><option value="0">MC</option><option value="1">PMC</option><option value="2">PP</option></select></td></tr><tr><th><label for="id_explain">Explain:</label></th><td><input type="text" name="explain" maxlength="512" required id="id_explain"></td></tr><tr><th><label for="id_tag">Tag:</label></th><td><select name="tag" id="id_tag" multiple><option value="1">math</option></select></td></tr><tr><th><label for="id_options">Options:</label></th> <td><select name="options" required id="id_options" multiple><option value="1">temp</option> <option value="2">tempTwo</option></select></td></tr><tr><th><label for="id_correctOption">CorrectOption:</label></th><td><select name="correctOption" id="id_correctOption"><option value="" selected>---------</option><option value="1">temp</option><option value="2">tempTwo</option></select> </td></tr>', str(form)
+        form = questionForm()        
+        self.assertInHTML(      
+            '<tr> <th><label for="id_stem">Stem:</label></th> <td> <input type="text" name="stem" maxlength="1024" required id="id_stem"></td></tr><tr><th><label for="id_type">Type:</label></th><td><select name="type" required id="id_type"><option value="" selected>---------</option><option value="0">MC</option><option value="1">PMC</option><option value="2">PP</option></select></td></tr><tr><th><label for="id_explain">Explain:</label></th><td><input type="text" name="explain" maxlength="512" required id="id_explain"></td></tr><tr><th><label for="id_tag">Tag:</label></th><td><select name="tag" id="id_tag" multiple><option value="1">math</option></select></td></tr><tr><th><label for="id_options">Options:</label></th><td><select name="options" required id="id_options" multiple><option value="1">temp</option><option value="2">tempTwo</option></select></td></tr><tr><th><label for="id_correctOption">CorrectOption:</label></th><td><select name="correctOption" required id="id_correctOption" multiple><option value="1">temp</option><option value="2">tempTwo</option></select></td></tr>', str(form)
         )
     def test_valid_form(self):
         opt = Options(content="other")
         opt.save()
         opttwo = Options(content="otherTwo")
         opttwo.save()
-        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint")
         ques.tag.create(tag='example')
         ques.options.add(opttwo)
+        ques.correctOption.add(opt)
         ques.save()
         data = {
             'stem': ques.stem, 
             'type': ques.type,
             'explain': ques.explain,
-            'correctOption': ques.correctOption,
+            'correctOption': ques.correctOption.all(),
             'options': ques.options.all(),
             'tag':ques.tag.all(),
         }
@@ -270,14 +342,15 @@ class editViewTest(TestCase):
         opt.save()
         opttwo = Options(content="otherTwo")
         opttwo.save()
-        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint")
         ques.tag.create(tag='example')
         ques.options.add(opttwo)
+        ques.correctOption.add(opt)
         ques.save()
         data = {
             'stem': ques.stem, 
             'type': ques.type,
-            'correctOption': ques.correctOption,
+            'correctOption': ques.correctOption.all(),
             'options': ques.options.all(),
             'tag':ques.tag.all(),
         }
@@ -291,16 +364,17 @@ class editViewTest(TestCase):
         opt.save()
         opttwo = Options(content="otherTwo")
         opttwo.save()
-        ques= Question.objects.create(stem="newQues", type=2, explain="new hint", correctOption = opt)
+        ques= Question.objects.create(stem="newQues", type=2, explain="new hint")
         ques.tag.create(tag='example')
         ques.options.add(opttwo)
+        ques.correctOption.add(opt)
         ques.save()
         self.assertEqual(ques.stem, "newQues")
         data = {
             'stem': "What is an apple?", 
             'type': ques.type,
             'explain': ques.explain,
-            'correctOption': ques.correctOption,
+            'correctOption': ques.correctOption.all(),
             'options': ques.options.all(),
             'tag':ques.tag.all(),
         }
@@ -335,33 +409,33 @@ class exportTest(TestCase):
         self.ques =Question.objects.create(
             stem=f'What is one plus one?',
             type=0,
-            explain=f'It is even',
-            correctOption = opt2
+            explain=f'It is even'
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt3)
+        self.ques.correctOption.add(opt2)
         self.ques =Question.objects.create(
             stem=f'What is one plus zero?',
             type=0,
-            explain=f'It is odd',
-            correctOption = opt1
+            explain=f'It is odd'
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt2, opt3)
+        self.ques.correctOption.add(opt1)
         self.ques =Question.objects.create(
             stem=f'What is one plus two?',
             type=0,
-            explain=f'It is odd',
-            correctOption = opt3
+            explain=f'It is odd'
         )
         tag1 = Tag.objects.create(tag =f'CIS201')
         tag2 = Tag.objects.create(tag =f'CIS202')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2)
+        self.ques.correctOption.add(opt3)
         
         # creates a teacher for authentication
         User.objects.create(
@@ -436,31 +510,31 @@ class addPageTest(TestCase):
         self.ques =Question.objects.create(
             stem='What is two plus three?',
             type=1,
-            explain="it's not four",
-            correctOption = opt1
+            explain="it's not four"
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Addition')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques.correctOption.add(opt1)
         self.ques =Question.objects.create(
             stem='What is three plus four?',
             type=1,
-            explain='eight minus one',
-            correctOption = opt2
+            explain='eight minus one'
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Addition')
         self.ques.tag.add(tag1, tag2)
+        self.ques.correctOption.add(opt2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
         self.ques =Question.objects.create(
             stem='What is what is three times three?',
             type=1,
-            explain='same as three plus three plus three',
-            correctOption = opt3
+            explain='same as three plus three plus three'
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Multiplication')
+        self.ques.correctOption.add(opt3)
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
         
@@ -506,7 +580,8 @@ class addPageTest(TestCase):
         self.client.login(username="test@test.com", password="SlappedHam123")
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(len(response.context['question_list']), 3)
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':2, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        #tested adding a permutation question(mult answers)
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something', 'type':1, 'explain': 'none', 'tag': 'hi|bye', 'options':'opt1:@0|opt2:@2|correct:@1', 'correctOption':'correct:@1|opt1:@2', 'Submit':'Submit'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
@@ -515,15 +590,13 @@ class addPageTest(TestCase):
     def test_submit_and_add_another_button(self):
         # print("Tested the 'Submit and Add Another' Button.")
         self.client.login(username="test@test.com", password="SlappedHam123")
-        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':1, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1|opt2', 'correctOption':'correct'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'something else', 'type':0, 'explain': 'explaination here', 'tag': 'bye', 'options':'opt1:@0|opt2:@0', 'correctOption':'correct:@0', 'Submit':'Submit'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('add'))
-        
-        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt1|opt2', 'correctOption':'correct'})
+        response = self.client.post("/questions/add/addrecord/", {'stem':'another question stem', 'type':0, 'explain': 'explaination2 here', 'tag': 'tag1|tag2', 'options': 'opt:@01|opt2:@0', 'correctOption':'correct:@0', 'Submit':'Submit'})
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse('questionPage'))
         self.assertEqual(response.status_code, 200)
-        
         self.assertEqual(len(response.context['question_list']), 5)
 
 
@@ -561,32 +634,32 @@ class importTest(TestCase):
         self.ques =Question.objects.create(
             stem='What is two plus three?',
             type=1,
-            explain="it's not four",
-            correctOption = opt1
+            explain="it's not four"
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Addition')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques.correctOption.add(opt1)
         self.ques =Question.objects.create(
             stem='What is three plus four?',
             type=1,
-            explain='eight minus one',
-            correctOption = opt2
+            explain='eight minus one'
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Addition')
         self.ques.tag.add(tag1, tag2)
         self.ques.options.add(opt1, opt2, opt3, opt4)
+        self.ques.correctOption.add(opt2)
         self.ques =Question.objects.create(
             stem='What is what is three times three?',
             type=1,
-            explain='same as three plus three plus three',
-            correctOption = opt3
+            explain='same as three plus three plus three'
         )
         tag1 = Tag.objects.create(tag ='Math')
         tag2 = Tag.objects.create(tag ='Multiplication')
         self.ques.tag.add(tag1, tag2)
+        self.ques.correctOption.add(opt3)
         self.ques.options.add(opt1, opt2, opt3, opt4)
         
         # creates a teacher for authentication
@@ -822,9 +895,10 @@ class SearchQuestionsTest(TestCase):
         opt1.save()
         opt2 = Options.objects.create(content = "two")
         opt2.save()
-        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1", correctOption= opt1)
-        self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2", correctOption=opt2)
-        
+        self.question1 = Question.objects.create(stem="What is the capital of France?", type=0, explain="Explanation 1")
+        self.question1.correctOption.add(opt1)
+        self.question2 = Question.objects.create(stem="What is the capital of Spain?", type=0, explain="Explanation 2")
+        self.question2.correctOption.add(opt2)
         # creates a teacher for authentication
         User.objects.create(
             id="111222333444",
@@ -1040,7 +1114,8 @@ class TakeQuizTest(TestCase):
         o2.save()
         o3 = Options.objects.create(content="answer3")
         o3.save()
-        question = Question.objects.create(stem = "example", type = 0, correctOption = o1)
+        question = Question.objects.create(stem = "example", type = 0)
+        question.correctOption.add(o1)
         question.options.add(o1)
         question.options.add(o2)
         question.options.add(o3)
@@ -1111,7 +1186,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': 1                                                        # for the question
+            'selectedOpt': "1:1"                                                       # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.get(self.quiz_url)                                  # Accesses the quiz page
@@ -1129,7 +1204,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': 1                                                        # for the question
+            'selectedOpt': "1:1"                                                        # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.post(self.quiz_url, data=self.quiz_data)            # Accesses the quiz page

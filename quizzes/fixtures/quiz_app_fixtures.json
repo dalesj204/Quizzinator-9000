@@ -84,6 +84,118 @@
     }
   },
   {
+    "model": "quizzes.Options",
+    "pk": "8",
+    "fields": {
+      "content": "Data stores, processes, entities, relationships",
+      "orderForPerm": "1"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "9",
+    "fields": {
+      "content": "Tables, column names and formats, datat sources, data importing procedures, drill-down procedures",
+      "orderForPerm": "2"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "10",
+    "fields": {
+      "content": "Code look-up tables, foreign keys",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "11",
+    "fields": {
+      "content": "Program and file names,access modes, security",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "12",
+    "fields": {
+      "content": "Table names, column names and formats, indexes, views",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "13",
+    "fields": {
+      "content": "Dimensional descriptions, aggregation rules, drill-down procedures",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "14",
+    "fields": {
+      "content": "Tab",
+      "orderForPerm": "4"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "15",
+    "fields": {
+      "content": "Newline",
+      "orderForPerm": "3"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "16",
+    "fields": {
+      "content": "Double Quote",
+      "orderForPerm": "2"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "17",
+    "fields": {
+      "content": "Backslash",
+      "orderForPerm": "1"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "18",
+    "fields": {
+      "content": "Backspace",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "19",
+    "fields": {
+      "content": "Return Carriage",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "20",
+    "fields": {
+      "content": "Form Feed",
+      "orderForPerm": "0"
+    }
+  },
+  {
+    "model": "quizzes.Options",
+    "pk": "21",
+    "fields": {
+      "content": "Single Quote",
+      "orderForPerm": "0"
+    }
+  },
+  {
     "model": "quizzes.Question",
     "pk": "1",
     "fields": {
@@ -122,6 +234,32 @@
   }
   ,
   {
+    "model": "quizzes.Question",
+    "pk": "4",
+    "fields": {
+      "stem": "Which of these best describes the contents of a data dictionary of: 1. a CASE tool 2. a data warehouse",
+      "type": "1",
+      "explain": "No hint",
+      "tag": "3",
+      "options": ["8", "9", "10", "11", "12", "13"],
+      "correctOption": ["8", "9"]
+    }
+  }
+  ,
+  {
+    "model": "quizzes.Question",
+    "pk": "5",
+    "fields": {
+      "stem": "Which of these options match the Escape Sequences: 1.\\\\ 2.\\\" 3.\\n 4.\\t",
+      "type": "1",
+      "explain": "No hint",
+      "tag": "3",
+      "options": ["14", "15", "16", "17", "18", "19", "20", "21"],
+      "correctOption": ["14", "15", "16", "17"]
+    }
+  }
+  ,
+  {
     "model": "quizzes.DataModel",
     "pk": "1",
     "fields": {
@@ -140,10 +278,60 @@
     }
   },
   {
+    "model": "quizzes.DataModel",
+    "pk": "3",
+    "fields": {
+      "student_id": "111111111111",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
+    "model": "quizzes.DataModel",
+    "pk": "4",
+    "fields": {
+      "student_id": "111111111112",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
+    "model": "quizzes.DataModel",
+    "pk": "5",
+    "fields": {
+      "student_id": "111111111111",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
+    "model": "quizzes.DataModel",
+    "pk": "6",
+    "fields": {
+      "student_id": "111111111112",
+      "grade": "0",
+      "attempts": "0"
+    }
+  },
+  {
     "model": "quizzes.Gradebook",
     "pk": "1",
     "fields": {
       "student_data": ["1", "2"]
+    }
+  },
+  {
+    "model": "quizzes.Gradebook",
+    "pk": "2",
+    "fields": {
+      "student_data": ["3", "4"]
+    }
+  },
+  {
+    "model": "quizzes.Gradebook",
+    "pk": "3",
+    "fields": {
+      "student_data": ["5", "6"]
     }
   },
   {
@@ -158,6 +346,32 @@
       "passingThreshold": "60",
       "gradebook": "1"
     }
+  }  ,
+  {
+    "model": "quizzes.Quiz",
+    "pk": "2",
+    "fields":{
+      "name": "Final Exam",
+      "questions": ["1", "2", "3", "4", "5"],
+      "start_time": "2023-01-01 12:00:00.000000",
+      "end_time": "2024-01-01 12:00:00.000000",
+      "time_limit": "00:30:00",
+      "passingThreshold": "60",
+      "gradebook": "2"
+    }
+  },
+  {
+    "model": "quizzes.Quiz",
+    "pk": "3",
+    "fields":{
+      "name": "Pop Quiz",
+      "questions": ["4"],
+      "start_time": "2023-01-01 12:00:00.000000",
+      "end_time": "2024-01-01 12:00:00.000000",
+      "time_limit": "00:30:00",
+      "passingThreshold": "101",
+      "gradebook": "3"
+    }
   }
   ,
   {
@@ -165,7 +379,7 @@
     "pk": "1",
     "fields": {
       "name": "CIS 203",
-      "quizzes": "1"
+      "quizzes": ["1", "2", "3"]
     }
   },
   {

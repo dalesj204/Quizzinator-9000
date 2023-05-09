@@ -24,10 +24,10 @@ class TagTestCase(TestCase):
         self.question = Question(
             stem="What is the capital of France?",
             type=0,
-            explain="The capital of France is Paris.",
-            correctOption = self.opt
+            explain="The capital of France is Paris."
             )
         self.question.save()
+        self.question.correctOption.set([self.opt])
         self.question.options.set([self.opt, self.opt2])
 
         self.tag1 = Tag.objects.create(tag='Geography')
@@ -141,7 +141,7 @@ class QuizModelTest(TestCase):
             explain = "It has nothing to do with University",
             tag = tag1_ques1,
             options = [opt1_ques1, opt2_ques1, opt3_ques1],
-            correctOption = opt2_ques1
+            correctOption = [opt2_ques1]
             )
         ques1.save()
         
@@ -165,7 +165,7 @@ class QuizModelTest(TestCase):
             explain = "It had machine in its name",
             tag = tag1_ques2,
             options = [opt1_ques2, opt2_ques2, opt3_ques2],
-            correctOption = opt1_ques2
+            correctOption = [opt1_ques2]
             )
         ques2.save()
         
@@ -189,7 +189,7 @@ class QuizModelTest(TestCase):
             explain = "This question is definitely asked WAY too much",
             tag = tag1_ques3,
             options = [opt1_ques3, opt2_ques3, opt3_ques3],
-            correctOption = opt3_ques3
+            correctOption = [opt3_ques3]
             )
         ques3.save()
         

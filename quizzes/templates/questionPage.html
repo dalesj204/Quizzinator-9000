@@ -36,7 +36,9 @@
       {% elif question.type == 2 %} PP 
       {% endif %}</td>
       <td class="text-left">
-        {{question.correctOption}} </td>
+        {% for o in question.correctOption.all %}
+          {{o.content}}{% if question.type == 1 %}({{o.orderForPerm}}){% endif %} <p></p>
+      {% endfor %} </td>
     <td class="text-left">
       {% for o in question.options.all %}
         {{o.content}} <p></p>

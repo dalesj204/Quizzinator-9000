@@ -11,6 +11,7 @@ admin.site.register(Teacher)
 admin.site.register(Student)
 admin.site.register(Quiz)
 
+
 class QuestionInline(admin.TabularInline):
     model = Question
 

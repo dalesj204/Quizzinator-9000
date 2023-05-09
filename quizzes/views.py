@@ -26,6 +26,7 @@ import datetime
 from datetime import datetime
 import random
 from django.db.models import Q
+import re
 # Create your views here.
 
 # allows the teacher to toggle between student and teacher views
@@ -213,6 +214,7 @@ def ClassDetailView(request, class_id):
 def TeacherGradebookView(request, quiz_id):
     this_quiz = Quiz.objects.get(id = quiz_id)
     gb = this_quiz.gradebook.student_data.all()
+    classes = Class.objects.filter(quizzes = this_quiz)
     average = 0
     students = []
     for student in gb:
@@ -373,7 +375,23 @@ def export_xcl(request):
                     tempthree = []
                     tempf = 0
                     con2 = 1
-                    filesheet.write(row_number, col_num, row.correctOption.content)
+                    leng2 = row.options.all().count()
+                    con2 = 1
+                    for x in row.correctOption.all():
+                        if con2 != 1 and con2 < leng2 + 1:
+                            tempthree.append('|')
+                            tempthree.append(x.content)
+                            if row.type == 1:
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
+                            con2 = con2 + 1
+                        else:
+                            tempthree.append(x.content)
+                            if row.type == 1:
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
+                            con2 = con2 + 1
+                    filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 4:
                     tempthree = []
                     tempf = 0
@@ -383,9 +401,15 @@ def export_xcl(request):
                         if con2 != 1 and con2 < leng2 + 1:
                             tempthree.append('|')
                             tempthree.append(x.content)
+                            if row.type == 1:
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
                             con2 = con2 + 1
                         else:
                             tempthree.append(x.content)
+                            if row.type == 1:
+                                tempthree.append(':@')
+                                tempthree.append(str(x.orderForPerm))
                             con2 = con2 + 1
                     filesheet.write(row_number, col_num, tempthree)
                 elif col_num == 5:
@@ -426,30 +450,48 @@ def import_xcl(request):
                 else:
                     h= Tag.objects.get(tag=tag)
                 temp.append(h)
-            
-            if(not(Options.objects.all().filter(content = data[3]).exists())):
-                o = Options(content = data[3])
-                o.save()
-            o = Options.objects.get(content = data[3])
             value = Question(
                 id = data[0], # id
                 stem = data[1], # stem
                 type = data[2], # type
-                correctOption = o, # correctOption
                 explain = data[5], # explain
             )
             value.save()
-            value.tag.add(*temp)
+            value.tag.set(temp)
             value.save()
-            
+            ansList = []
+            for ans in data[3].split('|'):
+                if data[2] == 1:
+                    listOrder = ans.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                        if data[2] == 1:
+                            o = Options(content = cont, orderForPerm = order)
+                            o.save()
+                    ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if(not(Options.objects.all().filter(content = ans, orderForPerm = 0).exists())):
+                        o = Options(content = ans)
+                        o.save()
+                    ansList.append(Options.objects.get(content=ans, orderForPerm = 0).id)
+            value.correctOption.set(ansList)
             optionList = []
             for op in data[4].split('|'):
-                if not Options.objects.all().filter(content=op).exists():
-                    h = Options(content=op)
-                    h.save()
-                optionList.append(Options.objects.get(content=op).id)
+                if data[2] == 1:
+                    listOrder = op.split(':@')
+                    order = listOrder[1]
+                    cont = listOrder[0]
+                    if not Options.objects.all().filter(content=cont, orderForPerm = order).exists():
+                        h = Options(content=cont, orderForPerm=order)
+                        h.save()
+                    optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+                else:
+                    if(not(Options.objects.all().filter(content = op, orderForPerm = 0).exists())):
+                        ans = Options(content = op)
+                        ans.save()
+                    optionList.append(Options.objects.get(content=op, orderForPerm = 0).id)
             value.options.set(optionList)
-                
         return HttpResponseRedirect(reverse('questionPage'))
     except:
         messages.error(request, "File must be an excel file", extra_tags='excel')
@@ -478,55 +520,65 @@ def add(request):
 @login_required(login_url='login')
 @user_is_teacher
 def addrecord(request):
-    x = request.POST['stem']
-    y = request.POST['type']
-    z = request.POST['explain']
-    q = request.POST['tag']
-    o = request.POST['options']
-    c = request.POST['correctOption']
-    if(not Question.objects.all().filter(stem=x).exists()):
-        if not Options.objects.all().filter(content=c).exists():
-            w = Options(content = c)
-            w.save()
-        c = Options.objects.get(content = c)
-        ques = Question(stem=x, type=y, explain=z, correctOption = c)
-        if 'Submit' in request.POST:
-            ques.save()
-            temp = []
-            for k in q.split('|'):
+    if 'Another' in request.POST or 'Submit' in request.POST:
+        x = request.POST['stem']
+        y = request.POST['type']
+        z = request.POST['explain']
+        q = request.POST['tag']
+        o = request.POST['options']
+        c = request.POST['correctOption']
+        ques = Question(stem=x, type=y, explain=z)
+        ques.save()
+        temp = []
+        for k in q.split('|'):
+            if not Tag.objects.all().filter(tag=k).exists():
                 h = Tag(tag = k)
                 h.save()
-                temp.append(h)
-            ques.tag.add(*temp)
-            optionList = []
-            for x in o.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
-                    h = Options(content=x)
-                    h.save()
-                optionList.append(Options.objects.get(content=x).id)
-            ques.options.set(optionList)
-            ques.save()
-            return HttpResponseRedirect(reverse('questionPage'))
-        elif 'Cancel' in request.POST:
+            else:
+                h= Tag.objects.get(tag=k)
+            temp.append(h)
+        ques.tag.add(*temp)
+        ansList = []
+        for x in c.split('|'):
+            if y == '1':
+                listOrder = x.split(':@')
+                order = listOrder[1]
+                cont = listOrder[0]
+                if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                        if y == '1':
+                            ans = Options(content = cont, orderForPerm = order)
+                            ans.save()
+                ansList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+            else:
+                if(not(Options.objects.all().filter(content = x, orderForPerm = 0).exists())):
+                    ans = Options(content = x)
+                    ans.save()
+                ansList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+        ques.correctOption.set(ansList)
+        optionList = []
+        for x in o.split('|'):
+            if y == '1':
+                listOrder = x.split(':@')
+                order = listOrder[1]
+                cont = listOrder[0]
+                if(not(Options.objects.all().filter(content = cont, orderForPerm = order).exists())):
+                        ans = Options(content = cont, orderForPerm = order)
+                        ans.save()
+                optionList.append(Options.objects.get(content=cont, orderForPerm = order).id)
+            else:
+                if(not(Options.objects.all().filter(content = x, orderForPerm = 0).exists())):
+                    ans = Options(content = x)
+                    ans.save()
+                optionList.append(Options.objects.get(content=x, orderForPerm = 0).id)
+        ques.options.set(optionList)
+        ques.save()
+        if 'Submit' in request.POST:
             return HttpResponseRedirect(reverse('questionPage'))
         else:
-            ques.save()
-            temp = []
-            for k in q.split('|'):
-                h = Tag(tag = k)
-                h.save()
-                temp.append(h)
-            optionList = []
-            for x in o.split('|'):
-                if not Options.objects.all().filter(content=x).exists():
-                    h = Options(content=x)
-                    h.save()
-                optionList.append(Options.objects.get(content=x).id)
-            ques.options.set(optionList)
-
-            ques.tag.add(*temp)
-            ques.save()
             return HttpResponseRedirect(reverse('add'))
+    elif 'Cancel' in request.POST:
+        return HttpResponseRedirect(reverse('questionPage'))
+    
     else: return HttpResponseRedirect(reverse('questionPage'))
     
 # Function that deletes the question from the question bank. 
@@ -838,8 +890,12 @@ def SubmitQuiz(request, quiz_id):
         this_quiz = Quiz.objects.get(id=quiz_id)
         questions = this_quiz.questions.all()
 
+        total_answers = 0
+        for q in questions:
+            total_answers+=q.correctOption.count()
+        
         # Checks if the appropriate amount of answers were submitted
-        if(not (len(selectedOpt) == len(questions))):
+        if(not (len(selectedOpt) == total_answers)):
             # KNOW BUG: The url of the reroute will be the
             # summary page, but display the quiz still
             return TakeQuizView(request, quiz_id, error="MMChoices")
@@ -854,14 +910,22 @@ def SubmitQuiz(request, quiz_id):
         # This means a for loop counter will always match
         # the choice to the appropriate question
         count = 0
-        for i in range(len(questions)):
-            # Compares correctOption *ID* with that question's answer's *ID*
-            if(selectedOpt[i] == str(questions[i].correctOption.id)):
-                count+=1
+        offset = 0
+        for q in range(len(questions)):
+            flag = True
+            tempOffset = 0
+            for o in range(len(questions[q].correctOption.all())):
+                sel, cor = selectedOpt[q + o + offset].split(":")
+                if(not sel == cor):
+                    flag = False
+                if(o >= 1): tempOffset+=1
+            if(flag): count+=1
+            offset+=tempOffset
+
         # Quick score calculation and check against the passingThreshold
         score = count / len(questions)
         score = round(score * 100, 2)
-        if(this_quiz.passingThreshold >= score):
+        if(this_quiz.passingThreshold > score):
             retake = True
         else:
             retake = False
