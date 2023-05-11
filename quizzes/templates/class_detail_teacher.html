@@ -1,28 +1,38 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
 <h1>{{class.name}}</h1> {% comment %} add an edit button {% endcomment %}
 <p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p> {% comment %} add an edit button {% endcomment %}
 
 <p><strong>Students: </strong> <a href="{% url 'addStudent' class.pk %}" >edit</a></p> 
-
+<ul class="list-group">
   {% for student in student_list %}
-    <p> 
+    <li class="list-group-item">
       {{student.user.first_name}} {{student.user.last_name}}
-    </p>
+    </li>
   {% endfor %}
+</ul>
+
+
 <h2>Quizzes for class: </h2>
+<ul class="list-group">
   {% for quiz in active_quizzes %}
-    <p>
+  <li class="list-group-item">
         <a href="{% url 'gradebook' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font> Closes: {{quiz.end_time}}
-    </p>
+  </li>
   {% endfor %}
+</ul>
 
   <h2>Past Quizzes: </h2>
+  <ul class="list-group">
   {% for quiz in inactive_quizzes %}
-    <p>
+  <li class="list-group-item">
       <a href="{% url 'gradebook' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Red">Inactive</font>
-    </p>
+  </li>
   {% endfor %}
   </ul>
+</div>
+</div>
 {% endblock %}

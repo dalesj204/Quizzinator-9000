@@ -1,6 +1,8 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
 
 {% if error == "MMChoices" %}
   <p>INCORRECT NUMBER OF CHOICES SELECTED</p>
@@ -40,4 +42,6 @@
   </ol>
   <button type ="submit">Submit</button>
 </form>
+</div>
+</div>
 {% endblock %}
