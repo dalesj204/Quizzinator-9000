@@ -154,6 +154,33 @@ class Quiz(models.Model):
                 self.gradebook.student_data.add(data)
         self.save()
 
+    def depopulate(self, class_id, student_id):
+        this_class = Class.objects.get(id=class_id)
+        for q in this_class.quizzes.all():
+            print(q, Class.objects.filter(quizzes = q).count())
+            if(Class.objects.filter(quizzes = q).count() == 1):
+                temp_list = q.gradebook.student_data.all()
+                try:
+                    temp = temp_list.get(student_id=student_id)
+                    q.gradebook.student_data.remove(temp)
+                except:
+                    q
+            else:
+                s_class_list = Student.objects.get(user__id = student_id).classes.all()
+                flag = 0
+                for c in s_class_list:
+                    if(c.quizzes.contains(q)):
+                        flag+=1
+                print(flag)
+                if(flag == 0):
+                    temp_list = q.gradebook.student_data.all()
+                    try:
+                        temp = temp_list.get(student_id=student_id)
+                        q.gradebook.student_data.remove(temp)
+                    except:
+                        temp = q
+
+
     class Meta:
         db_table = 'quizzes'    # Define the database table name
         verbose_name = 'Quiz'   # Define the verbose name for the model

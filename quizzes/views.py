@@ -214,17 +214,42 @@ def ClassDetailView(request, class_id):
 def TeacherGradebookView(request, quiz_id):
     this_quiz = Quiz.objects.get(id = quiz_id)
     gb = this_quiz.gradebook.student_data.all()
-    classes = Class.objects.filter(quizzes = this_quiz)
     average = 0
     students = []
+
+    this_user = User.objects.get(id = request.user.id)
+    this_teacher = Teacher.objects.get(user = this_user)
+    t_classes = list(this_teacher.classes.all())
+    classes = list(Class.objects.filter(quizzes = this_quiz))
+    for c in classes:
+        if(not t_classes.__contains__(c)): classes.remove(c)
+
+    class_order = []
+    switch = []
+    temp_class = ""
     for student in gb:
-        students.append(Student.objects.get(user__id = student.student_id))
+        s = Student.objects.get(user__id = student.student_id)
+        students.append(s)
+        for c in classes:
+            if(s.classes.contains(c)): 
+                class_order.append(c)
+                if(not c.name == temp_class):
+                    switch.append(True)
+                    temp_class = c.name
+                else:
+                    switch.append(False)
+                break
+
         average+= student.grade
-    average = round(average / gb.count(), 2)
+    if(gb.count() != 0):
+        average = round(average / gb.count(), 2)
+    else:
+        average = "N/A"
     context = {
         'quiz': this_quiz,
-        'gradebook': zip(gb, students),
-        'average': average
+        'gradebook': zip(gb, students, class_order, switch),
+        'average': average,
+        'classes': classes
     }
     return render(request, 'gradebook.html', context)
 
@@ -284,11 +309,12 @@ def deleteStudentrecord(request, id):
         for studentID in selectedStudent:
             stud = User.objects.get(id = studentID)
             stud2 = Student.objects.get(user = stud)
-            stud2.classes.remove(Class.objects.get(pk = id))
+            c = Class.objects.get(pk = id)
+            stud2.classes.remove(c)
             stud.save()
-            for c in stud2.classes.all():
-                for q in c.quizzes.all():
-                    q.populate(c.id)
+            for q in c.quizzes.all():
+                q.depopulate(c.id, stud.id)
+
 
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
