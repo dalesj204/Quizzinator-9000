@@ -216,22 +216,29 @@ def TeacherGradebookView(request, quiz_id):
     gb = this_quiz.gradebook.student_data.all()
     average = 0
     students = []
-
     this_user = User.objects.get(id = request.user.id)
     this_teacher = Teacher.objects.get(user = this_user)
     t_classes = list(this_teacher.classes.all())
-    classes = list(Class.objects.filter(quizzes = this_quiz))
-    for c in classes:
-        if(not t_classes.__contains__(c)): classes.remove(c)
+
+    if(request.method == "POST"):
+        class_ids = request.POST.getlist('selectedClasses')
+        classes = []
+        for id in class_ids:
+            classes.append(Class.objects.get(pk = id))
+
+    else:
+        classes = list(Class.objects.filter(quizzes = this_quiz))
+        for c in classes:
+            if(not t_classes.__contains__(c)): classes.remove(c)
 
     class_order = []
     switch = []
     temp_class = ""
     for student in gb:
         s = Student.objects.get(user__id = student.student_id)
-        students.append(s)
         for c in classes:
-            if(s.classes.contains(c)): 
+            if(s.classes.contains(c)):
+                students.append(s)
                 class_order.append(c)
                 if(not c.name == temp_class):
                     switch.append(True)
@@ -249,7 +256,8 @@ def TeacherGradebookView(request, quiz_id):
         'quiz': this_quiz,
         'gradebook': zip(gb, students, class_order, switch),
         'average': average,
-        'classes': classes
+        'sel_classes': classes,
+        't_classes': t_classes
     }
     return render(request, 'gradebook.html', context)
 
