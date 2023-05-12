@@ -234,12 +234,15 @@ def TeacherGradebookView(request, quiz_id):
     class_order = []
     switch = []
     temp_class = ""
+    gradebook = []
     for student in gb:
         s = Student.objects.get(user__id = student.student_id)
         for c in classes:
             if(s.classes.contains(c)):
                 students.append(s)
                 class_order.append(c)
+                gradebook.append(gb.get(student_id = s.user.id))
+                average+= student.grade
                 if(not c.name == temp_class):
                     switch.append(True)
                     temp_class = c.name
@@ -247,14 +250,13 @@ def TeacherGradebookView(request, quiz_id):
                     switch.append(False)
                 break
 
-        average+= student.grade
-    if(gb.count() != 0):
-        average = round(average / gb.count(), 2)
+    if(len(gradebook) != 0):
+        average = round(average / len(gradebook), 2)
     else:
         average = "N/A"
     context = {
         'quiz': this_quiz,
-        'gradebook': zip(gb, students, class_order, switch),
+        'gradebook': zip(gradebook, students, class_order, switch),
         'average': average,
         'sel_classes': classes,
         't_classes': t_classes
