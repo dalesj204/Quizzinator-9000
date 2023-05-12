@@ -3,19 +3,23 @@
 {% block content %}
 <div style="text-align: center;">
   <div style="display: inline-block; text-align: left;">
-<h1>Quizzes</h1>
+    <h1>Quizzes</h1>
     
     <ul>
-    {% for quiz in quizzes %}
-    <li>
-      <p> 
-        <a href="{% url 'quiz_summary' quiz.id %}" > {{quiz.name}} </a>
-      </p>
-    </li>
-    {% endfor %}
+      {% for quiz in quizzes %}
+        <li>
+          <p> 
+            <a href="{% url 'quiz_summary' quiz.id %}" > {{quiz.name}} </a>
+          </p>
+        </li>
+      {% endfor %}
     </ul>
 
-
+    <p></p>
+    <br>
+    <p></p>
+    <br>
+    <p></p>
   </div>
 </div>
 {% endblock %}

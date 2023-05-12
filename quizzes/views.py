@@ -803,12 +803,20 @@ def TakeQuizView(request, quiz_id, error="none"):
     questions = this_quiz.questions.all()
     for q in questions:
         q.order = (randomizeAnswers(q.options.all()))
+    
+    this_user = User.objects.get(id=request.user.id)
+    this_student = Student.objects.filter(user=this_user)
+    if this_student.count() == 1:
+        user_is_student = True
+    else:
+        user_is_student = False
 
     context = {
         'name': name,
         'questions': questions,
         'quiz_id': quiz_id,
-        'error': error
+        'error': error,
+        'user_is_student': user_is_student,
     }
     return render(request, 'take_quiz.html', context=context)
 

@@ -40,8 +40,20 @@
           </div>
     {% endfor %}
   </ol>
-  <button type ="submit">Submit</button>
+  {% if user_is_student %}
+    <button type ="submit">Submit</button>
+  {% endif %}
 </form>
+{% if not user_is_student %}
+<form action={% url 'index' %} method="link">
+  <button type="submit">Back</button>
+</form>
+{% endif %}
+<p></p>
+<br>
+<p></p>
+<br>
+<p></p>
 </div>
 </div>
 {% endblock %}

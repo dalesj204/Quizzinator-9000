@@ -25,7 +25,6 @@
                     {% if user.is_teacher %}
                     <li class="nav_items"><a href="{% url 'questionPage' %}" class="nav-link1">Questions</a></li>
                     {% endif %}
-                    <li class="nav_items"><a href="{{ request.META.HTTP_REFERER }}" class="nav-link1">Back</a></li>
                     {% if user.is_superuser %}
                         {% if user.is_teacher %}
                         <li class="nav_items"><a class="nav-link1" href="{% url 'adminViewChange' view_id="student" %}">View as Student</a></li>
