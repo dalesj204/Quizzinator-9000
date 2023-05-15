@@ -82,38 +82,86 @@ class studentInClassTest(TestCase):
     def setUpClass(cls):
         print(colored('Students in Class is Testing: ', 'blue'))
         super().setUpClass()
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         print("/"+colored('\n Model: Students in Class is Tested!', 'green'))
+
     @classmethod
     def setUpTestData(self):
-        User.objects.create(id = '111111111111',is_student = True, is_teacher = False,first_name = 'Jasmine', last_name = 'James', email = 'jj@me.com')
+        self.data = {
+            'selectedStudent': ['111111111111', '111111111112', '111111111113'],
+            'selectedStudent2': ['111111111112']
+        }
+
+        self.c1 = Class.objects.create(name = "CIS-201")
+
+        self.url1 = reverse('addStudentrecord', args=[self.c1.pk])
+        self.url2 = reverse('deleteStudentrecord', args=[self.c1.pk])
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+            username="test@test.com"
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        self.teacher = Teacher.objects.create(
+            user=this_user
+        )
+        self.teacher.save()
+
+        User.objects.create(id = '111111111111',is_student = True, is_teacher = False,first_name = 'Jasmine', last_name = 'James', email = 'jj@me.com', username = 'jj@me.com')
         studentOneUser = User.objects.get(id = '111111111111')
-        studentOneUser.set_password("SlappedHam123")
+        studentOneUser.set_password("SlappedHam1233")
         studentOneUser.save()
-        # User.objects.create(id = '111111111112',is_student = True, is_teacher = False,first_name = 'Belle', last_name = 'Brown', email = 'BelleBrown@me.com')
-        # studentTwoUser = User.objects.get(id = '111111111112')
-        # studentTwoUser.set_password("SlappedHam1234")
-        # studentTwoUser.save()
-        # User.objects.create(id = '111111111113',is_student = True, is_teacher = False,first_name = 'Snow', last_name = 'Smith', email = 'SS@me.com')
-        # studentThreeUser = User.objects.get(id = '111111111113')
-        # studentThreeUser.set_password("SlappedHam1235")
-        classer = Class(name = "CIS201")
-        classer.save()
-        studentOne = Student.objects.create(user = studentOneUser)
-        studentOne.classes.add(classer)
-        studentOne.save()
-        # studentTwo = Student.objects.create(user = studentTwoUser,classes = classOne)
-        # studentTwo.save()
+
+        User.objects.create(id = '111111111112',is_student = True, is_teacher = False,first_name = 'Belle', last_name = 'Brown', email = 'BelleBrown@me.com', username = 'BelleBrown@me.com')
+        studentTwoUser = User.objects.get(id = '111111111112')
+        studentTwoUser.set_password("SlappedHam1234")
+        studentTwoUser.save()
+
+        User.objects.create(id = '111111111113',is_student = True, is_teacher = False,first_name = 'Snow', last_name = 'Smith', email = 'SS@me.com', username = 'SS@me.com')
+        studentThreeUser = User.objects.get(id = '111111111113')
+        studentThreeUser.set_password("SlappedHam1235")
+        studentThreeUser.save()
+
+        self.s1 = Student.objects.create(user = studentOneUser)
+        self.s2 = Student.objects.create(user = studentTwoUser)
+        self.s3 = Student.objects.create(user = studentThreeUser)
 
     def test_num_students_class(self):
-        self.assertEqual(len(Student.objects.all().filter(classes=1)), 1)
+        self.assertEqual(len(Student.objects.all().filter(classes=1)), 0)
     
-    # def test_remove_student_class(self):
-    #     data = {'selectedStudent2': ['1']}
-    #     response = self.client.post('addStudent/deleteStudentrecord/1', data)
-    #     self.assertEqual(response.status_code, 200)
+    def test_add_students_to_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(Student.objects.filter(classes=1).count(), 3)              # Confirm classes added
+    
+    def test_remove_student_from_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(Student.objects.filter(classes=1).count(), 3)              # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(Student.objects.filter(classes=1).count(), 2)              # Confirm classes removed
+    
+    def test_remove_specific_student_from_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(Student.objects.filter(classes=1).count(), 3)              # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(Student.objects.filter(classes=1).count(), 2)              # Confirm classes removed
+        self.assertTrue(not Student.objects.filter(classes=1).contains(self.s2))    # Confirms specific class removed
+
+
+
 class questionListViewTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1431,6 +1479,69 @@ class CreateClassTest(TestCase):
 
 
 class AddDropClassTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Add/Drop Classes is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Add/Drop Classes is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        self.url1 = reverse('addClass')
+        self.url2 = reverse('dropClass')
+        self.data = {
+            'selectedClass': ['1', '2', '3'],
+            'selectedClass2': ['2']
+        }
+
+        self.c1 = Class.objects.create(name = "CIS-201")
+        self.c2 = Class.objects.create(name = "CIS-203")
+        self.c3 = Class.objects.create(name = "CIS-300")
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        self.teacher = Teacher.objects.create(
+            user=this_user
+        )
+        self.teacher.save()
+
+    def test_add_classes(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+
+    def test_remove_classes(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(self.teacher.classes.count(), 2)                           # Confirm classes removed
+
+    def test_remove_specific_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(self.teacher.classes.count(), 2)                           # Confirm classes removed
+        self.assertTrue(not self.teacher.classes.contains(self.c2))                 # Confirms specific class removed
+
+
+
+class AddRemoveStudentsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         print(colored('Add/Drop Classes is Testing: ', 'blue'))
