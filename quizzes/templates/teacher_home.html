@@ -1,28 +1,38 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<h1>Welcome {{name}}!</h1>
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
+    <h1>Welcome {{name}}!</h1>
 
-{% if user.is_superuser %}
-<p>Reset a user's password  <a href="{% url 'adminPasswordReset' %}">here</a></P>
-{% endif %}
+    {% load static %}
+        <img src="{% static 'pdambear.png' %}" alt="bearpic" style="width:340px;height:280px;"/>
 
-<p>Register a new teacher <a href="{% url 'teacherRegistration' %}">here</a></P>
-<p>Reset password <a href="{% url 'resetPassword' %}">here</a></P>
-<form action={% url 'quiz_create' %} method="link">
-  <button type="submit">Create Quiz</button>
-</form>
-<form action={% url 'quiz_list' %} method="link">
-  <button type="submit">List of Quizzes</button>
-</form>
+    {% if user.is_superuser %}
+      <p><a href="{% url 'adminPasswordReset' %}">Reset a user's password</a></p>
+    {% endif %}
+
+    <p><a href="{% url 'teacherRegistration' %}">Register a new teacher</a></p>
+
+    <form action={% url 'quiz_create' %} method="link">
+      <button type="submit" >Create Quiz</button>
+    </form>
+    <form action={% url 'quiz_list' %} method="link">
+      <button type="submit">List of Quizzes</button>
+    </form>
 
 
-<h2>Classes</h2>
-    
-{% for class in classes %}
-    <p> 
-      <a href="{{ class.get_absolute_url }}" > {{class}} </a>
-    </p>
-{% endfor %}
-
+    <h2>Classes</h2>
+    <ul class="list-group">
+      {% for class in classes %}
+        <li class="list-group-item"><a href="{{ class.get_absolute_url }}" > {{class}} </a></li>
+      {% endfor %}
+    </ul>
+    <p></p>
+    <br>
+    <p></p>
+    <br>
+    <p></p>
+  </div>
+</div>
 {% endblock %}

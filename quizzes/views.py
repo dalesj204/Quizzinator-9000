@@ -26,7 +26,6 @@ import datetime
 from datetime import datetime
 import random
 from django.db.models import Q
-import re
 # Create your views here.
 
 # allows the teacher to toggle between student and teacher views
@@ -715,7 +714,7 @@ def AdminPasswordReset(request):
 # allows a user to log in
 def LoginView(request):
     if request.method == 'POST':
-        email = request.POST['email']
+        email = request.POST['email'].lower()
         password = request.POST['password']
         user = authenticate(request, username=email, password=password)
         if user is not None:
@@ -873,13 +872,19 @@ def TakeQuizView(request, quiz_id, error="none"):
     for q in questions:
         q.order = (randomizeAnswers(q.options.all()))
 
+    if(Student.objects.filter(user = request.user).count() == 1):
+        u = False
+    else:
+        u = True
     context = {
         'name': name,
         'questions': questions,
         'quiz_id': quiz_id,
-        'error': error
+        'error': error,
+        'user_is_teacher': u
     }
     return render(request, 'take_quiz.html', context=context)
+
 
 
 # Post processing method for TakeQuizView
@@ -952,7 +957,7 @@ def SubmitQuiz(request, quiz_id):
             user_info.grade = score
         user_info.attempts+=1
         user_info.save()
-        
+
         # The retake boolean is processed in the HTML page
         context = {
             "score": str(score) + "%",
@@ -962,4 +967,3 @@ def SubmitQuiz(request, quiz_id):
 
         }
         return render(request, 'quiz_results.html', context=context)
-
