@@ -215,14 +215,50 @@ def TeacherGradebookView(request, quiz_id):
     gb = this_quiz.gradebook.student_data.all()
     average = 0
     students = []
+    this_user = User.objects.get(id = request.user.id)
+    this_teacher = Teacher.objects.get(user = this_user)
+    t_classes = list(this_teacher.classes.all())
+
+    if(request.method == "POST"):
+        class_ids = request.POST.getlist('selectedClasses')
+        classes = []
+        for id in class_ids:
+            classes.append(Class.objects.get(pk = id))
+
+    else:
+        classes = list(Class.objects.filter(quizzes = this_quiz))
+        for c in classes:
+            if(not t_classes.__contains__(c)): classes.remove(c)
+
+    class_order = []
+    switch = []
+    temp_class = ""
+    gradebook = []
     for student in gb:
-        students.append(Student.objects.get(user__id = student.student_id))
-        average+= student.grade
-    average = round(average / gb.count(), 2)
+        s = Student.objects.get(user__id = student.student_id)
+        for c in classes:
+            if(s.classes.contains(c)):
+                students.append(s)
+                class_order.append(c)
+                gradebook.append(gb.get(student_id = s.user.id))
+                average+= student.grade
+                if(not c.name == temp_class):
+                    switch.append(True)
+                    temp_class = c.name
+                else:
+                    switch.append(False)
+                break
+
+    if(len(gradebook) != 0):
+        average = round(average / len(gradebook), 2)
+    else:
+        average = "N/A"
     context = {
         'quiz': this_quiz,
-        'gradebook': zip(gb, students),
-        'average': average
+        'gradebook': zip(gradebook, students, class_order, switch),
+        'average': average,
+        'sel_classes': classes,
+        't_classes': t_classes
     }
     return render(request, 'gradebook.html', context)
 
@@ -282,11 +318,12 @@ def deleteStudentrecord(request, id):
         for studentID in selectedStudent:
             stud = User.objects.get(id = studentID)
             stud2 = Student.objects.get(user = stud)
-            stud2.classes.remove(Class.objects.get(pk = id))
+            c = Class.objects.get(pk = id)
+            stud2.classes.remove(c)
             stud.save()
-            for c in stud2.classes.all():
-                for q in c.quizzes.all():
-                    q.populate(c.id)
+            for q in c.quizzes.all():
+                q.depopulate(c.id, stud.id)
+
 
     #Returns file for the response
     return HttpResponseRedirect(reverse('addStudent', args = [id]))
