@@ -8,7 +8,7 @@ import xlwt
 from django.shortcuts import redirect
 from django.views.generic import CreateView,View, ListView, TemplateView, DetailView
 from django.contrib import messages
-from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm, AdminPasswordResetForm
+from .forms import  questionForm, StudentSignUpForm, TeacherSignUpForm, LoginForm, PasswordResetForm, AdminPasswordResetForm, CreateClassForm
 from django.http import HttpResponse, request, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from .models import Class, Stats, Question, Tag, Type, Quiz, User, Student, Teacher
@@ -967,3 +967,62 @@ def SubmitQuiz(request, quiz_id):
 
         }
         return render(request, 'quiz_results.html', context=context)
+    
+def EditClassList(request):
+    teacher = Teacher.objects.get(user = request.user)
+    in_class = [c for c in teacher.classes.all()]
+    not_in_class = [c for c in Class.objects.all()]
+    for c in in_class:
+        not_in_class.remove(c)
+
+    context = {
+        "in_class": in_class,
+        "not_in_class": not_in_class
+    }
+    return render(request, 'edit_classes.html', context=context)
+
+#This allows the teacher to select student in the database to be added to the class
+#precondition - student must not already be in the class
+#postcondition - student is now added to the class
+#parameter - class id, list of students to be added to the class
+@login_required(login_url='login')
+@user_is_teacher
+def addClass(request):
+    teacher = Teacher.objects.get(user = request.user)
+    if request.method == 'POST': 
+        selectedClasses = request.POST.getlist('selectedClass')
+        for ClassID in selectedClasses:
+            this_class = Class.objects.get(id = ClassID)
+            teacher.classes.add(this_class)
+
+    #Returns file for the response
+    return HttpResponseRedirect(reverse('edit_classes'))
+
+#this allows the teacher to remove a student from a class
+#precondition - student must be already be in the class
+#postcondition - student is now removed from the class
+#parameter - class id, list of students to be removed from the class
+@login_required(login_url='login')
+@user_is_teacher
+def dropClass(request):
+    teacher = Teacher.objects.get(user = request.user)
+    if request.method == 'POST': 
+        selectedClasses = request.POST.getlist('selectedClass2')
+        for ClassID in selectedClasses:
+            this_class = Class.objects.get(id = ClassID)
+            teacher.classes.remove(this_class)
+
+
+    #Returns file for the response
+    return HttpResponseRedirect(reverse('edit_classes'))
+
+# allows a user to register as a student
+def CreateClass(request):
+    if request.method == 'POST':
+        form = CreateClassForm(request.POST)
+        if form.is_valid():
+            this_class = form.save(commit=False)
+            return redirect(index, permanent=True)
+    else:
+        form = CreateClassForm()
+    return render(request, 'create_class.html', {'form' : form})

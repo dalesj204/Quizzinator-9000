@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 
-from .models import Question, User, Student, Teacher
+from .models import Question, User, Student, Teacher, Class
 
 # form to edit questions
 class questionForm(ModelForm):
@@ -158,3 +158,16 @@ class AdminPasswordResetForm(forms.Form):
         elif (password1 != password2):
             raise forms.ValidationError("Your passwords do not match")
         return password2
+    
+class CreateClassForm(forms.Form):
+    name = forms.CharField(label='Enter a Class Name', required=True, max_length=100)
+
+    class Meta:
+        model = Class
+        fields = ("name")
+
+    @transaction.atomic
+    def save(self, commit=False):
+        this_class = Class(name = self.cleaned_data['name'])
+        this_class.save()
+        return this_class

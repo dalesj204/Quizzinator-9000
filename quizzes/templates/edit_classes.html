@@ -1,0 +1,83 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
+
+    <!-- Add additional CSS in static file -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <h1>Enrolled Classes</h1>
+    <div class="row">
+      <div class="col-md">
+        <div class="card card body">
+          <table class="table">
+            <tr>
+              <th>Name</th>
+              <th>Remove Class</th>
+            </tr>
+            {% for c in in_class %}
+              <tr>
+                <p> 
+                  <td class="text-left"> {{ c }}</td>
+                  <form action="{% url 'dropClass' %}" method="post">
+                    {%csrf_token%}
+                    <td class="text-left"> 
+                      <div class="form-check">
+                        <input type="checkbox" value= "{{c.id}}" id=class name="selectedClass2"></input>
+                      </div>
+                    </td>
+                </p>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    <p></p>
+    <button type ="submit">Remove Classes</button>
+    </form>
+    <h1>Non-Enrolled Classes</h1>
+    <div class="row">
+      <div class="col-md">
+        <div class="card card body">
+          <table class="table">
+            <tr>
+              <th>Name</th>
+              <th>Add Class</th>
+            </tr>
+
+            {% for c in not_in_class %}
+              <tr>
+                <p> 
+                  <td class="text-left"> {{ c }}</td>
+                  <form action="{% url 'addClass' %}" method="post">
+                    {%csrf_token%}
+                    <td class="text-left"> 
+                      <div class="form-check">
+                        <input type="checkbox" value= "{{c.id}}" id=class name="selectedClass"></input>
+                      </div>
+                    </td>
+                </p>
+              </tr>
+            {% endfor %}         
+          </table>
+        </div>
+      </div>
+    </div>
+    <p></p>
+    <button type ="submit">Add Classes</button>
+    </form>
+    <p></p>
+    <form action={% url 'index' %} method="link">
+      <button type="submit">Back</button>
+    </form>
+
+    <p></p>
+    <br>
+    <p></p>
+    <br>
+    <p></p>
+  </div>
+</div>
+{% endblock %}

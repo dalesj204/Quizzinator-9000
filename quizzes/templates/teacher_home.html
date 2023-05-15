@@ -20,9 +20,13 @@
     <form action={% url 'quiz_list' %} method="link">
       <button type="submit">List of Quizzes</button>
     </form>
+    <form action={% url 'create_class' %} method="link">
+      <button type="submit">Create a Class</button>
+    </form>
 
 
     <h2>Classes</h2>
+    <p><a href="{% url 'edit_classes' %}">Add/Drop Classes</a></p>
     <ul class="list-group">
       {% for class in classes %}
         <li class="list-group-item"><a href="{{ class.get_absolute_url }}" > {{class}} </a></li>

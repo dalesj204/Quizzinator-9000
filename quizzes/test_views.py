@@ -1186,7 +1186,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': "1:1"                                                       # for the question
+            'selectedOpt': "1:1"                                                    # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.get(self.quiz_url)                                  # Accesses the quiz page
@@ -1204,7 +1204,7 @@ class TakeQuizTest(TestCase):
             })                                                                      # at the specified pk
 #                                                                                   #
         self.quiz_data = {                                                          # Passes one answer
-            'selectedOpt': "1:1"                                                        # for the question
+            'selectedOpt': "1:1"                                                    # for the question
         }                                                                           # 
 #                                                                                   #
         response2 = self.client.post(self.quiz_url, data=self.quiz_data)            # Accesses the quiz page
@@ -1382,3 +1382,111 @@ class AdminViewToggleTest(TestCase):
         self.assertEqual(this_user.is_student, False)
         
         
+
+class CreateClassTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Create Class Function is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Create Class Function is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        self.url = reverse('create_class')
+        self.data = {
+            'name': 'CIS-405'
+        }
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        Teacher.objects.create(
+            user=this_user
+        )
+
+    def test_create_class_redirect(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the class
+        self.assertEqual(response.status_code, 301)                                 # Confirm redirect to home page
+
+    def test_create_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url, data=self.data)                       # Create the class
+        self.assertEqual(response.status_code, 301)                                 # Confirm redirect to home page
+        self.assertTrue(Class.objects.filter(name="CIS-405").count() == 1)          # Confirms the class exists
+
+
+
+class AddDropClassTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        print(colored('Add/Drop Classes is Testing: ', 'blue'))
+        super().setUpClass()
+        
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        print("/"+colored('\n Add/Drop Classes is Tested!', 'green'))
+        
+    @classmethod
+    def setUp(self):
+        self.url1 = reverse('addClass')
+        self.url2 = reverse('dropClass')
+        self.data = {
+            'selectedClass': ['1', '2', '3'],
+            'selectedClass2': ['2']
+        }
+
+        self.c1 = Class.objects.create(name = "CIS-201")
+        self.c2 = Class.objects.create(name = "CIS-203")
+        self.c3 = Class.objects.create(name = "CIS-300")
+        
+        # creates a teacher for authentication
+        User.objects.create(
+            id="111222333444",
+            is_student=False,
+            is_teacher=True,
+            first_name="Richie",
+            last_name="Guy",
+            email="test@test.com",
+        )
+        this_user = User.objects.all().first()
+        this_user.set_password("SlappedHam123")
+        this_user.save()
+        self.teacher = Teacher.objects.create(
+            user=this_user
+        )
+        self.teacher.save()
+
+    def test_add_classes(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+
+    def test_remove_classes(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(self.teacher.classes.count(), 2)                           # Confirm classes removed
+
+    def test_remove_specific_class(self):
+        self.client.login(username="test@test.com", password="SlappedHam123")       # Login as teacher
+        response = self.client.post(self.url1, data=self.data)                      # Adds 3 classes to teacher
+        self.assertEqual(self.teacher.classes.count(), 3)                           # Confirm classes added
+        response = self.client.post(self.url2, data=self.data)                      # Removes 1 class from teacher
+        self.assertEqual(self.teacher.classes.count(), 2)                           # Confirm classes removed
+        self.assertTrue(not self.teacher.classes.contains(self.c2))                 # Confirms specific class removed
