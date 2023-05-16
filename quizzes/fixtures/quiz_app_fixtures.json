@@ -407,20 +407,6 @@
     }
   },
   {
-    "model": "quizzes.Student",
-    "fields": {
-      "user": "999999999999",
-      "classes": "1"
-    }
-  },
-  {
-    "model": "quizzes.Teacher",
-    "fields": {
-      "user": "999999999999",
-      "classes": "1"
-    }
-  },
-  {
     "model": "quizzes.User",
     "fields": {
       "id": "111111111111",

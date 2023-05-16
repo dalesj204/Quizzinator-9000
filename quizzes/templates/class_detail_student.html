@@ -1,20 +1,33 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<h1>{{class.name}}</h1>
-<p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p>
+<div style="text-align: center;">
+    <div style="display: inline-block; text-align: left;">
+        <h1>{{class.name}}</h1>
+        <p><strong>Instructor:</strong> {% for teacher in teacher_list %} {{teacher.user.first_name}} {{teacher.user.last_name}}{% endfor %}</p>
 
-<h2>Active Quizzes: </h2>
-    {% for quiz in active_quizzes %}
-        <p>
-            <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font> Closes: {{quiz.end_time}}
-        </p>
-    {% endfor %}
+        <h2>Active Quizzes: </h2>
+        <ul class="list-group">
+            {% for quiz in active_quizzes %}
+                    <li class="list-group-item">
+                        <a href="{% url 'take_quiz' quiz_id=quiz.pk %}" > {{quiz.name}} </a> <font color="Blue">Active</font> Closes: {{quiz.end_time}}
+                    </li>
+            {% endfor %}
+        </ul>
 
-<h2>Past Quizzes: </h2>
-    {% for quiz, grade in inactive_quizzes %}
-        <p>
-            {{quiz.name}} <font color="Red">Inactive</font> Grade: {{grade}}
-        </p>
-    {% endfor %}
+        <h2>Past Quizzes: </h2>
+        <ul class="list-group">
+            {% for quiz, grade in inactive_quizzes %}
+                <li class="list-group-item">
+                    {{quiz.name}} <font color="Red">Inactive</font> Grade: {{grade}}
+                </li>
+            {% endfor %}
+        </ul>
+        <p></p>
+        <br>
+        <p></p>
+        <br>
+        <p></p>
+    </div>
+</div>
 {% endblock %}

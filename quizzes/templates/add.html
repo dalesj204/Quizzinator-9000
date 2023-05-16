@@ -3,32 +3,41 @@
 {% block content %}
 
 <h1>Add question</h1>
+<div style="text-align: center;">
+    <div style="display: inline-block; text-align: left;">
 
-<form action="addrecord/" method="post">
-{% csrf_token %}
-Question:<br>
-<input name="stem">
-<br><br>
-Type:<br>
-<input name="type">
-<br><br>
-Hint:<br>
-<input name="explain">
-<br><br>
-Tags:<br>
-<input name="tag">
-<br><br>
-Options:<br>
-<input name="options">
-<br><br>
-Correct Option:<br>
-<input name="correctOption">
-<br><br>
-<input type="submit" value="Submit" name="Submit">
-<input type="submit" value="Submit and Add Another" name="Another">
-<input type="submit" value="Cancel" name="Cancel">
+        <form action="addrecord/" method="post">
+        {% csrf_token %}
+        Question:<br>
+        <input name="stem">
+        <br><br>
+        Type:<br>
+        <input name="type">
+        <br><br>
+        Hint:<br>
+        <input name="explain">
+        <br><br>
+        Tags:<br>
+        <input name="tag">
+        <br><br>
+        Options:<br>
+        <input name="options">
+        <br><br>
+        Correct Option:<br>
+        <input name="correctOption">
+        <br><br>
+        <input type="submit" value="Submit" name="Submit">
+        <input type="submit" value="Submit and Add Another" name="Another">
+        <input type="submit" value="Cancel" name="Cancel">
 
-</form>
-
+        </form>
+        
+        <p></p>
+        <br>
+        <p></p>
+        <br>
+        <p></p>
+    </div>
+</div>
 
 {% endblock %}

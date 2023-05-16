@@ -1,17 +1,24 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<div style="text-align: center;">
+    <div style="display: inline-block; text-align: left;">
 <h1>Edit Question</h1>
 <br/> 
 <form action ="" method=POST>
     {% csrf_token %}
     {{form.as_p}}
     <br/>
-    <input type ="submit" value="Update" name="Update"
-    class="btn btn-secondary">
-    <input type="submit" value="Cancel" name="Cancel"
-    class="btn btn-secondary">
+    <input type ="submit" value="Update" name="Update">
+    <input type="submit" value="Cancel" name="Cancel">
 </form>
 
 
+<p></p>
+<br>
+<p></p>
+<br>
+<p></p>
+</div>
+</div>
 {% endblock %}

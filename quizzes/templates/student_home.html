@@ -2,18 +2,21 @@
 
 
 {% block content %}
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
 <h1>Welcome {{name}}!</h1>
-<p>Reset password <a href="{% url 'resetPassword' %}">here</a></P>
 <h3>Classes</h3>
     
-<ul>
+<ul class="list-group">
   {% for class in classes %}
-    <li>
-      <p> 
-        <a href="{{ class.get_absolute_url }}" > {{class}} </a>
-      </p>
-    </li>
+    <li class="list-group-item"><a href="{{ class.get_absolute_url }}" > {{class}} </a></li>
   {% endfor %}
 </ul>
-
+<p></p>
+<br>
+<p></p>
+<br>
+<p></p>
+</div>
+</div>
 {% endblock %}

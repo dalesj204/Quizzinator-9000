@@ -4,10 +4,20 @@
 
 <h1>Gradebook: {{ quiz.name }}</h1>
 <h2>Average Grade: {{ average }} </h2>
-
+<h2>Select Specific Class(es): {{ sel_classes|join:", " }}</h2>
+<form action="{% url 'gradebook' quiz.id %}" method="post">
+{%csrf_token%}
+{% for class in t_classes %}
+    <p><input type="checkbox" value= "{{class.pk}}"id=class name="selectedClasses">{{ class }}</p>
+{% endfor %}
+<button type ="submit">Submit</button>
+</form>
 <br>
-{% for student_data, name in gradebook %}
-    <p>{{ name }} - {{ student_data.grade }}/100 - {{ student_data.attempts }} Attempts</p>
+{% for student_data, name, class, switch in gradebook %}
+    {% if switch %}
+        <h3>{{ class }}</h3>
+    {% endif %}
+    <p> - {{ name }} - {{ student_data.grade }}/100 - {{ student_data.attempts }} Attempts</p>
 {% endfor %}
 
 {% endblock %}

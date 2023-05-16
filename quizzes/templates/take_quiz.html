@@ -1,6 +1,8 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<div style="text-align: center;">
+  <div style="display: inline-block; text-align: left;">
 
 {% if error == "MMChoices" %}
   <p>INCORRECT NUMBER OF CHOICES SELECTED</p>
@@ -38,6 +40,20 @@
           </div>
     {% endfor %}
   </ol>
+{% if not user_is_teacher %}
   <button type ="submit">Submit</button>
+{% endif %}
 </form>
+{% if user_is_teacher %}
+<form action={% url 'index' %} method="link">
+  <button type="submit">Home</button>
+</form>
+{% endif %}
+<p></p>
+<br>
+<p></p>
+<br>
+<p></p>
+</div>
+</div>
 {% endblock %}
