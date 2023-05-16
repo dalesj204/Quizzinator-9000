@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 
-from .models import Question, User, Student, Teacher
+from .models import Question, User, Student, Teacher, Class
 
 # form to edit questions
 class questionForm(ModelForm):
@@ -15,14 +15,6 @@ class questionForm(ModelForm):
         model = Question
         fields = ('stem', 'type', 'explain', 'tag', 'options', 'correctOption')
 
-ids = []
-# generates random unique id  
-def unique_id():
-    tempid = random.randint(111111111111, 999999999999)
-    while tempid in ids:
-        tempid = random.randint(111111111111, 999999999999)
-    ids.append(tempid)
-    return tempid
         
 class StudentSignUpForm(UserCreationForm):
     first_name = forms.CharField(label='First name', max_length=100)
@@ -30,7 +22,6 @@ class StudentSignUpForm(UserCreationForm):
     email = forms.EmailField(label='Email', required=True)
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput, max_length=100)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)
-    tempid = unique_id()
     
 
     class Meta(UserCreationForm.Meta):
@@ -52,12 +43,20 @@ class StudentSignUpForm(UserCreationForm):
         elif (password1 != password2):
             raise forms.ValidationError("Your passwords do not match")
         return password2
-        
+    
+    # generates random unique id  
+    def unique_id(self):
+        tempid = random.randint(111111111111, 999999999999)
+        ids = [u.id for u in User.objects.all()]
+        while tempid in ids:
+            tempid = random.randint(111111111111, 999999999999)
+        return tempid
+    
     @transaction.atomic
     def save(self, commit=False):
-        user = User(id=self.tempid, is_student=True, first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'], password=self.cleaned_data['password2'], username=self.cleaned_data['email'])
+        user = User(id=self.unique_id(), is_student=True, first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'], password=self.cleaned_data['password2'], username=self.cleaned_data['email'])
         user.save()
-        student = Student(user=user)
+        student = Student.objects.create(user=user)
         student.save()
         return user
     
@@ -66,8 +65,7 @@ class TeacherSignUpForm(UserCreationForm):
     last_name = forms.CharField(label='Last name', max_length=100)
     email = forms.EmailField(label='Email', required=True)
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput, max_length=100)
-    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)    
-    tempid = unique_id()
+    password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput, max_length=100)
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -89,12 +87,20 @@ class TeacherSignUpForm(UserCreationForm):
         elif (password1 != password2):
             raise forms.ValidationError("Your passwords do not match")
         return password2
-        
+    
+    # generates random unique id  
+    def unique_id(self):
+        tempid = random.randint(111111111111, 999999999999)
+        ids = [u.id for u in User.objects.all()]
+        while tempid in ids:
+            tempid = random.randint(111111111111, 999999999999)
+        return tempid
+
     @transaction.atomic
     def save(self, commit=False):
-        user = User(id=self.tempid, is_teacher=True, first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'], password=self.cleaned_data['password2'], username=self.cleaned_data['email'])
+        user = User(id=self.unique_id(), is_teacher=True, first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'], password=self.cleaned_data['password2'], username=self.cleaned_data['email'])
         user.save()
-        teacher = Teacher(user=user)
+        teacher = Teacher.objects.create(user=user)
         teacher.save()
         return user
     
@@ -158,3 +164,16 @@ class AdminPasswordResetForm(forms.Form):
         elif (password1 != password2):
             raise forms.ValidationError("Your passwords do not match")
         return password2
+    
+class CreateClassForm(forms.Form):
+    name = forms.CharField(label='Enter a Class Name', required=True, max_length=100)
+
+    class Meta:
+        model = Class
+        fields = ("name")
+
+    @transaction.atomic
+    def save(self, commit=False):
+        this_class = Class(name = self.cleaned_data['name'])
+        this_class.save()
+        return this_class

@@ -34,8 +34,12 @@ urlpatterns = [
     path('register/student/', views.StudentSignUpView, name='studentRegistration'),
     path('register/teacher/', views.TeacherSignUpView, name='teacherRegistration'),
     
-    path('class_detail/<int:class_id>', views.ClassDetailView, name='class_detail'), 
-    
+    path('class_detail/<int:class_id>', views.ClassDetailView, name='class_detail'),
+    path('edit_classes', views.EditClassList, name="edit_classes"),
+    path('edit_classes/add', views.addClass, name='addClass'),
+    path('edit_classes/drop', views.dropClass, name='dropClass'),
+    path('create_class', views.CreateClass, name="create_class"),
+
     path('quizzes/take/<int:quiz_id>', views.TakeQuizView, name='take_quiz'),
     path('quizzes/take/summary/<int:quiz_id>', views.SubmitQuiz, name='submitQuiz'),
     path('quizzes/gradebook/<int:quiz_id>', views.TeacherGradebookView, name='gradebook'),
